@@ -179,6 +179,73 @@ function getInitialLang() {
   return urlLang || savedLang || 'pt';
 }
 
+function NewsletterForm({ lang, placeholder, buttonText }) {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    if (!email) return;
+
+    try {
+      setLoading(true);
+
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email,
+          language: lang,
+          source_page: 'site'
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.ok) {
+        setSuccess(true);
+        setEmail('');
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder={placeholder}
+        type="email"
+        required
+      />
+
+      <button type="submit" disabled={loading}>
+        {loading ? '...' : buttonText}
+      </button>
+
+      {success && (
+        <span
+          style={{
+            color: '#d7ff00',
+            marginLeft: 12,
+            fontWeight: 600
+          }}
+        >
+          OK!
+        </span>
+      )}
+    </form>
+  );
+}
+
 export default function SitePage() {
   const [lang, setLang] = useState('pt');
   const [mobile, setMobile] = useState(false);
@@ -426,16 +493,17 @@ export default function SitePage() {
         </section>
 
         <section id="newsletter" className="newsletterBar">
-          <div>
-            <h2>{t.newsletterTitle}</h2>
-            <p>{t.newsletterText}</p>
-          </div>
+  <div>
+    <h2>{t.newsletterTitle}</h2>
+    <p>{t.newsletterText}</p>
+  </div>
 
-          <form>
-            <input placeholder={t.emailPlaceholder} />
-            <button>{t.subscribe}</button>
-          </form>
-        </section>
+  <NewsletterForm
+    lang={lang}
+    placeholder={t.emailPlaceholder}
+    buttonText={t.subscribe}
+  />
+</section>
 
         <footer id="footer" className="premiumFooter">
           <Image src="/assets/bfwc-logo.jpg" alt="BFWC" width={80} height={80} />
