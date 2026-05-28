@@ -189,31 +189,27 @@ function NewsletterForm({ lang, placeholder, buttonText }) {
 
     if (!email) return;
 
-    try {
-      setLoading(true);
+    setLoading(true);
 
-      const response = await fetch('/api/newsletter', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email,
-          language: lang,
-          source_page: 'site'
-        })
-      });
+    const response = await fetch('/api/newsletter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        language: lang,
+        source_page: 'site'
+      })
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (data.ok) {
-        setSuccess(true);
-        setEmail('');
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
+    setLoading(false);
+
+    if (data.ok) {
+      setSuccess(true);
+      setEmail('');
+    } else {
+      alert(data.message || 'Erro ao cadastrar e-mail.');
     }
   }
 
@@ -228,17 +224,11 @@ function NewsletterForm({ lang, placeholder, buttonText }) {
       />
 
       <button type="submit" disabled={loading}>
-        {loading ? '...' : buttonText}
+        {loading ? 'Enviando...' : buttonText}
       </button>
 
       {success && (
-        <span
-          style={{
-            color: '#d7ff00',
-            marginLeft: 12,
-            fontWeight: 600
-          }}
-        >
+        <span style={{ color: '#eaff00', marginLeft: 12, fontWeight: 800 }}>
           OK!
         </span>
       )}
