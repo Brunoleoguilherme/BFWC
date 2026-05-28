@@ -254,7 +254,7 @@ useState(() => {
           <p className="miniTag">PARCEIROS</p>
           <div className="partnerLine">
             <Image src="/assets/underarmour-white.png" alt="Under Armour" width={130} height={80} />
-            <Image src="/assets/brasil-sports-business.jpeg" alt="Brasil Sports Business" width={130} height={80} />
+            <Image src="/assets/brasil-sports-business2.jpeg" alt="Brasil Sports Business" width={130} height={80} />
             <Image src="/assets/blue-panda.png" alt="Blue Panda Travel" width={190} height={90} />
             <Image src="/assets/embaixada-eua.png" alt="U.S. Embassy" width={130} height={80} />
           </div>
