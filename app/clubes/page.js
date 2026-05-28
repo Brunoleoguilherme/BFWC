@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect } from 'react';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ArrowLeft,
   CheckCircle2,
@@ -231,12 +232,25 @@ export default function ClubInterestPage() {
     }
   }
 
+  useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const urlLang = params.get('lang');
+  const savedLang = localStorage.getItem('bfwc_language');
+  const selectedLang = urlLang || savedLang || 'pt';
+
+  if (texts[selectedLang]) {
+    setLang(selectedLang);
+    setForm((prev) => ({ ...prev, language: selectedLang }));
+    localStorage.setItem('bfwc_language', selectedLang);
+  }
+}, []);
+
   return (
     <main className="clubPage premiumClubPage">
       <div className="clubBackgroundImage" />
 
       <header className="clubHeader">
-        <Link href="/" className="backLink">
+        <Link href={`/site?lang=${lang}`} className="backLink">
           <ArrowLeft size={18} />
           {t.back}
         </Link>
