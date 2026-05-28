@@ -2027,15 +2027,6 @@ img {
   color: #fff;
 }
 
-.languageBg {
-  position: fixed;
-  inset: 0;
-  background:
-    linear-gradient(90deg, rgba(2,8,23,.86), rgba(2,8,23,.55), rgba(2,8,23,.88)),
-    url('/assets/hero-rio-athletes.png') center / cover no-repeat;
-  z-index: 0;
-}
-
 .languageCard {
   position: relative;
   z-index: 2;
@@ -2134,11 +2125,11 @@ img {
 .languageBg {
   position: fixed;
   inset: 0;
-  background:
-    radial-gradient(circle at 50% 42%, rgba(20, 90, 255, .20), transparent 35%),
-    linear-gradient(90deg, rgba(2,8,23,.90), rgba(2,8,23,.48), rgba(2,8,23,.92)),
-    linear-gradient(180deg, rgba(2,8,23,.25), rgba(2,8,23,.95)),
-    url('/assets/hero-rio-athletes.png') center / cover no-repeat;
+  width: 100vw;
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   z-index: 0;
 }
 
@@ -2212,6 +2203,18 @@ img {
 .languageOptions {
   display: grid;
   gap: 16px;
+}
+
+.languageOverlay {
+  position: fixed;
+  inset: 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.28) 0%,
+      rgba(0, 0, 0, 0.48) 100%
+    );
+  z-index: 1;
 }
 
 .languageOption {
