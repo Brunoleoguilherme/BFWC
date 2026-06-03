@@ -1,0 +1,195 @@
+.languageLanding {
+  position: relative;
+  min-height: 100dvh;
+  height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  overflow: hidden;
+  background: #020817;
+  color: #fff;
+}
+
+.languageBg {
+  position: fixed;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
+}
+
+.languageOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(90deg, rgba(2,8,23,.62), rgba(2,8,23,.32), rgba(2,8,23,.62)),
+    linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.40));
+}
+
+.languageCard {
+  position: relative;
+  z-index: 2;
+  width: min(620px, 94vw);
+  max-height: calc(100dvh - 32px);
+  padding: 28px 34px;
+  border-radius: 32px;
+  text-align: center;
+  background: linear-gradient(145deg, rgba(8,28,78,.95), rgba(2,10,30,.94));
+  border: 1px solid rgba(255,255,255,.16);
+  box-shadow: 0 42px 120px rgba(0,0,0,.58);
+  backdrop-filter: blur(22px);
+}
+
+.languageLogo {
+  width: 170px;
+  height: 170px;
+  object-fit: contain;
+  margin-bottom: 14px;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.languageCard h1 {
+  font-size: clamp(34px, 4.2vw, 50px);
+  line-height: .95;
+  letter-spacing: -2px;
+  margin-bottom: 10px;
+}
+
+.languageCard p {
+  font-size: 15px;
+  color: rgba(255,255,255,.78);
+  margin-bottom: 18px;
+}
+
+.languageOptions {
+  display: grid;
+  gap: 10px;
+}
+
+.languageOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 82px;
+  padding: 13px 18px;
+  border-radius: 18px;
+  text-align: left;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.16);
+  transition: .25s ease;
+}
+
+.languageOption:hover {
+  transform: translateY(-3px);
+  background: linear-gradient(135deg, rgba(234,255,0,.16), rgba(13,75,255,.18));
+  border-color: rgba(234,255,0,.45);
+}
+
+.languageLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.languageFlagIcon {
+  width: 54px;
+  height: 54px;
+  min-width: 54px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+
+.flagImage {
+  width: 72px !important;
+  height: 72px !important;
+  max-width: none !important;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.languageTexts small {
+  display: block;
+  color: #eaff00;
+  font-weight: 950;
+  letter-spacing: 1px;
+  margin-bottom: 3px;
+}
+
+.languageTexts strong {
+  display: block;
+  font-size: 17px;
+  line-height: 1.1;
+}
+
+.languageTexts span {
+  display: block;
+  margin-top: 5px;
+  color: rgba(255,255,255,.68);
+  font-size: 12px;
+}
+
+.languageOption svg {
+  color: #eaff00;
+  flex-shrink: 0;
+}
+
+@media (max-width: 620px) {
+  .languageLanding {
+    padding: 10px;
+  }
+
+  .languageCard {
+    width: min(390px, 94vw);
+    padding: 20px;
+    border-radius: 26px;
+  }
+
+  .languageLogo {
+    width: 125px;
+    height: 125px;
+  }
+
+  .languageCard h1 {
+    font-size: 32px;
+    letter-spacing: -1px;
+  }
+
+  .languageCard p {
+    font-size: 13px;
+  }
+
+  .languageOption {
+    min-height: 72px;
+    padding: 11px 13px;
+  }
+
+  .languageLeft {
+    gap: 12px;
+  }
+
+  .languageFlagIcon {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+  }
+
+  .flagImage {
+    width: 60px !important;
+    height: 60px !important;
+  }
+
+  .languageTexts strong {
+    font-size: 14px;
+  }
+
+  .languageTexts span {
+    font-size: 10px;
+  }
+}

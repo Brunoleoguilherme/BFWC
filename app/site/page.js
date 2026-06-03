@@ -13,18 +13,19 @@ import {
   X,
   ArrowRight
 } from 'lucide-react';
+import './site.css';
 
 const langs = {
   pt: {
     home: 'HOME',
     about: 'SOBRE',
     info: 'INFORMAÇÕES',
-    news: 'NOTÍCIAS',
+    
     partners: 'PARCEIROS',
     contact: 'CONTATO',
-    heroTitle: 'O MUNDO SE ENCONTRA NO BRASIL.',
-    heroSub: 'Um jogo. Uma paixão.',
-    register: 'CADASTRAR INTERESSE',
+    heroTitle: 'O FLAG FOOTBALL MUNDIAL\nVAI SE ENCONTRAR NO BRASIL.',
+heroSub: 'O PRÓXIMO NÍVEL NO ESPORTE!',
+register: 'CADASTRAR INTERESSE DA MINHA EQUIPE',
     aboutTag: 'SOBRE O EVENTO',
     aboutTitle: 'UM NOVO CAPÍTULO PARA O FLAG FOOTBALL.',
     aboutText:
@@ -45,11 +46,7 @@ const langs = {
     latestNews: 'ÚLTIMAS NOTÍCIAS',
     stayUpdated: 'FIQUE POR DENTRO',
     viewAll: 'VER TODAS',
-    newsItems: [
-      ['ANÚNCIO', 'Under Armour é a patrocinadora oficial do Championship'],
-      ['DESTINO', 'Rio de Janeiro será sede do Championship 2026'],
-      ['GLOBAL', 'Países de todos os continentes já estão confirmados']
-    ],
+    
     partnersTitle: 'PARCEIROS',
     newsletterTitle: 'NÃO PERCA NENHUMA NOVIDADE!',
     newsletterText: 'Se inscreva para receber novidades sobre o campeonato.',
@@ -70,7 +67,7 @@ const langs = {
     home: 'HOME',
     about: 'ABOUT',
     info: 'INFO',
-    news: 'NEWS',
+    
     partners: 'PARTNERS',
     contact: 'CONTACT',
     heroTitle: 'THE WORLD MEETS IN BRAZIL.',
@@ -93,15 +90,9 @@ const langs = {
     expect: 'WHAT TO EXPECT',
     expectValue: 'High level games',
     expectDesc: 'culture, beach and experience',
-    latestNews: 'LATEST NEWS',
-    stayUpdated: 'STAY UPDATED',
+        stayUpdated: 'STAY UPDATED',
     viewAll: 'VIEW ALL',
-    newsItems: [
-      ['ANNOUNCEMENT', 'Under Armour is the official sponsor of the Championship'],
-      ['DESTINATION', 'Rio de Janeiro will host the 2026 Championship'],
-      ['GLOBAL', 'Countries from all continents are already confirmed']
-    ],
-    partnersTitle: 'PARTNERS',
+        partnersTitle: 'PARTNERS',
     newsletterTitle: "DON'T MISS ANY NEWS!",
     newsletterText: 'Subscribe to receive updates about the championship.',
     emailPlaceholder: 'Your email',
@@ -121,7 +112,6 @@ const langs = {
     home: 'HOME',
     about: 'SOBRE',
     info: 'INFO',
-    news: 'NOTICIAS',
     partners: 'SOCIOS',
     contact: 'CONTACTO',
     heroTitle: 'EL MUNDO SE ENCUENTRA EN BRASIL.',
@@ -144,14 +134,9 @@ const langs = {
     expect: 'QUÉ ESPERAR',
     expectValue: 'Juegos de alto nivel',
     expectDesc: 'cultura, playa y experiencia',
-    latestNews: 'ÚLTIMAS NOTICIAS',
-    stayUpdated: 'MANTENTE INFORMADO',
+        stayUpdated: 'MANTENTE INFORMADO',
     viewAll: 'VER TODAS',
-    newsItems: [
-      ['ANUNCIO', 'Under Armour es patrocinadora oficial del Championship'],
-      ['DESTINO', 'Rio de Janeiro será sede del Championship 2026'],
-      ['GLOBAL', 'Países de todos los continentes ya están confirmados']
-    ],
+    
     partnersTitle: 'SOCIOS',
     newsletterTitle: '¡NO TE PIERDAS NINGUNA NOTICIA!',
     newsletterText: 'Suscríbete para recibir novedades del campeonato.',
@@ -308,8 +293,7 @@ export default function SitePage() {
             <a href="#top">{t.home}</a>
             <a href="#about">{t.about}</a>
             <a href="#info">{t.info}</a>
-            <Link href="/noticias">{t.news}</Link>
-            <a href="#partners">{t.partners}</a>
+                        <a href="#partners">{t.partners}</a>
             <a href="#footer">{t.contact}</a>
           </nav>
 
@@ -336,7 +320,7 @@ export default function SitePage() {
             <a href="#top">{t.home}</a>
             <a href="#about">{t.about}</a>
             <a href="#info">{t.info}</a>
-            <a href="#news">{t.news}</a>
+           
             <a href="#partners">{t.partners}</a>
           </div>
         )}
@@ -355,8 +339,26 @@ export default function SitePage() {
           <div className="heroRibbon" />
 
           <div className="heroInner">
-            <h1>{t.heroTitle}</h1>
-            <h2>{t.heroSub}</h2>
+            <h1 className="heroTitleSplit">
+  {lang === 'pt' ? (
+    <>
+      <span>O FLAG FOOTBALL MUNDIAL</span>
+      <strong>VAI SE ENCONTRAR NO BRASIL.</strong>
+    </>
+  ) : lang === 'en' ? (
+    <>
+      <span>WORLD FLAG FOOTBALL</span>
+      <strong>WILL MEET IN BRAZIL.</strong>
+    </>
+  ) : (
+    <>
+      <span>EL FLAG FOOTBALL MUNDIAL</span>
+      <strong>SE ENCONTRARÁ EN BRASIL.</strong>
+    </>
+  )}
+</h1>
+
+<h2>{t.heroSub}</h2>
 
             <div className="heroMeta">
               <span>
@@ -438,40 +440,7 @@ export default function SitePage() {
           ))}
         </section>
 
-        <section id="news" className="newsBlock">
-          <div className="sectionTitle">
-            <div>
-              <p className="miniTag">{t.latestNews}</p>
-              <h2>{t.stayUpdated}</h2>
-            </div>
-
-            <Link href="/noticias">{t.viewAll}</Link>
-          </div>
-
-          <div className="newsGrid">
-            {[
-              [t.newsItems[0][0], t.newsItems[0][1], '/noticias/under-armour'],
-              [t.newsItems[1][0], t.newsItems[1][1], '/noticias/rio-de-janeiro'],
-              [t.newsItems[2][0], t.newsItems[2][1], '/noticias/paises-confirmados']
-            ].map((item, index) => (
-              <Link href={item[2]} className="newsCard" key={item[0]}>
-                <Image
-                  src={index === 1 ? '/assets/hero-rio-athletes.png' : '/assets/bfwc-logo.jpg'}
-                  alt={item[1]}
-                  fill
-                />
-
-                <div>
-                  <span>{item[0]}</span>
-                  <h3>{item[1]}</h3>
-                  <p>18 de maio de 2026</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        <section id="partners" className="officialPartners">
+                <section id="partners" className="officialPartners">
           <p className="miniTag">{t.partnersTitle}</p>
 
           <div className="partnerLine">

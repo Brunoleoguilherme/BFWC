@@ -1,5 +1,6 @@
 'use client';
 
+import './clubes.css';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
@@ -8,43 +9,51 @@ import {
   CheckCircle2,
   Loader2,
   ShieldCheck,
-  Globe2,
   Trophy,
   Plane,
-  Users,
-  Mail,
-  Sparkles
+  Users
 } from 'lucide-react';
+
+const categories = ['Men', 'Women', 'Mixed', 'U20 Men', 'U20 Women', 'Masters', 'Other'];
+
+const prioritiesList = [
+  'Nível técnico da arbitragem',
+  'Qualidade do gramado/estrutura das quadras',
+  'Premiação em dinheiro / Troféus e medalhas de alto padrão',
+  'Transmissão ao vivo dos jogos',
+  'Festas oficiais / Eventos de integração',
+  'Logística de transporte e proximidade dos hotéis'
+];
 
 const texts = {
   pt: {
     back: 'Voltar para o site',
     eyebrow: 'PROCESSO DE SELEÇÃO DE CLUBES',
-    title: 'Inscrição de interesse do clube.',
+    title: 'Sua equipe quer participar do Brasil Flag World Championship?',
     subtitle:
-      'Preencha as informações abaixo. O comitê do campeonato irá analisar o perfil do clube e enviar uma resposta oficial por e-mail.',
-    curated: 'Seleção criteriosa',
-    email: 'Confirmação por e-mail',
-    international: 'Clubes internacionais',
+      'Preencha o formulário de candidatura abaixo. O Comitê Organizador vai avaliar o perfil do seu clube e enviará uma resposta oficial por e-mail.',
     review: 'Análise oficial para equipes selecionadas.',
     noGuarantee: 'O envio não garante participação automática.',
     steps: [
-      ['1. Enviar interesse', 'O clube envia informações institucionais, competitivas e de contato.'],
+      ['1. Enviar interesse', 'A equipe envia informações institucionais, competitivas e de contato.'],
       ['2. Análise do comitê', 'A organização avalia categoria, histórico, perfil e capacidade.'],
       ['3. Resposta oficial', 'O contato recebe aprovação ou próximos passos por e-mail.'],
-      ['4. Apoio de viagem', 'Clubes aprovados poderão receber suporte oficial da Blue Panda Travel.']
+      ['4. Apoio de viagem', 'Equipes aprovadas poderão receber suporte oficial da Blue Panda Travel.']
     ],
     official: 'INSCRIÇÃO OFICIAL',
-    formTitle: 'Envie seu clube para análise',
+    formTitle: 'Envie sua equipe para análise',
     formSubtitle:
       'Preencha com informações corretas. Este formulário será enviado à organização do BFWC e armazenado para análise.',
-    premium: 'Evento internacional premium',
-    clubInfo: 'Informações do clube',
+    firstStep:
+      'Esse é seu primeiro passo para viver sua melhor experiência internacional do Flag Football em 2026.',
+    clubInfo: 'Informações da equipe',
     contact: 'Contato responsável',
     clubName: 'Nome do clube / equipe',
     country: 'País',
     city: 'Cidade',
-    category: 'Categoria / divisão',
+    category: 'Categoria / divisão principal',
+    moreCategories: 'Deseja inscrever mais de uma categoria?',
+    categoriesInterested: 'Quais categorias sua equipe deseja inscrever?',
     select: 'Selecione',
     instagram: 'Instagram',
     website: 'Site',
@@ -55,6 +64,10 @@ const texts = {
     yes: 'Sim, apoio Blue Panda',
     no: 'Não',
     maybe: 'Talvez',
+    hosting:
+      'Se a sua equipe precisar de viagem, qual tipo de hospedagem vocês preferem?',
+    priorities:
+      'Quais são as 3 coisas mais importantes para você e sua equipe em um evento internacional de Flag?',
     history: 'Histórico competitivo',
     historyPlaceholder: 'Principais torneios, títulos, liga, federação, experiência internacional...',
     notes: 'Observações adicionais',
@@ -64,36 +77,37 @@ const texts = {
     submit: 'Enviar para análise oficial',
     submitting: 'Enviando...',
     success:
-      'Inscrição recebida. Seu clube receberá uma confirmação por e-mail e a organização analisará sua solicitação.'
+      'Inscrição recebida. Sua equipe receberá uma confirmação por e-mail e a organização analisará sua solicitação.'
   },
+
   en: {
     back: 'Back to website',
     eyebrow: 'CLUB SELECTION PROCESS',
-    title: 'Club interest application.',
+    title: 'Does your team want to join the Brasil Flag World Championship?',
     subtitle:
-      'Complete the information below. The championship committee will review your club profile and send an official response by email.',
-    curated: 'Curated selection',
-    email: 'Email confirmation',
-    international: 'International clubs',
+      'Complete the application form below. The Organizing Committee will review your club profile and send an official response by email.',
     review: 'Official review for selected teams.',
     noGuarantee: 'Submission does not guarantee automatic participation.',
     steps: [
-      ['1. Submit interest', 'The club sends institutional, competitive and contact information.'],
+      ['1. Submit interest', 'The team sends institutional, competitive and contact information.'],
       ['2. Committee review', 'The organization reviews category, history, profile and capacity.'],
-      ['3. Official response', 'The contact receives the approval or next steps by email.'],
-      ['4. Travel support', 'Approved clubs may receive official Blue Panda Travel assistance.']
+      ['3. Official response', 'The contact receives approval or next steps by email.'],
+      ['4. Travel support', 'Approved teams may receive official Blue Panda Travel assistance.']
     ],
     official: 'OFFICIAL APPLICATION',
-    formTitle: 'Submit your club for analysis',
+    formTitle: 'Submit your team for analysis',
     formSubtitle:
       'Please fill in accurate information. This form will be sent to the BFWC organization team and stored for review.',
-    premium: 'Premium international event',
-    clubInfo: 'Club information',
+    firstStep:
+      'This is your first step toward living your best international Flag Football experience in 2026.',
+    clubInfo: 'Team information',
     contact: 'Responsible contact',
     clubName: 'Club / Team name',
     country: 'Country',
     city: 'City',
-    category: 'Category / Division',
+    category: 'Main category / division',
+    moreCategories: 'Would you like to register more than one category?',
+    categoriesInterested: 'Categories of interest',
     select: 'Select',
     instagram: 'Instagram',
     website: 'Website',
@@ -104,45 +118,48 @@ const texts = {
     yes: 'Yes, Blue Panda support',
     no: 'No',
     maybe: 'Maybe',
+    hosting: 'If your team needs travel, what type of accommodation do you prefer?',
+    priorities: 'What are the 3 most important things for your team in an international Flag event?',
     history: 'Competitive history',
     historyPlaceholder: 'Main tournaments, titles, league, federation, international experience...',
     notes: 'Additional notes',
-    notesPlaceholder: 'Any relevant information about your club, travel group, expectations or questions...',
+    notesPlaceholder: 'Relevant information about your club, travel group, expectations or questions...',
     consent:
       'I authorize the organization to process this information for club selection, official communication and event-related opportunities.',
     submit: 'Submit for official review',
     submitting: 'Submitting...',
     success:
-      'Application received. Your club will receive a confirmation email and the organization will analyze your request.'
+      'Application received. Your team will receive a confirmation email and the organization will analyze your request.'
   },
+
   es: {
     back: 'Volver al sitio',
     eyebrow: 'PROCESO DE SELECCIÓN DE CLUBES',
-    title: 'Solicitud de interés del club.',
+    title: '¿Tu equipo quiere participar en el Brasil Flag World Championship?',
     subtitle:
-      'Complete la información abajo. El comité del campeonato revisará el perfil del club y enviará una respuesta oficial por correo electrónico.',
-    curated: 'Selección criteriosa',
-    email: 'Confirmación por e-mail',
-    international: 'Clubes internacionales',
+      'Complete el formulario de candidatura abajo. El Comité Organizador evaluará el perfil de su club y enviará una respuesta oficial por correo electrónico.',
     review: 'Revisión oficial para equipos seleccionados.',
     noGuarantee: 'El envío no garantiza participación automática.',
     steps: [
-      ['1. Enviar interés', 'El club envía información institucional, competitiva y de contacto.'],
+      ['1. Enviar interés', 'El equipo envía información institucional, competitiva y de contacto.'],
       ['2. Revisión del comité', 'La organización revisa categoría, historial, perfil y capacidad.'],
       ['3. Respuesta oficial', 'El contacto recibe aprobación o próximos pasos por e-mail.'],
-      ['4. Apoyo de viaje', 'Los clubes aprobados podrán recibir asistencia oficial de Blue Panda Travel.']
+      ['4. Apoyo de viaje', 'Los equipos aprobados podrán recibir asistencia oficial de Blue Panda Travel.']
     ],
     official: 'SOLICITUD OFICIAL',
-    formTitle: 'Envíe su club para análisis',
+    formTitle: 'Envíe su equipo para análisis',
     formSubtitle:
       'Complete la información con precisión. Este formulario será enviado al equipo organizador del BFWC y almacenado para revisión.',
-    premium: 'Evento internacional premium',
-    clubInfo: 'Información del club',
+    firstStep:
+      'Este es el primer paso para vivir su mejor experiencia internacional de Flag Football en 2026.',
+    clubInfo: 'Información del equipo',
     contact: 'Contacto responsable',
     clubName: 'Nombre del club / equipo',
     country: 'País',
     city: 'Ciudad',
-    category: 'Categoría / división',
+    category: 'Categoría / división principal',
+    moreCategories: '¿Desea inscribir más de una categoría?',
+    categoriesInterested: 'Categorías de interés',
     select: 'Seleccione',
     instagram: 'Instagram',
     website: 'Sitio web',
@@ -153,6 +170,8 @@ const texts = {
     yes: 'Sí, apoyo Blue Panda',
     no: 'No',
     maybe: 'Tal vez',
+    hosting: 'Si su equipo necesita viajar, ¿qué tipo de hospedaje prefieren?',
+    priorities: '¿Cuáles son las 3 cosas más importantes para su equipo en un evento internacional de Flag?',
     history: 'Historial competitivo',
     historyPlaceholder: 'Principales torneos, títulos, liga, federación, experiencia internacional...',
     notes: 'Notas adicionales',
@@ -162,7 +181,7 @@ const texts = {
     submit: 'Enviar para revisión oficial',
     submitting: 'Enviando...',
     success:
-      'Solicitud recibida. Su club recibirá una confirmación por e-mail y la organización analizará su solicitud.'
+      'Solicitud recibida. Su equipo recibirá una confirmación por e-mail y la organización analizará su solicitud.'
   }
 };
 
@@ -171,6 +190,7 @@ const initial = {
   country: '',
   city: '',
   category: '',
+    categories_interested: [],
   contact_name: '',
   contact_role: '',
   email: '',
@@ -180,6 +200,8 @@ const initial = {
   athletes_count: '',
   competitive_history: '',
   travel_support: 'yes',
+  hosting_preference: '',
+  event_priorities: [],
   notes: '',
   language: 'pt',
   lgpd: false
@@ -197,10 +219,34 @@ export default function ClubInterestPage() {
   function changeLang(value) {
     setLang(value);
     setForm((prev) => ({ ...prev, language: value }));
+    localStorage.setItem('bfwc_language', value);
   }
 
   function set(k, v) {
     setForm((prev) => ({ ...prev, [k]: v }));
+  }
+
+  function toggleArray(field, value, limit = null) {
+    setForm((prev) => {
+      const current = prev[field] || [];
+      const exists = current.includes(value);
+
+      if (exists) {
+        return {
+          ...prev,
+          [field]: current.filter((item) => item !== value)
+        };
+      }
+
+      if (limit && current.length >= limit) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        [field]: [...current, value]
+      };
+    });
   }
 
   async function submit(e) {
@@ -232,20 +278,20 @@ export default function ClubInterestPage() {
   }
 
   useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  const urlLang = params.get('lang');
-  const savedLang = localStorage.getItem('bfwc_language');
-  const selectedLang = urlLang || savedLang || 'pt';
+    const params = new URLSearchParams(window.location.search);
+    const urlLang = params.get('lang');
+    const savedLang = localStorage.getItem('bfwc_language');
+    const selectedLang = urlLang || savedLang || 'pt';
 
-  if (texts[selectedLang]) {
-    setLang(selectedLang);
-    setForm((prev) => ({ ...prev, language: selectedLang }));
-    localStorage.setItem('bfwc_language', selectedLang);
-  }
-}, []);
+    if (texts[selectedLang]) {
+      setLang(selectedLang);
+      setForm((prev) => ({ ...prev, language: selectedLang }));
+      localStorage.setItem('bfwc_language', selectedLang);
+    }
+  }, []);
 
   return (
-    <main className="clubPage premiumClubPage">
+    <main className="premiumClubPage">
       <div className="clubBackgroundImage" />
 
       <header className="clubHeader">
@@ -273,12 +319,6 @@ export default function ClubInterestPage() {
           <p className="eyebrow">{t.eyebrow}</p>
           <h1>{t.title}</h1>
           <p>{t.subtitle}</p>
-
-          <div className="clubHeroBadges">
-            <span><ShieldCheck size={16} />{t.curated}</span>
-            <span><Mail size={16} />{t.email}</span>
-            <span><Globe2 size={16} />{t.international}</span>
-          </div>
         </div>
 
         <div className="clubHeroCard">
@@ -317,11 +357,7 @@ export default function ClubInterestPage() {
             <p className="tag">{t.official}</p>
             <h2>{t.formTitle}</h2>
             <p>{t.formSubtitle}</p>
-          </div>
-
-          <div className="formSeal">
-            <Sparkles />
-            <span>{t.premium}</span>
+            <p className="formIntroHighlight">{t.firstStep}</p>
           </div>
         </div>
 
@@ -333,19 +369,36 @@ export default function ClubInterestPage() {
             <Input label={t.country} value={form.country} onChange={(v) => set('country', v)} required />
             <Input label={t.city} value={form.city} onChange={(v) => set('city', v)} required />
 
-            <label>
-              {t.category}
-              <select value={form.category} onChange={(e) => set('category', e.target.value)} required>
-                <option value="">{t.select}</option>
-                <option>Men</option>
-                <option>Women</option>
-                <option>Mixed</option>
-                <option>U20 Men</option>
-                <option>U20 Women</option>
-                <option>Masters</option>
-                <option>Other</option>
-              </select>
-            </label>
+            <label className="fullField">
+  {t.categoriesInterested}
+  <div className="checkboxGrid">
+    {categories.map((cat) => (
+      <label key={cat} className="miniCheck">
+        <input
+          type="checkbox"
+          checked={form.categories_interested.includes(cat)}
+          onChange={() => {
+            toggleArray('categories_interested', cat);
+
+            setForm((prev) => {
+              const alreadySelected = prev.categories_interested.includes(cat);
+              const updatedCategories = alreadySelected
+                ? prev.categories_interested.filter((item) => item !== cat)
+                : [...prev.categories_interested, cat];
+
+              return {
+                ...prev,
+                categories_interested: updatedCategories,
+                category: updatedCategories.join(', ')
+              };
+            });
+          }}
+        />
+        <span>{cat}</span>
+      </label>
+    ))}
+  </div>
+</label>
 
             <Input label={t.instagram} value={form.instagram} onChange={(v) => set('instagram', v)} />
             <Input label={t.website} value={form.website} onChange={(v) => set('website', v)} />
@@ -369,6 +422,42 @@ export default function ClubInterestPage() {
                 <option value="no">{t.no}</option>
                 <option value="maybe">{t.maybe}</option>
               </select>
+            </label>
+
+            <label className="fullField">
+              {t.hosting}
+              <select
+                value={form.hosting_preference}
+                onChange={(e) => set('hosting_preference', e.target.value)}
+              >
+                <option value="">{t.select}</option>
+                <option>Não precisamos de hospedagem / Somos locais</option>
+                <option>Econômica / Hostels / Acomodações coletivas</option>
+                <option>Intermediária / Hotéis 3 estrelas</option>
+                <option>Premium / Hotéis 4 ou 5 estrelas</option>
+              </select>
+            </label>
+
+            <label className="fullField">
+              {t.priorities}
+              <div className="checkboxGrid">
+                {prioritiesList.map((item) => {
+                  const checked = form.event_priorities.includes(item);
+                  const disabled = !checked && form.event_priorities.length >= 3;
+
+                  return (
+                    <label key={item} className={`miniCheck ${disabled ? 'disabled' : ''}`}>
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        disabled={disabled}
+                        onChange={() => toggleArray('event_priorities', item, 3)}
+                      />
+                      <span>{item}</span>
+                    </label>
+                  );
+                })}
+              </div>
             </label>
           </div>
         </div>
