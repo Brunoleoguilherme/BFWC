@@ -368,7 +368,7 @@ export default function SitePage() {
 
               <span>
                 <MapPin size={19} />
-                RIO DE JANEIRO, BRAZIL
+                RIO DE JANEIRO, BRASIL
               </span>
             </div>
 

@@ -487,9 +487,11 @@
 }
 
 .partnerLine img {
+  width: 170px !important;
+  height: 95px !important;
   object-fit: contain;
   filter: grayscale(1);
-  opacity: .82;
+  opacity: .9;
   transition: .25s ease;
 }
 
@@ -725,4 +727,10 @@
   .newsletterBar h2 {
     font-size: 30px;
   }
+}
+
+.partnerLine img {
+  width: 210px !important;
+  height: 115px !important;
+  object-fit: contain;
 }
