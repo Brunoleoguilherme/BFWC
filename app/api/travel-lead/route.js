@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { getResend, fromEmail, adminEmail } from '@/lib/email';
+import { getResend, fromEmail, adminEmails } from '@/lib/email';
 
 export async function POST(request){
   try{
@@ -12,7 +12,7 @@ export async function POST(request){
     const resend = getResend();
     await Promise.allSettled([
       resend.emails.send({ from:fromEmail, to:body.email, subject:'Blue Panda Travel - Travel request received', html:`<h2>Travel request received</h2><p>Hello ${body.name}, we received your travel interest for the Brazil Flag World Championship 2026.</p>` }),
-      resend.emails.send({ from:fromEmail, to:adminEmail, subject:`Lead Blue Panda Travel: ${data.name}`, html:`<h2>Novo lead de viagem</h2><pre>${JSON.stringify(data,null,2)}</pre>` })
+      ...adminEmails.map(to => resend.emails.send({ from:fromEmail, to, subject:`Lead Blue Panda Travel: ${data.name}`, html:`<h2>Novo lead de viagem</h2><pre>${JSON.stringify(data,null,2)}</pre>` }))
     ]);
     return NextResponse.json({ok:true});
   }catch(error){
