@@ -115,16 +115,16 @@
   min-width: 54px;
   border-radius: 50%;
   overflow: hidden;
-  display: grid;
-  place-items: center;
+  flex-shrink: 0;
 }
 
 .flagImage {
-  width: 72px !important;
-  height: 72px !important;
-  max-width: none !important;
-  object-fit: cover;
+  width: 54px !important;
+  height: 54px !important;
+  object-fit: cover !important;
   border-radius: 50%;
+  display: block;
+  transform: scale(1.15);
 }
 
 .languageTexts small {
@@ -194,8 +194,8 @@
   }
 
   .flagImage {
-    width: 60px !important;
-    height: 60px !important;
+    width: 44px !important;
+    height: 44px !important;
   }
 
   .languageTexts strong {

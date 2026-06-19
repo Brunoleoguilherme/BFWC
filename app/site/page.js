@@ -42,13 +42,13 @@ register: 'CADASTRAR INTERESSE DA MINHA EQUIPE',
     categoriesDesc: 'Sub 15 (misto) • Sub 12 (misto)',
     expect: 'O QUE ESPERAR',
     expectValue: 'Jogos de alto nível',
-    expectDesc: 'cultura, praia e experiência',
+    expectDesc: 'cultura, competitividade e experiência',
     latestNews: 'ÚLTIMAS NOTÍCIAS',
     stayUpdated: 'FIQUE POR DENTRO',
     viewAll: 'VER TODAS',
     
     partnersTitle: 'PARCEIROS',
-    partnerSponsor: 'PATROCINADOR',
+    partnerSponsor: 'PATROCINADORES',
     partnerOrganizer: 'REALIZAÇÃO',
     partnerSupport: 'APOIO',
     newsletterTitle: 'NÃO PERCA NENHUMA NOVIDADE!',
@@ -93,11 +93,11 @@ register: 'CADASTRAR INTERESSE DA MINHA EQUIPE',
     categoriesDesc: 'U15 Mixed • U12 Mixed',
     expect: 'WHAT TO EXPECT',
     expectValue: 'High level games',
-    expectDesc: 'culture, beach and experience',
+    expectDesc: 'culture, competitiveness and experience',
         stayUpdated: 'STAY UPDATED',
     viewAll: 'VIEW ALL',
         partnersTitle: 'PARTNERS',
-    partnerSponsor: 'SPONSOR',
+    partnerSponsor: 'SPONSORS',
     partnerOrganizer: 'ORGANIZER',
     partnerSupport: 'SUPPORT',
     newsletterTitle: "DON'T MISS ANY NEWS!",
@@ -141,12 +141,12 @@ register: 'CADASTRAR INTERESSE DA MINHA EQUIPE',
     categoriesDesc: 'Sub 15 (mixto) • Sub 12 (mixto)',
     expect: 'QUÉ ESPERAR',
     expectValue: 'Juegos de alto nivel',
-    expectDesc: 'cultura, playa y experiencia',
+    expectDesc: 'cultura, competitividad y experiencia',
         stayUpdated: 'MANTENTE INFORMADO',
     viewAll: 'VER TODAS',
     
     partnersTitle: 'SOCIOS',
-    partnerSponsor: 'PATROCINADOR',
+    partnerSponsor: 'PATROCINADORES',
     partnerOrganizer: 'ORGANIZACIÓN',
     partnerSupport: 'APOYO',
     newsletterTitle: '¡NO TE PIERDAS NINGUNA NOTICIA!',
@@ -210,23 +210,45 @@ function NewsletterForm({ lang, placeholder, buttonText }) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder={placeholder}
-        type="email"
-        required
-      />
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+      <div style={{ display: 'flex', gap: 0 }}>
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={placeholder}
+          type="email"
+          required
+          style={{ flex: 1 }}
+        />
 
-      <button type="submit" disabled={loading}>
-        {loading ? 'Enviando...' : buttonText}
-      </button>
+        <button type="submit" disabled={loading}>
+          {loading ? '...' : buttonText}
+        </button>
+      </div>
 
       {success && (
-        <span style={{ color: '#eaff00', marginLeft: 12, fontWeight: 800 }}>
-          OK!
-        </span>
+        <div style={{
+          marginTop: 16,
+          background: 'rgba(104,255,91,0.12)',
+          border: '1px solid #68ff5b',
+          borderRadius: 12,
+          padding: '14px 20px',
+          color: '#68ff5b',
+          fontWeight: 700,
+          fontSize: 15,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#68ff5b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          {lang === 'en'
+            ? 'Subscribed! Check your email for a confirmation.'
+            : lang === 'es'
+            ? '¡Inscrito! Revisa tu correo para confirmación.'
+            : 'Inscrito com sucesso! Verifique seu e-mail.'}
+        </div>
       )}
     </form>
   );
@@ -347,7 +369,6 @@ export default function SitePage() {
           />
 
           <div className="heroDark" />
-          <div className="heroRibbon" />
 
           <div className="heroInner">
             <h1 className="heroTitleSplit">
@@ -448,8 +469,9 @@ export default function SitePage() {
             <div className="partnerGroup">
               <span className="partnerGroupLabel">{t.partnerSponsor}</span>
               <div className="partnerGroupLogos">
-                <Image src="/assets/underarmour-white.png" alt="Under Armour" width={130} height={80} />
-                <Image src="/assets/blue-panda.png" alt="Blue Panda Travel" width={260} height={130} />
+                <Image src="/assets/underarmour-white.png" alt="Under Armour" width={140} height={70} />
+                <Image src="/assets/blue-panda.png" alt="Blue Panda Travel" width={600} height={282} className="logoBluePanda" />
+                <Image src="/assets/new-players.png" alt="New Players Sports" width={120} height={70} />
               </div>
             </div>
 
@@ -467,7 +489,7 @@ export default function SitePage() {
             <div className="partnerGroup">
               <span className="partnerGroupLabel">{t.partnerSupport}</span>
               <div className="partnerGroupLogos">
-                <Image src="/assets/embaixada-eua.png" alt="U.S. Embassy" width={130} height={80} />
+                <Image src="/assets/embaixada-eua.png" alt="U.S. Embassy" width={375} height={225} className="logoEmbaixada" />
               </div>
             </div>
           </div>
@@ -517,6 +539,17 @@ export default function SitePage() {
                 <path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.123 1.532 5.855L0 24l6.335-1.51A11.933 11.933 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.017-1.376l-.36-.214-3.732.889.928-3.64-.235-.374A9.818 9.818 0 112 12 9.818 9.818 0 0121.818 12c0 5.423-4.395 9.818-9.818 9.818z"/>
               </svg>
               WhatsApp
+            </a>
+
+            <a
+              href="mailto:contato@brasilsportsbusiness.com"
+              className="emailBtn"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+              </svg>
+              E-mail
             </a>
           </div>
         </footer>

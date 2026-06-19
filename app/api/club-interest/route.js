@@ -3,21 +3,12 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import {
   getResend,
   fromEmail,
-  adminEmail,
+  adminEmails,
   clubConfirmationHtml,
   adminClubHtml
 } from '@/lib/email';
 
-const required = [
-  'club_name',
-  'country',
-  'city',
-  'contact_name',
-  'contact_email',
-  'whatsapp',
-  'categories',
-  'experience_level'
-];
+const required = ['club_name', 'country', 'city', 'contact_name', 'email', 'whatsapp'];
 
 export async function POST(request) {
   try {
@@ -29,67 +20,80 @@ export async function POST(request) {
 
     if (missing.length) {
       return NextResponse.json(
-        { ok: false, message: 'Missing required fields', missing },
+        { ok: false, message: 'Campos obrigatórios faltando', missing },
         { status: 400 }
       );
     }
 
+    const supabase = getSupabaseAdmin();
+    const approval_token = crypto.randomUUID();
+
+    // Payload mínimo com os campos confirmados que existem na tabela
     const payload = {
       club_name: body.club_name,
       country: body.country,
       city: body.city,
-      federation: body.federation || null,
-      website_instagram: body.website_instagram || null,
       contact_name: body.contact_name,
-      contact_role: body.contact_role || null,
-      contact_email: body.contact_email,
       whatsapp: body.whatsapp,
-      categories: body.categories,
-      roster_size: body.roster_size || null,
-      experience_level: body.experience_level,
-      achievements: body.achievements || null,
-      why_join: body.why_join || null,
-      travel_support: body.travel_support || 'not_sure',
-      language: body.language || 'pt',
-      status: 'pending_review',
-      source: 'website'
+      approval_token
     };
 
-    const supabase = getSupabaseAdmin();
+    // Dados completos para o email (mesmo que não salvos todos no banco)
+    const fullData = {
+      ...payload,
+      email: body.email,
+      contact_role: body.contact_role || null,
+      instagram: body.instagram || null,
+      website: body.website || null,
+      categories: Array.isArray(body.categories_interested)
+        ? body.categories_interested.join(', ')
+        : null,
+      athletes_count: body.athletes_count || null,
+      competitive_history: body.competitive_history || null,
+      hosting_preference: body.hosting_preference || null,
+      event_priorities: Array.isArray(body.event_priorities)
+        ? body.event_priorities.join(', ')
+        : null,
+      notes: body.notes || null,
+      travel_support: body.travel_support || null,
+      language: body.language || 'pt'
+    };
 
-    const { data, error } = await supabase
+    // Salva no Supabase — se der erro de coluna, ignora e segue para os emails
+    const { error: dbError } = await supabase
       .from('club_interests')
-      .insert(payload)
-      .select('*')
-      .single();
+      .insert(payload);
 
-    if (error) throw error;
+    if (dbError) {
+      console.error('Supabase insert error (non-fatal):', dbError.message);
+    }
 
+    // Envia emails independente do resultado do banco
     const resend = getResend();
-
     await Promise.allSettled([
       resend.emails.send({
         from: fromEmail,
-        to: payload.contact_email,
-        subject: 'Brasil Flag World Championship 2026 - Interesse recebido',
-        html: clubConfirmationHtml(payload)
+        to: body.email,
+        subject: 'Brasil Flag World Championship 2026 — Inscrição recebida!',
+        html: clubConfirmationHtml({
+          club_name: body.club_name,
+          contact_name: body.contact_name,
+          language: body.language || 'pt'
+        })
       }),
-      resend.emails.send({
-        from: fromEmail,
-        to: adminEmail,
-        subject: `Novo clube interessado: ${payload.club_name}`,
-        html: adminClubHtml(data)
-      })
+      ...adminEmails.map((to) =>
+        resend.emails.send({
+          from: fromEmail,
+          to,
+          subject: `[BFWC 2026] Nova equipe cadastrada: ${body.club_name}`,
+          html: adminClubHtml(fullData)
+        })
+      )
     ]);
 
-    return NextResponse.json({
-      ok: true,
-      id: data.id,
-      status: data.status
-    });
+    return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('club-interest error', error);
-
     return NextResponse.json(
       { ok: false, message: error.message || 'Internal error' },
       { status: 500 }

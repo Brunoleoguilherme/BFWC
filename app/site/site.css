@@ -272,8 +272,10 @@
 
 .aboutBlock {
   padding: 72px 58px 64px;
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
   background: linear-gradient(180deg, #061b3a, #031020);
 }
 
@@ -305,7 +307,7 @@
   color: #d5e1f7;
   line-height: 1.7;
   font-size: clamp(18px, 1.6vw, 24px);
-  max-width: 900px;
+  max-width: 100%;
 }
 
 .outlineBtn {
@@ -541,20 +543,32 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 28px;
-  flex-wrap: wrap;
+  gap: 36px;
+  flex-wrap: nowrap;
 }
 
 .partnerGroupLogos img {
   transition: transform .25s ease, opacity .25s ease;
-  opacity: .85;
+  opacity: .88;
   object-fit: contain;
-  max-height: 130px;
+  height: 110px !important;
+  width: auto !important;
+  max-width: 620px;
 }
 
 .partnerGroupLogos img:hover {
   opacity: 1;
   transform: scale(1.06);
+}
+
+.partnerGroupLogos img.logoBluePanda {
+  height: 220px !important;
+  max-width: 680px;
+}
+
+.partnerGroupLogos img.logoEmbaixada {
+  height: 220px !important;
+  max-width: 480px;
 }
 
 .partnerDivider {
@@ -691,6 +705,26 @@
 
 .whatsappBtn:hover {
   background: #1ebe59;
+  transform: translateY(-2px);
+}
+
+.emailBtn {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.2);
+  color: #fff !important;
+  font-weight: 900 !important;
+  font-size: 13px !important;
+  transition: background .2s ease, transform .2s ease;
+  width: fit-content;
+}
+
+.emailBtn:hover {
+  background: rgba(255,255,255,.18);
   transform: translateY(-2px);
 }
 

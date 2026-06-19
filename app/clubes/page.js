@@ -316,6 +316,7 @@ export default function ClubInterestPage() {
 
       setSuccess(true);
       setForm({ ...initial, language: lang });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -390,12 +391,34 @@ export default function ClubInterestPage() {
         })}
       </section>
 
-      {success && (
-        <div className="successBox">
-          <CheckCircle2 />
-          {t.success}
+      {success ? (
+        <div className="successScreen">
+          <div className="successIconWrap">
+            <CheckCircle2 size={64} strokeWidth={1.5} />
+          </div>
+          <h2 className="successTitle">
+            {lang === 'en' ? 'Application received!' : lang === 'es' ? '¡Solicitud recibida!' : 'Inscrição recebida!'}
+          </h2>
+          <p className="successMsg">{t.success}</p>
+          <div className="successSteps">
+            <div className="successStep">
+              <span className="successStepNum">1</span>
+              <span>{lang === 'en' ? 'Confirmation email sent to your inbox' : lang === 'es' ? 'E-mail de confirmación enviado' : 'E-mail de confirmação enviado para você'}</span>
+            </div>
+            <div className="successStep">
+              <span className="successStepNum">2</span>
+              <span>{lang === 'en' ? 'Our team will review your application' : lang === 'es' ? 'Nuestro equipo revisará tu solicitud' : 'Nossa equipe vai analisar sua inscrição'}</span>
+            </div>
+            <div className="successStep">
+              <span className="successStepNum">3</span>
+              <span>{lang === 'en' ? 'We will contact you with next steps' : lang === 'es' ? 'Te contactaremos con los próximos pasos' : 'Entraremos em contato com os próximos passos'}</span>
+            </div>
+          </div>
+          <button className="successBackBtn" onClick={() => setSuccess(false)}>
+            {lang === 'en' ? 'Register another team' : lang === 'es' ? 'Registrar otro equipo' : 'Inscrever outra equipe'}
+          </button>
         </div>
-      )}
+      ) : (
 
       <form className="premiumForm" onSubmit={submit}>
         <div className="formTop">
@@ -545,6 +568,7 @@ export default function ClubInterestPage() {
           {loading ? t.submitting : t.submit}
         </button>
       </form>
+      )}
     </main>
   );
 }
