@@ -39,6 +39,12 @@
   background: rgba(255,255,255,.08);
   border: 1px solid rgba(255,255,255,.14);
   font-weight: 900;
+  transition: background .2s ease, border-color .2s ease;
+}
+
+.backLink:hover {
+  background: rgba(255,255,255,.14);
+  border-color: rgba(255,255,255,.3);
 }
 
 .clubLang {
@@ -77,10 +83,9 @@
 
 .clubHero {
   display: grid;
-  grid-template-columns: 1.08fr .92fr;
-  gap: 62px;
+  gap: 54px;
   align-items: center;
-  margin-bottom: 38px;
+  margin-bottom: 46px;
 }
 
 .eyebrow,
@@ -243,6 +248,10 @@
   margin-top: 32px;
 }
 
+.premiumForm > label {
+  margin-top: 28px;
+}
+
 .formSection h3 {
   color: #eaff00;
   font-size: 22px;
@@ -314,6 +323,17 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.primaryBtn:not(:disabled):hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 20px 50px rgba(32,227,63,.35);
+}
+
+.primaryBtn:disabled {
+  opacity: .7;
+  cursor: not-allowed;
 }
 
 .submitBtn {
@@ -331,9 +351,14 @@
   }
 }
 
+@media (max-width: 1100px) {
+  .selectionSteps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 980px) {
   .clubHero,
-  .selectionSteps,
   .formGrid,
   .formTop {
     grid-template-columns: 1fr;
@@ -418,6 +443,17 @@
   background: rgba(255,255,255,.06);
   border: 1px solid rgba(255,255,255,.12);
   font-weight: 700 !important;
+  cursor: pointer;
+  transition: background .18s ease, border-color .18s ease;
+}
+
+.miniCheckActive {
+  background: rgba(234,255,0,.14) !important;
+  border-color: rgba(234,255,0,.6) !important;
+}
+
+.miniCheckActive span {
+  color: #eaff00;
 }
 
 .miniCheck input {
@@ -440,9 +476,6 @@
 
 .clubHero {
   grid-template-columns: 1fr 420px;
-  gap: 54px;
-  align-items: center;
-  margin-bottom: 46px;
   min-height: 520px;
 }
 

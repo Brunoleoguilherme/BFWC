@@ -40,6 +40,18 @@
   border: 1px solid rgba(255,255,255,.16);
   box-shadow: 0 42px 120px rgba(0,0,0,.58);
   backdrop-filter: blur(22px);
+  animation: cardEntrance .7s ease both;
+}
+
+@keyframes cardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .languageLogo {
@@ -81,13 +93,14 @@
   text-align: left;
   background: rgba(255,255,255,.08);
   border: 1px solid rgba(255,255,255,.16);
-  transition: .25s ease;
+  transition: transform .25s ease, background .25s ease, border-color .25s ease, box-shadow .25s ease;
 }
 
 .languageOption:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
   background: linear-gradient(135deg, rgba(234,255,0,.16), rgba(13,75,255,.18));
-  border-color: rgba(234,255,0,.45);
+  border-color: rgba(234,255,0,.5);
+  box-shadow: 0 16px 40px rgba(0,0,0,.35);
 }
 
 .languageLeft {
@@ -194,38 +207,3 @@
   }
 }
 
-.languageFlagIcon {
-  width: 58px;
-  height: 58px;
-  min-width: 58px;
-  border-radius: 50%;
-  overflow: hidden;
-  display: grid;
-  place-items: center;
-  background: transparent;
-}
-
-.flagImage {
-  width: 78px !important;
-  height: 78px !important;
-  max-width: none !important;
-  object-fit: cover;
-  border-radius: 50%;
-  transform: scale(1.25);
-}
-
-@media (max-width: 620px) {
-  .languageFlagIcon {
-    width: 44px;
-    height: 44px;
-    min-width: 44px;
-  }
-
-  .flagImage {
-    width: 54px !important;
-    height: 54px !important;
-    max-width: 54px !important;
-    object-fit: cover;
-    border-radius: 50%;
-  }
-}

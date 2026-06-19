@@ -59,7 +59,7 @@ export default function UnderArmourNewsPage() {
           </p>
 
           <p>
-            O Brasil Flag World Championship 2026 será realizado no Rio de Janeiro
+            O Brasil Flag World Championship 2026 será realizado em Leme, SP,
             e reunirá delegações nacionais e internacionais em uma celebração
             histórica do flag football mundial.
           </p>

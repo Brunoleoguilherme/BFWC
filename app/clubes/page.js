@@ -14,16 +14,59 @@ import {
   Users
 } from 'lucide-react';
 
-const categories = ['Men', 'Women', 'Mixed', 'U20 Men', 'U20 Women', 'Masters', 'Other'];
+const categoriesMap = {
+  pt: ['Masculino', 'Feminino', 'Sub 15 (misto)', 'Sub 12 (misto)'],
+  en: ['Men', 'Women', 'U15 Mixed', 'U12 Mixed'],
+  es: ['Masculino', 'Femenino', 'Sub 15 (mixto)', 'Sub 12 (mixto)']
+};
 
-const prioritiesList = [
-  'Nível técnico da arbitragem',
-  'Qualidade do gramado/estrutura das quadras',
-  'Premiação em dinheiro / Troféus e medalhas de alto padrão',
-  'Transmissão ao vivo dos jogos',
-  'Festas oficiais / Eventos de integração',
-  'Logística de transporte e proximidade dos hotéis'
-];
+const prioritiesMap = {
+  pt: [
+    'Nível técnico da arbitragem',
+    'Qualidade do gramado/estrutura das quadras',
+    'Troféus e medalhas de alto padrão',
+    'Transmissão ao vivo dos jogos',
+    'Festas oficiais / Eventos de integração',
+    'Logística de transporte e proximidade dos hotéis'
+  ],
+  en: [
+    'Referee technical level',
+    'Field/court quality and infrastructure',
+    'High-standard trophies and medals',
+    'Live game streaming',
+    'Official parties / Integration events',
+    'Transport logistics and hotel proximity'
+  ],
+  es: [
+    'Nivel técnico del arbitraje',
+    'Calidad del campo/infraestructura de canchas',
+    'Trofeos y medallas de alto nivel',
+    'Transmisión en vivo de los juegos',
+    'Fiestas oficiales / Eventos de integración',
+    'Logística de transporte y proximidad de hoteles'
+  ]
+};
+
+const hostingOptionsMap = {
+  pt: [
+    'Não precisamos de hospedagem / Somos locais',
+    'Econômica / Hostels / Acomodações coletivas',
+    'Intermediária / Hotéis 3 estrelas',
+    'Premium / Hotéis 4 ou 5 estrelas'
+  ],
+  en: [
+    "We don't need accommodation / We are locals",
+    'Budget / Hostels / Shared accommodation',
+    'Mid-range / 3-star hotels',
+    'Premium / 4 or 5-star hotels'
+  ],
+  es: [
+    'No necesitamos alojamiento / Somos locales',
+    'Económica / Hostels / Alojamiento compartido',
+    'Intermedia / Hoteles 3 estrellas',
+    'Premium / Hoteles 4 o 5 estrellas'
+  ]
+};
 
 const texts = {
   pt: {
@@ -36,7 +79,7 @@ const texts = {
     noGuarantee: 'O envio não garante participação automática.',
     steps: [
       ['1. Enviar interesse', 'A equipe envia informações institucionais, competitivas e de contato.'],
-      ['2. Análise do comitê', 'A organização avalia categoria, histórico, perfil e capacidade.'],
+      ['2. Análise do comitê', 'A organização avalia o perfil das equipes e envia as informações para participação do torneio.'],
       ['3. Resposta oficial', 'O contato recebe aprovação ou próximos passos por e-mail.'],
       ['4. Apoio de viagem', 'Equipes aprovadas poderão receber suporte oficial da Blue Panda Travel.']
     ],
@@ -45,7 +88,7 @@ const texts = {
     formSubtitle:
       'Preencha com informações corretas. Este formulário será enviado à organização do BFWC e armazenado para análise.',
     firstStep:
-      'Esse é seu primeiro passo para viver sua melhor experiência internacional do Flag Football em 2026.',
+      'Esse é seu primeiro passo para viver sua melhor experiência internacional do Flag Football em 2026.',
     clubInfo: 'Informações da equipe',
     contact: 'Contato responsável',
     clubName: 'Nome do clube / equipe',
@@ -90,7 +133,7 @@ const texts = {
     noGuarantee: 'Submission does not guarantee automatic participation.',
     steps: [
       ['1. Submit interest', 'The team sends institutional, competitive and contact information.'],
-      ['2. Committee review', 'The organization reviews category, history, profile and capacity.'],
+      ['2. Committee review', 'The organization reviews the teams\' profiles and sends the information for tournament participation.'],
       ['3. Official response', 'The contact receives approval or next steps by email.'],
       ['4. Travel support', 'Approved teams may receive official Blue Panda Travel assistance.']
     ],
@@ -142,7 +185,7 @@ const texts = {
     noGuarantee: 'El envío no garantiza participación automática.',
     steps: [
       ['1. Enviar interés', 'El equipo envía información institucional, competitiva y de contacto.'],
-      ['2. Revisión del comité', 'La organización revisa categoría, historial, perfil y capacidad.'],
+      ['2. Revisión del comité', 'La organización evalúa el perfil de los equipos y envía la información para participación en el torneo.'],
       ['3. Respuesta oficial', 'El contacto recibe aprobación o próximos pasos por e-mail.'],
       ['4. Apoyo de viaje', 'Los equipos aprobados podrán recibir asistencia oficial de Blue Panda Travel.']
     ],
@@ -215,6 +258,9 @@ export default function ClubInterestPage() {
   const [error, setError] = useState('');
 
   const t = texts[lang];
+  const categories = categoriesMap[lang] || categoriesMap.pt;
+  const prioritiesList = prioritiesMap[lang] || prioritiesMap.pt;
+  const hostingOptions = hostingOptionsMap[lang] || hostingOptionsMap.pt;
 
   function changeLang(value) {
     setLang(value);
@@ -372,31 +418,31 @@ export default function ClubInterestPage() {
             <label className="fullField">
   {t.categoriesInterested}
   <div className="checkboxGrid">
-    {categories.map((cat) => (
-      <label key={cat} className="miniCheck">
-        <input
-          type="checkbox"
-          checked={form.categories_interested.includes(cat)}
-          onChange={() => {
-            toggleArray('categories_interested', cat);
-
-            setForm((prev) => {
-              const alreadySelected = prev.categories_interested.includes(cat);
-              const updatedCategories = alreadySelected
-                ? prev.categories_interested.filter((item) => item !== cat)
-                : [...prev.categories_interested, cat];
-
-              return {
-                ...prev,
-                categories_interested: updatedCategories,
-                category: updatedCategories.join(', ')
-              };
-            });
-          }}
-        />
-        <span>{cat}</span>
-      </label>
-    ))}
+    {categories.map((cat) => {
+      const checked = form.categories_interested.includes(cat);
+      return (
+        <label key={cat} className={`miniCheck${checked ? ' miniCheckActive' : ''}`}>
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={() => {
+              setForm((prev) => {
+                const current = prev.categories_interested;
+                const updated = current.includes(cat)
+                  ? current.filter((item) => item !== cat)
+                  : [...current, cat];
+                return {
+                  ...prev,
+                  categories_interested: updated,
+                  category: updated.join(', ')
+                };
+              });
+            }}
+          />
+          <span>{cat}</span>
+        </label>
+      );
+    })}
   </div>
 </label>
 
@@ -431,10 +477,9 @@ export default function ClubInterestPage() {
                 onChange={(e) => set('hosting_preference', e.target.value)}
               >
                 <option value="">{t.select}</option>
-                <option>Não precisamos de hospedagem / Somos locais</option>
-                <option>Econômica / Hostels / Acomodações coletivas</option>
-                <option>Intermediária / Hotéis 3 estrelas</option>
-                <option>Premium / Hotéis 4 ou 5 estrelas</option>
+                {hostingOptions.map((opt) => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
               </select>
             </label>
 

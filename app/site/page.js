@@ -29,17 +29,17 @@ register: 'CADASTRAR INTERESSE DA MINHA EQUIPE',
     aboutTag: 'SOBRE O EVENTO',
     aboutTitle: 'UM NOVO CAPÍTULO PARA O FLAG FOOTBALL.',
     aboutText:
-      'O Brasil Flag World Championship 2026 conecta clubes, atletas, culturas e marcas em uma celebração global do esporte.',
+      'O Brasil Flag World Championship 2026 é o maior campeonato internacional de flag football já realizado no Brasil. Com categorias masculina, feminina, Sub 15 e Sub 12, o evento reúne clubes, atletas e delegações de todo o mundo na cidade de Leme, SP. Uma celebração do esporte, da cultura e do espírito competitivo — tudo em um único lugar.',
     learnMore: 'SAIBA MAIS',
     date: 'DATA',
-    dateValue: '28 de agosto de 2026',
+    dateValue: '31 de outubro de 2026',
     dateDesc: 'Abertura oficial',
     location: 'LOCAL',
-    locationValue: 'Rio de Janeiro',
+    locationValue: 'Leme, SP',
     locationDesc: 'Brasil',
     categories: 'CATEGORIAS',
-    categoriesValue: 'Masculino • Feminino • Misto',
-    categoriesDesc: 'Youth • Masters',
+    categoriesValue: 'Masculino • Feminino',
+    categoriesDesc: 'Sub 15 (misto) • Sub 12 (misto)',
     expect: 'O QUE ESPERAR',
     expectValue: 'Jogos de alto nível',
     expectDesc: 'cultura, praia e experiência',
@@ -48,6 +48,9 @@ register: 'CADASTRAR INTERESSE DA MINHA EQUIPE',
     viewAll: 'VER TODAS',
     
     partnersTitle: 'PARCEIROS',
+    partnerSponsor: 'PATROCINADOR',
+    partnerOrganizer: 'REALIZAÇÃO',
+    partnerSupport: 'APOIO',
     newsletterTitle: 'NÃO PERCA NENHUMA NOVIDADE!',
     newsletterText: 'Se inscreva para receber novidades sobre o campeonato.',
     emailPlaceholder: 'Seu e-mail',
@@ -56,7 +59,7 @@ register: 'CADASTRAR INTERESSE DA MINHA EQUIPE',
       'O Brasil Flag World Championship conecta culturas, pessoas e paixão por meio do esporte.',
     quickLinks: 'LINKS RÁPIDOS',
     event: 'EVENTO',
-    countdown: 'CONTAGEM REGRESSIVA PARA 28/08/2026',
+    countdown: 'CONTAGEM REGRESSIVA PARA 31/10/2026',
     days: 'DIAS',
     hours: 'HORAS',
     minutes: 'MINUTOS',
@@ -72,27 +75,31 @@ register: 'CADASTRAR INTERESSE DA MINHA EQUIPE',
     contact: 'CONTACT',
     heroTitle: 'THE WORLD MEETS IN BRAZIL.',
     heroSub: 'One game. One passion.',
+    latestNews: 'LATEST NEWS',
     register: 'REGISTER YOUR INTEREST',
     aboutTag: 'ABOUT THE EVENT',
     aboutTitle: 'A NEW CHAPTER FOR FLAG FOOTBALL.',
     aboutText:
-      'The Brazil Flag World Championship 2026 brings together clubs, athletes, cultures and brands in a global celebration of sport.',
+      'The Brasil Flag World Championship 2026 is the biggest international flag football championship ever held in Brazil. Featuring men\'s, women\'s, U15 and U12 categories, the event brings together clubs, athletes and delegations from around the world in Leme, SP. A celebration of sport, culture and competitive spirit — all in one place.',
     learnMore: 'LEARN MORE',
     date: 'DATE',
-    dateValue: 'August 28, 2026',
+    dateValue: 'October 31, 2026',
     dateDesc: 'Official opening',
     location: 'LOCATION',
-    locationValue: 'Rio de Janeiro',
+    locationValue: 'Leme, SP',
     locationDesc: 'Brazil',
     categories: 'CATEGORIES',
-    categoriesValue: 'Men • Women • Mixed',
-    categoriesDesc: 'Youth • Masters',
+    categoriesValue: 'Men • Women',
+    categoriesDesc: 'U15 Mixed • U12 Mixed',
     expect: 'WHAT TO EXPECT',
     expectValue: 'High level games',
     expectDesc: 'culture, beach and experience',
         stayUpdated: 'STAY UPDATED',
     viewAll: 'VIEW ALL',
         partnersTitle: 'PARTNERS',
+    partnerSponsor: 'SPONSOR',
+    partnerOrganizer: 'ORGANIZER',
+    partnerSupport: 'SUPPORT',
     newsletterTitle: "DON'T MISS ANY NEWS!",
     newsletterText: 'Subscribe to receive updates about the championship.',
     emailPlaceholder: 'Your email',
@@ -101,7 +108,7 @@ register: 'CADASTRAR INTERESSE DA MINHA EQUIPE',
       'The Brazil Flag World Championship connects cultures, people and passion through sport.',
     quickLinks: 'QUICK LINKS',
     event: 'EVENT',
-    countdown: 'COUNTDOWN TO 08/28/2026',
+    countdown: 'COUNTDOWN TO 10/31/2026',
     days: 'DAYS',
     hours: 'HOURS',
     minutes: 'MINUTES',
@@ -116,21 +123,22 @@ register: 'CADASTRAR INTERESSE DA MINHA EQUIPE',
     contact: 'CONTACTO',
     heroTitle: 'EL MUNDO SE ENCUENTRA EN BRASIL.',
     heroSub: 'Un juego. Una pasión.',
+    latestNews: 'ÚLTIMAS NOTICIAS',
     register: 'REGISTRAR INTERÉS',
     aboutTag: 'SOBRE EL EVENTO',
     aboutTitle: 'UN NUEVO CAPÍTULO PARA EL FLAG FOOTBALL.',
     aboutText:
-      'El Brazil Flag World Championship 2026 conecta clubes, atletas, culturas y marcas en una celebración global del deporte.',
+      'El Brasil Flag World Championship 2026 es el mayor campeonato internacional de flag football realizado en Brasil. Con categorías masculina, femenina, Sub 15 y Sub 12, el evento reúne clubes, atletas y delegaciones de todo el mundo en Leme, SP. Una celebración del deporte, la cultura y el espíritu competitivo — todo en un solo lugar.',
     learnMore: 'SABER MÁS',
     date: 'FECHA',
-    dateValue: '28 de agosto de 2026',
+    dateValue: '31 de octubre de 2026',
     dateDesc: 'Apertura oficial',
     location: 'UBICACIÓN',
-    locationValue: 'Rio de Janeiro',
+    locationValue: 'Leme, SP',
     locationDesc: 'Brasil',
     categories: 'CATEGORÍAS',
-    categoriesValue: 'Masculino • Femenino • Mixto',
-    categoriesDesc: 'Youth • Masters',
+    categoriesValue: 'Masculino • Femenino',
+    categoriesDesc: 'Sub 15 (mixto) • Sub 12 (mixto)',
     expect: 'QUÉ ESPERAR',
     expectValue: 'Juegos de alto nivel',
     expectDesc: 'cultura, playa y experiencia',
@@ -138,6 +146,9 @@ register: 'CADASTRAR INTERESSE DA MINHA EQUIPE',
     viewAll: 'VER TODAS',
     
     partnersTitle: 'SOCIOS',
+    partnerSponsor: 'PATROCINADOR',
+    partnerOrganizer: 'ORGANIZACIÓN',
+    partnerSupport: 'APOYO',
     newsletterTitle: '¡NO TE PIERDAS NINGUNA NOTICIA!',
     newsletterText: 'Suscríbete para recibir novedades del campeonato.',
     emailPlaceholder: 'Tu e-mail',
@@ -146,7 +157,7 @@ register: 'CADASTRAR INTERESSE DA MINHA EQUIPE',
       'El Brazil Flag World Championship conecta culturas, personas y pasión a través del deporte.',
     quickLinks: 'ENLACES RÁPIDOS',
     event: 'EVENTO',
-    countdown: 'CUENTA REGRESIVA PARA 28/08/2026',
+    countdown: 'CUENTA REGRESIVA PARA 31/10/2026',
     days: 'DÍAS',
     hours: 'HORAS',
     minutes: 'MINUTOS',
@@ -243,7 +254,7 @@ export default function SitePage() {
   }, []);
 
   useEffect(() => {
-    const targetDate = new Date('2026-08-28T00:00:00-03:00');
+    const targetDate = new Date('2026-10-31T00:00:00-03:00');
 
     function updateCountdown() {
       const now = new Date();
@@ -368,7 +379,7 @@ export default function SitePage() {
 
               <span>
                 <MapPin size={19} />
-                RIO DE JANEIRO, BRASIL
+                LEME, SP — BRASIL
               </span>
             </div>
 
@@ -414,14 +425,6 @@ export default function SitePage() {
             </Link>
           </div>
 
-          <div className="videoCard">
-            <Image
-              src="/assets/hero-rio-athletes.png"
-              alt="Rio Experience"
-              fill
-            />
-            <button>▶</button>
-          </div>
         </section>
 
         <section id="info" className="infoGrid">
@@ -441,13 +444,32 @@ export default function SitePage() {
         </section>
 
                 <section id="partners" className="officialPartners">
-          <p className="miniTag">{t.partnersTitle}</p>
+          <div className="partnerGroups">
+            <div className="partnerGroup">
+              <span className="partnerGroupLabel">{t.partnerSponsor}</span>
+              <div className="partnerGroupLogos">
+                <Image src="/assets/underarmour-white.png" alt="Under Armour" width={130} height={80} />
+                <Image src="/assets/blue-panda.png" alt="Blue Panda Travel" width={260} height={130} />
+              </div>
+            </div>
 
-          <div className="partnerLine">
-            <Image src="/assets/underarmour-white.png" alt="Under Armour" width={130} height={80} />
-            <Image src="/assets/brasil-sports-business2.jpeg" alt="Brasil Sports Business" width={130} height={80} />
-            <Image src="/assets/blue-panda.png" alt="Blue Panda Travel" width={190} height={90} />
-            <Image src="/assets/embaixada-eua.png" alt="U.S. Embassy" width={130} height={80} />
+            <div className="partnerDivider" />
+
+            <div className="partnerGroup">
+              <span className="partnerGroupLabel">{t.partnerOrganizer}</span>
+              <div className="partnerGroupLogos">
+                <Image src="/assets/brasil-sports-business2.jpeg" alt="Brasil Sports Business" width={130} height={80} />
+              </div>
+            </div>
+
+            <div className="partnerDivider" />
+
+            <div className="partnerGroup">
+              <span className="partnerGroupLabel">{t.partnerSupport}</span>
+              <div className="partnerGroupLogos">
+                <Image src="/assets/embaixada-eua.png" alt="U.S. Embassy" width={130} height={80} />
+              </div>
+            </div>
           </div>
         </section>
 
@@ -478,15 +500,24 @@ export default function SitePage() {
 
           <div>
             <b>{t.event}</b>
-            <span>Rio de Janeiro, Brazil</span>
+            <span>Leme, SP — Brasil</span>
             <span>2026</span>
           </div>
 
           <div>
             <b>{t.contact}</b>
-            <span>Partnerships</span>
-            <span>Media</span>
-            <span>Travel</span>
+            <a
+              href="https://wa.me/5516997754522"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="whatsappBtn"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.123 1.532 5.855L0 24l6.335-1.51A11.933 11.933 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.017-1.376l-.36-.214-3.732.889.928-3.64-.235-.374A9.818 9.818 0 112 12 9.818 9.818 0 0121.818 12c0 5.423-4.395 9.818-9.818 9.818z"/>
+              </svg>
+              WhatsApp
+            </a>
           </div>
         </footer>
       </section>
