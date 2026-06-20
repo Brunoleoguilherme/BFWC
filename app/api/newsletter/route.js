@@ -200,13 +200,15 @@ export async function POST(request) {
         subject: t.subject,
         html: emailHtml(lang)
       }),
-      // Notificação para BSB
-      resend.emails.send({
-        from: fromEmail,
-        to: 'contato@brasilsportsbusiness.com',
-        subject: '[BFWC 2026] Novo inscrito na newsletter',
-        html: adminNewsletterHtml(body.email, lang)
-      })
+      // Notificação para admins
+      ...['contato@brasilsportsbusiness.com', 'brunoleoguilherme@gmail.com'].map((to) =>
+        resend.emails.send({
+          from: fromEmail,
+          to,
+          subject: '[BFWC 2026] Novo inscrito na newsletter',
+          html: adminNewsletterHtml(body.email, lang)
+        })
+      )
     ]);
 
     return NextResponse.json({ ok: true });

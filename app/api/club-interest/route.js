@@ -26,21 +26,14 @@ export async function POST(request) {
     }
 
     const supabase = getSupabaseAdmin();
-    const approval_token = crypto.randomUUID();
 
-    // Payload mínimo com os campos confirmados que existem na tabela
-    const payload = {
+    // Dados completos para o email e para o banco
+    const fullData = {
       club_name: body.club_name,
       country: body.country,
       city: body.city,
       contact_name: body.contact_name,
       whatsapp: body.whatsapp,
-      approval_token
-    };
-
-    // Dados completos para o email (mesmo que não salvos todos no banco)
-    const fullData = {
-      ...payload,
       email: body.email,
       contact_role: body.contact_role || null,
       instagram: body.instagram || null,
@@ -59,13 +52,14 @@ export async function POST(request) {
       language: body.language || 'pt'
     };
 
-    // Salva no Supabase — se der erro de coluna, ignora e segue para os emails
+    // Salva no Supabase
     const { error: dbError } = await supabase
       .from('club_interests')
-      .insert(payload);
+      .insert(fullData);
 
     if (dbError) {
-      console.error('Supabase insert error (non-fatal):', dbError.message);
+      console.error('Supabase insert error:', dbError.message);
+      // Não bloqueia o envio de email, mas loga o problema
     }
 
     // Envia emails independente do resultado do banco
