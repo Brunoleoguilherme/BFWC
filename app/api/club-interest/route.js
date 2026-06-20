@@ -27,20 +27,25 @@ export async function POST(request) {
 
     const supabase = getSupabaseAdmin();
 
-    // Dados completos para o email e para o banco
-    const fullData = {
+    // Payload mínimo com colunas confirmadas no banco
+    const dbPayload = {
       club_name: body.club_name,
       country: body.country,
       city: body.city,
       contact_name: body.contact_name,
       whatsapp: body.whatsapp,
+      category: Array.isArray(body.categories_interested) && body.categories_interested.length
+        ? body.categories_interested.join(', ')
+        : (body.category || 'Não informado'),
+    };
+
+    // Dados completos só para o email
+    const fullData = {
+      ...dbPayload,
       email: body.email,
       contact_role: body.contact_role || null,
       instagram: body.instagram || null,
       website: body.website || null,
-      categories: Array.isArray(body.categories_interested)
-        ? body.categories_interested.join(', ')
-        : null,
       athletes_count: body.athletes_count || null,
       competitive_history: body.competitive_history || null,
       hosting_preference: body.hosting_preference || null,
@@ -55,16 +60,15 @@ export async function POST(request) {
     // Salva no Supabase
     const { error: dbError } = await supabase
       .from('club_interests')
-      .insert(fullData);
+      .insert(dbPayload);
 
     if (dbError) {
       console.error('Supabase insert error:', dbError.message);
-      // Não bloqueia o envio de email, mas loga o problema
     }
 
     // Envia emails independente do resultado do banco
     const resend = getResend();
-    await Promise.allSettled([
+    const emailResults = await Promise.allSettled([
       resend.emails.send({
         from: fromEmail,
         to: body.email,
@@ -84,6 +88,14 @@ export async function POST(request) {
         })
       )
     ]);
+
+    emailResults.forEach((result, i) => {
+      if (result.status === 'rejected') {
+        console.error(`Email ${i} falhou:`, result.reason);
+      } else if (result.value?.error) {
+        console.error(`Email ${i} erro Resend:`, result.value.error);
+      }
+    });
 
     return NextResponse.json({ ok: true });
   } catch (error) {
