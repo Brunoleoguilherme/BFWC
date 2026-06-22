@@ -123,7 +123,7 @@ function TeamModal({ team, onClose }) {
 }
 
 /* ── Team card ── */
-function TeamCard({ team, onClick, inPipeline, adding, addToCRM }) {
+function TeamCard({ team, onClick, inPipeline, adding, addToCRM, readOnly = false }) {
   const [hov, setHov] = useState(false);
   const status = STATUS_LABELS[team.status] || { label: team.status, color: '#aaa' };
   const travelColor = team.travel_support === 'yes' ? '#20e33f' : team.travel_support === 'maybe' ? '#f4ff00' : 'rgba(255,255,255,.3)';
@@ -183,19 +183,21 @@ function TeamCard({ team, onClick, inPipeline, adding, addToCRM }) {
               }}
             >WhatsApp</a>
           )}
-          <button
-            onClick={e => !inPipeline.has(team.id) && addToCRM(e, team.id)}
-            style={{
-              padding: '6px 12px', borderRadius: 8, fontSize: 11, fontWeight: 700,
-              background: inPipeline.has(team.id) ? 'rgba(32,227,63,.06)' : 'rgba(77,138,255,.1)',
-              border: `1px solid ${inPipeline.has(team.id) ? 'rgba(32,227,63,.2)' : 'rgba(77,138,255,.25)'}`,
-              color: inPipeline.has(team.id) ? '#20e33f' : '#4d8aff',
-              cursor: inPipeline.has(team.id) ? 'default' : 'pointer',
-              fontFamily: 'inherit',
-            }}
-          >
-            {adding === team.id ? '...' : inPipeline.has(team.id) ? '✓ No CRM' : '+ CRM'}
-          </button>
+          {!readOnly && (
+            <button
+              onClick={e => !inPipeline.has(team.id) && addToCRM(e, team.id)}
+              style={{
+                padding: '6px 12px', borderRadius: 8, fontSize: 11, fontWeight: 700,
+                background: inPipeline.has(team.id) ? 'rgba(32,227,63,.06)' : 'rgba(77,138,255,.1)',
+                border: `1px solid ${inPipeline.has(team.id) ? 'rgba(32,227,63,.2)' : 'rgba(77,138,255,.25)'}`,
+                color: inPipeline.has(team.id) ? '#20e33f' : '#4d8aff',
+                cursor: inPipeline.has(team.id) ? 'default' : 'pointer',
+                fontFamily: 'inherit',
+              }}
+            >
+              {adding === team.id ? '...' : inPipeline.has(team.id) ? '✓ No CRM' : '+ CRM'}
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -218,8 +220,10 @@ export default function BluePandaPage() {
   const [selected, setSelected] = useState(null);
   const [inPipeline, setInPipeline] = useState(new Set());
   const [adding, setAdding]     = useState(null);
+  const [role, setRole]         = useState('viewer');
 
   useEffect(() => {
+    fetch('/api/admin/me').then(r => r.json()).then(d => setRole(d.role || 'viewer'));
     fetch('/api/admin/teams').then(r => r.json()).then(d => setTeams(d.teams || []));
     fetch('/api/admin/blue-panda/deals').then(r => r.json()).then(d => {
       setInPipeline(new Set((d.deals || []).map(x => x.team_id)));
@@ -228,6 +232,7 @@ export default function BluePandaPage() {
 
   async function addToCRM(e, teamId) {
     e.stopPropagation();
+    if (role === 'viewer') return;
     setAdding(teamId);
     await fetch('/api/admin/blue-panda/deals', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -293,7 +298,7 @@ export default function BluePandaPage() {
               <div style={{ marginBottom: 24 }}>
                 <SectionHeader title="Precisam de apoio" count={needsTravel.length} color="#20e33f" />
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 10 }}>
-                  {needsTravel.map(t => <TeamCard key={t.id} team={t} onClick={setSelected} inPipeline={inPipeline} adding={adding} addToCRM={addToCRM} />)}
+                  {needsTravel.map(t => <TeamCard key={t.id} team={t} onClick={setSelected} inPipeline={inPipeline} adding={adding} addToCRM={addToCRM} readOnly={role === 'viewer'} />)}
                 </div>
               </div>
             )}
@@ -302,7 +307,7 @@ export default function BluePandaPage() {
               <div>
                 <SectionHeader title="Talvez precisem" count={maybeTravel.length} color="#f4ff00" />
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 10 }}>
-                  {maybeTravel.map(t => <TeamCard key={t.id} team={t} onClick={setSelected} inPipeline={inPipeline} adding={adding} addToCRM={addToCRM} />)}
+                  {maybeTravel.map(t => <TeamCard key={t.id} team={t} onClick={setSelected} inPipeline={inPipeline} adding={adding} addToCRM={addToCRM} readOnly={role === 'viewer'} />)}
                 </div>
               </div>
             )}
@@ -325,7 +330,7 @@ export default function BluePandaPage() {
                 <div key={group.key} style={{ marginBottom: 28 }}>
                   <SectionHeader title={group.label} sublabel={group.sublabel} count={items.length} color={group.color} />
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 10 }}>
-                    {items.map(t => <TeamCard key={t.id} team={t} onClick={setSelected} inPipeline={inPipeline} adding={adding} addToCRM={addToCRM} />)}
+                    {items.map(t => <TeamCard key={t.id} team={t} onClick={setSelected} inPipeline={inPipeline} adding={adding} addToCRM={addToCRM} readOnly={role === 'viewer'} />)}
                   </div>
                 </div>
               );
@@ -340,7 +345,7 @@ export default function BluePandaPage() {
                 <div>
                   <SectionHeader title="Não informado" count={unmatched.length} color="rgba(255,255,255,.2)" />
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 10 }}>
-                    {unmatched.map(t => <TeamCard key={t.id} team={t} onClick={setSelected} inPipeline={inPipeline} adding={adding} addToCRM={addToCRM} />)}
+                    {unmatched.map(t => <TeamCard key={t.id} team={t} onClick={setSelected} inPipeline={inPipeline} adding={adding} addToCRM={addToCRM} readOnly={role === 'viewer'} />)}
                   </div>
                 </div>
               );

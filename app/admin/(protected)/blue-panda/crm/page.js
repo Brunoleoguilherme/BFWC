@@ -23,7 +23,7 @@ function fmt(val) {
 }
 
 /* ── Deal modal ── */
-function DealModal({ deal, onClose, onUpdate, onRemove }) {
+function DealModal({ deal, onClose, onUpdate, onRemove, readOnly = false }) {
   const [notes, setNotes]  = useState(deal.notes || '');
   const [value, setValue]  = useState(deal.deal_value || '');
   const [saving, setSaving] = useState(false);
@@ -120,49 +120,59 @@ function DealModal({ deal, onClose, onUpdate, onRemove }) {
           ))}
         </div>
 
-        {/* Deal value */}
-        <div style={{ marginBottom: 16 }}>
-          <label style={{ display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 6 }}>
-            Valor do negócio (R$)
-          </label>
-          <input style={inp} type="number" placeholder="ex: 15000" value={value} onChange={e => setValue(e.target.value)} />
-        </div>
-
-        {/* Notes */}
-        <div style={{ marginBottom: 20 }}>
-          <label style={{ display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 6 }}>
-            Anotações / Andamento
-          </label>
-          <textarea
-            style={{ ...inp, resize: 'vertical', minHeight: 90 }}
-            value={notes} onChange={e => setNotes(e.target.value)}
-            placeholder="Registro de contatos, proposta, condições acordadas..."
-          />
-          <button onClick={save} disabled={saving} style={{
-            marginTop: 8, padding: '11px 24px', borderRadius: 12, border: 'none',
-            background: saved ? '#20e33f' : '#f4ff00', color: '#031020',
-            fontSize: 12, fontWeight: 900, letterSpacing: 1.5, textTransform: 'uppercase',
-            cursor: 'pointer', fontFamily: 'inherit',
-          }}>
-            {saving ? 'Salvando...' : saved ? '✓ Salvo!' : 'Salvar'}
-          </button>
-        </div>
-
-        <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,.06)', margin: '20px 0' }} />
-
-        {/* Move stage */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.25)', marginBottom: 10 }}>Mover para</div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {STAGES.filter(s => s.key !== deal.status).map(s => (
-              <button key={s.key} onClick={() => moveTo(s.key)} style={{
-                padding: '8px 16px', borderRadius: 10, fontSize: 12, fontWeight: 700,
-                cursor: 'pointer', background: s.color + '14', color: s.color,
-                border: `1px solid ${s.color}35`, fontFamily: 'inherit',
-              }}>{s.label}</button>
-            ))}
+        {readOnly ? (
+          <div style={{ padding: '14px 18px', borderRadius: 12, background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', fontSize: 12, color: 'rgba(255,255,255,.35)', textAlign: 'center', marginBottom: 20 }}>
+            Modo somente leitura — apenas admins podem alterar dados
           </div>
-        </div>
+        ) : (
+          <>
+            {/* Deal value */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 6 }}>
+                Valor do negócio (R$)
+              </label>
+              <input style={inp} type="number" placeholder="ex: 15000" value={value} onChange={e => setValue(e.target.value)} />
+            </div>
+
+            {/* Notes */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 6 }}>
+                Anotações / Andamento
+              </label>
+              <textarea
+                style={{ ...inp, resize: 'vertical', minHeight: 90 }}
+                value={notes} onChange={e => setNotes(e.target.value)}
+                placeholder="Registro de contatos, proposta, condições acordadas..."
+              />
+              <button onClick={save} disabled={saving} style={{
+                marginTop: 8, padding: '11px 24px', borderRadius: 12, border: 'none',
+                background: saved ? '#20e33f' : '#f4ff00', color: '#031020',
+                fontSize: 12, fontWeight: 900, letterSpacing: 1.5, textTransform: 'uppercase',
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}>
+                {saving ? 'Salvando...' : saved ? '✓ Salvo!' : 'Salvar'}
+              </button>
+            </div>
+
+            <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,.06)', margin: '20px 0' }} />
+
+            {/* Move stage */}
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.25)', marginBottom: 10 }}>Mover para</div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {STAGES.filter(s => s.key !== deal.status).map(s => (
+                  <button key={s.key} onClick={() => moveTo(s.key)} style={{
+                    padding: '8px 16px', borderRadius: 10, fontSize: 12, fontWeight: 700,
+                    cursor: 'pointer', background: s.color + '14', color: s.color,
+                    border: `1px solid ${s.color}35`, fontFamily: 'inherit',
+                  }}>{s.label}</button>
+                ))}
+              </div>
+            </div>
+
+            <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,.06)', margin: '20px 0' }} />
+          </>
+        )}
 
         {/* Actions row */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -173,11 +183,13 @@ function DealModal({ deal, onClose, onUpdate, onRemove }) {
               color: '#25d366', textDecoration: 'none', fontSize: 13, fontWeight: 700,
             }}>💬 WhatsApp</a>
           )}
-          <button onClick={remove} style={{
-            padding: '9px 16px', borderRadius: 10, border: '1px solid rgba(255,68,68,.2)',
-            background: 'rgba(255,68,68,.06)', color: 'rgba(255,68,68,.7)',
-            fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
-          }}>Remover do pipeline</button>
+          {!readOnly && (
+            <button onClick={remove} style={{
+              padding: '9px 16px', borderRadius: 10, border: '1px solid rgba(255,68,68,.2)',
+              background: 'rgba(255,68,68,.06)', color: 'rgba(255,68,68,.7)',
+              fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+            }}>Remover do pipeline</button>
+          )}
         </div>
       </div>
     </div>
@@ -185,7 +197,7 @@ function DealModal({ deal, onClose, onUpdate, onRemove }) {
 }
 
 /* ── Deal card ── */
-function DealCard({ deal, onClick, isDragging, onDragStart, onDragEnd }) {
+function DealCard({ deal, onClick, isDragging, onDragStart, onDragEnd, readOnly = false }) {
   const [hov, setHov] = useState(false);
   const t = deal.team || {};
   const stage = STAGES.find(s => s.key === deal.status) || STAGES[0];
@@ -193,9 +205,9 @@ function DealCard({ deal, onClick, isDragging, onDragStart, onDragEnd }) {
 
   return (
     <div
-      draggable
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
+      draggable={!readOnly}
+      onDragStart={readOnly ? undefined : onDragStart}
+      onDragEnd={readOnly ? undefined : onDragEnd}
       onClick={() => onClick(deal)}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
@@ -256,6 +268,7 @@ export default function BluePandaCRMPage() {
   const [selected, setSelected] = useState(null);
   const [dragId, setDragId]   = useState(null);
   const [dragOver, setDragOver] = useState(null);
+  const [role, setRole]       = useState('viewer');
 
   const fetchDeals = useCallback(async () => {
     setLoading(true);
@@ -264,10 +277,15 @@ export default function BluePandaCRMPage() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetchDeals(); }, [fetchDeals]);
+  useEffect(() => {
+    fetch('/api/admin/me').then(r => r.json()).then(d => setRole(d.role || 'viewer'));
+    fetchDeals();
+  }, [fetchDeals]);
+
+  const readOnly = role === 'viewer';
 
   async function handleDrop(stageKey) {
-    if (!dragId) return;
+    if (!dragId || readOnly) return;
     const deal = deals.find(d => d.id === dragId);
     if (!deal || deal.status === stageKey) { setDragId(null); setDragOver(null); return; }
 
@@ -329,10 +347,10 @@ export default function BluePandaCRMPage() {
                 )}
                 <div
                   style={{ width: 252 }}
-                  onDragOver={e => { e.preventDefault(); setDragOver(stage.key); }}
-                  onDragEnter={e => { e.preventDefault(); setDragOver(stage.key); }}
+                  onDragOver={e => { if (!readOnly) { e.preventDefault(); setDragOver(stage.key); } }}
+                  onDragEnter={e => { if (!readOnly) { e.preventDefault(); setDragOver(stage.key); } }}
                   onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget)) setDragOver(null); }}
-                  onDrop={e => { e.preventDefault(); handleDrop(stage.key); }}
+                  onDrop={e => { e.preventDefault(); if (!readOnly) handleDrop(stage.key); }}
                 >
                   {/* Column header */}
                   <div style={{ marginBottom: 14, padding: '0 2px' }}>
@@ -361,6 +379,7 @@ export default function BluePandaCRMPage() {
                         isDragging={dragId === d.id}
                         onDragStart={e => { e.dataTransfer.effectAllowed = 'move'; setDragId(d.id); }}
                         onDragEnd={() => { setDragId(null); setDragOver(null); }}
+                        readOnly={readOnly}
                       />
                     ))}
                     {items.length === 0 && !isOver && (
@@ -383,6 +402,7 @@ export default function BluePandaCRMPage() {
           onClose={() => setSelected(null)}
           onUpdate={() => { fetchDeals(); setSelected(null); }}
           onRemove={fetchDeals}
+          readOnly={readOnly}
         />
       )}
     </div>
