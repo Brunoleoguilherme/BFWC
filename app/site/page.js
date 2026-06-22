@@ -341,6 +341,7 @@ export default function SitePage() {
                 {item.toUpperCase()}
               </button>
             ))}
+            <a href="/admin/login" className="adminLoginBtn">Login</a>
           </div>
 
           <button className="mobileBtn" onClick={() => setMobile(!mobile)}>

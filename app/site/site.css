@@ -85,6 +85,23 @@
   color: #00133d;
 }
 
+.adminLoginBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #031020;
+  background: var(--yellow);
+  text-decoration: none;
+  transition: opacity .2s;
+  margin-left: 4px;
+}
+.adminLoginBtn:hover { opacity: .85; }
+
 .mobileBtn,
 .mobileMenu {
   display: none;

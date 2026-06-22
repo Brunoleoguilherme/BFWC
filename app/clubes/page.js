@@ -102,7 +102,9 @@ const texts = {
     website: 'Site',
     fullName: 'Nome completo',
     role: 'Cargo / função',
-    athletes: 'Número estimado de atletas/comissão',
+    athletes: 'Número estimado de atletas/comissão (total)',
+    athletesByCat: 'Atletas por categoria',
+    athletesCatHint: 'Informe quantos atletas (incluindo comissão) em cada categoria selecionada:',
     travel: 'Precisa de apoio de viagem?',
     yes: 'Sim, apoio Blue Panda',
     no: 'Não',
@@ -156,7 +158,9 @@ const texts = {
     website: 'Website',
     fullName: 'Full name',
     role: 'Role',
-    athletes: 'Estimated number of athletes/staff',
+    athletes: 'Estimated number of athletes/staff (total)',
+    athletesByCat: 'Athletes per category',
+    athletesCatHint: 'How many athletes (including staff) in each selected category:',
     travel: 'Needs travel support?',
     yes: 'Yes, Blue Panda support',
     no: 'No',
@@ -208,7 +212,9 @@ const texts = {
     website: 'Sitio web',
     fullName: 'Nombre completo',
     role: 'Cargo / función',
-    athletes: 'Número estimado de atletas/staff',
+    athletes: 'Número estimado de atletas/staff (total)',
+    athletesByCat: 'Atletas por categoría',
+    athletesCatHint: 'Indique cuántos atletas (incluyendo staff) en cada categoría seleccionada:',
     travel: '¿Necesita apoyo de viaje?',
     yes: 'Sí, apoyo Blue Panda',
     no: 'No',
@@ -241,6 +247,10 @@ const initial = {
   instagram: '',
   website: '',
   athletes_count: '',
+  athletes_masc: '',
+  athletes_fem: '',
+  athletes_sub15: '',
+  athletes_sub12: '',
   competitive_history: '',
   travel_support: 'yes',
   hosting_preference: '',
@@ -483,6 +493,30 @@ export default function ClubInterestPage() {
             <Input label="Email" type="email" value={form.email} onChange={(v) => set('email', v)} required />
             <Input label="WhatsApp" value={form.whatsapp} onChange={(v) => set('whatsapp', v)} required />
             <Input label={t.athletes} type="number" value={form.athletes_count} onChange={(v) => set('athletes_count', v)} />
+
+            {form.categories_interested.length > 0 && (
+              <div className="fullField" style={{ marginBottom: 4 }}>
+                <label style={{ display: 'block', marginBottom: 8, fontWeight: 600 }}>{t.athletesByCat}</label>
+                <p style={{ fontSize: 13, opacity: 0.6, marginBottom: 12 }}>{t.athletesCatHint}</p>
+                <div className="formGrid" style={{ gap: 12 }}>
+                  {form.categories_interested.map((cat) => {
+                    const catKey = cat.toLowerCase().includes('sub 12') || cat.toLowerCase().includes('u12') ? 'athletes_sub12'
+                      : cat.toLowerCase().includes('sub 15') || cat.toLowerCase().includes('u15') ? 'athletes_sub15'
+                      : cat.toLowerCase().includes('fem') || cat.toLowerCase() === 'women' ? 'athletes_fem'
+                      : 'athletes_masc';
+                    return (
+                      <Input
+                        key={cat}
+                        label={cat}
+                        type="number"
+                        value={form[catKey]}
+                        onChange={(v) => set(catKey, v)}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <label>
               {t.travel}
