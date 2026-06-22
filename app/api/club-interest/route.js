@@ -64,8 +64,9 @@ export async function POST(request) {
       console.error('Supabase insert error:', dbError.message);
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://brasilflagworldchampionship.com';
     const validateUrl = `${siteUrl}/api/validate-team?token=${token}`;
+    const rejectUrl   = `${siteUrl}/api/reject-team?token=${token}`;
 
     const resend = getResend();
     await Promise.allSettled([
@@ -80,7 +81,7 @@ export async function POST(request) {
           language: body.language || 'pt',
         }),
       }),
-      // Email para admins com botão de validação
+      // Email para admins com botões de validação/rejeição
       ...adminEmails.map((to) =>
         resend.emails.send({
           from: fromEmail,
@@ -105,6 +106,7 @@ export async function POST(request) {
             travel_support: body.travel_support,
             notes: body.notes,
             validateUrl,
+            rejectUrl,
           }),
         })
       ),
