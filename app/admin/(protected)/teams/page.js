@@ -365,10 +365,25 @@ export default function TeamsPage() {
 
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", color: '#fff' }}>
+      <style>{`
+        .teams-stats { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
+        .teams-stat-card { flex: 1; min-width: 100px; padding: 18px 20px; border-radius: 16px; }
+        .teams-board { display: flex; overflow-x: auto; align-items: flex-start; padding-bottom: 32px; gap: 0; }
+        .teams-col { width: 252px; flex-shrink: 0; }
+        @media (max-width: 640px) {
+          .teams-stats { gap: 8px; }
+          .teams-stat-card { padding: 14px 16px !important; min-width: 80px; }
+          .teams-stat-num { font-size: 28px !important; }
+          .teams-board { flex-direction: column; overflow-x: visible; padding-bottom: 16px; }
+          .teams-col { width: 100% !important; margin-bottom: 8px; }
+          .teams-col-divider { display: none !important; }
+          .teams-title { font-size: 26px !important; }
+        }
+      `}</style>
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: '#f4ff00', marginBottom: 8 }}>CRM</div>
-        <h1 style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1.5, color: '#fff', marginBottom: 0 }}>
+        <h1 className="teams-title" style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1.5, color: '#fff', marginBottom: 0 }}>
           {filterStatus ? (STATUS_MAP[filterStatus]?.label || filterStatus) : 'Times Inscritos'}
         </h1>
         {filterStatus && (
@@ -379,7 +394,7 @@ export default function TeamsPage() {
       </div>
 
       {/* Stats */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 28, flexWrap: 'wrap' }}>
+      <div className="teams-stats">
         {[
           { label: 'Total',       value: total,            alert: false },
           { label: 'Confirmados', value: confirmed.length, alert: false },
@@ -442,16 +457,16 @@ export default function TeamsPage() {
         </div>
       ) : (
         /* Kanban with drag-and-drop */
-        <div style={{ display: 'flex', overflowX: 'auto', alignItems: 'flex-start', paddingBottom: 32, gap: 0 }}>
+        <div className="teams-board">
           {cols.map((col, idx) => {
             const items = filtered.filter(t => t.status === col.key);
             const isOver = dragOver === col.key;
 
             return (
-              <div key={col.key} style={{ display: 'flex', flexShrink: 0 }}>
+              <div key={col.key} style={{ display: 'flex', flexShrink: 0, width: '100%' }}>
                 {/* Divider between columns */}
                 {idx > 0 && (
-                  <div style={{
+                  <div className="teams-col-divider" style={{
                     width: 1,
                     alignSelf: 'stretch',
                     background: 'rgba(255,255,255,.05)',
@@ -462,6 +477,7 @@ export default function TeamsPage() {
 
                 {/* Column */}
                 <div
+                  className="teams-col"
                   style={{ width: 252 }}
                   onDragOver={e => { e.preventDefault(); if (dragOver !== col.key) setDragOver(col.key); }}
                   onDragEnter={e => { e.preventDefault(); setDragOver(col.key); }}

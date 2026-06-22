@@ -85,7 +85,7 @@ function Panel({ title, badge, badgeColor, total, totalLabel, cats, catKey, load
 
       {/* Divider */}
       <div style={{ borderTop: '1px solid rgba(255,255,255,.06)', paddingTop: 20 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+        <div className="dash-grid-cats">
           {cats.map(c => (
             <div key={c.label} style={{
               background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.06)',
@@ -140,18 +140,32 @@ export default function DashboardPage() {
 
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", color: '#fff' }}>
+      <style>{`
+        .dash-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .dash-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+        .dash-grid-cats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        @media (max-width: 640px) {
+          .dash-grid-2 { grid-template-columns: 1fr !important; }
+          .dash-grid-3 { grid-template-columns: 1fr 1fr !important; }
+          .dash-grid-cats { grid-template-columns: repeat(2, 1fr) !important; }
+          .dash-title { font-size: 32px !important; letter-spacing: -1px !important; }
+          .dash-big-num { font-size: 52px !important; }
+          .dash-panel { padding: 20px 18px !important; }
+        }
+      `}</style>
+
       {/* Header */}
-      <div style={{ marginBottom: 36 }}>
+      <div style={{ marginBottom: 28 }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: '#f4ff00', marginBottom: 8 }}>
           BFWC 2026 · Painel de Controle
         </div>
-        <h1 style={{ fontSize: 44, fontWeight: 900, letterSpacing: -2, lineHeight: 1, color: '#fff' }}>
+        <h1 className="dash-title" style={{ fontSize: 44, fontWeight: 900, letterSpacing: -2, lineHeight: 1, color: '#fff' }}>
           Dashboard
         </h1>
       </div>
 
       {/* Pré-inscritos + Confirmados */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+      <div className="dash-grid-2">
         <Panel
           title="Times Pré-inscritos"
           badge="Pré-inscritos"
@@ -200,7 +214,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Pendentes + Rejeitados + Em Revisão */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 28 }}>
+      <div className="dash-grid-3">
         {[
           { label: 'Pendentes de Análise', value: pendentes, color: '#f4ff00', href: '/admin/teams?status=pendente_analise' },
           { label: 'Em Revisão',           value: emRevisao, color: '#a855f7', href: '/admin/teams?status=em_revisao'       },
