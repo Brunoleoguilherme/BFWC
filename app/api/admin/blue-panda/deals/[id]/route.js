@@ -4,8 +4,8 @@ import { requireWriter } from '@/lib/authAdmin';
 
 // PATCH — update deal status / notes / value
 export async function PATCH(request, { params }) {
-  const { error } = await requireWriter();
-  if (error) return error;
+  const { error: authError } = await requireWriter();
+  if (authError) return authError;
   const { id } = await params;
   const body = await request.json();
   const admin = getSupabaseAdmin();
@@ -26,8 +26,8 @@ export async function PATCH(request, { params }) {
 
 // DELETE — remove deal from pipeline
 export async function DELETE(request, { params }) {
-  const { error } = await requireWriter();
-  if (error) return error;
+  const { error: authError } = await requireWriter();
+  if (authError) return authError;
   const { id } = await params;
   const admin = getSupabaseAdmin();
   const { error } = await admin.from('blue_panda_deals').delete().eq('id', id);

@@ -3,8 +3,8 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { requireAuth, requireWriter } from '@/lib/authAdmin';
 
 export async function PATCH(request, { params }) {
-  const { profile, error } = await requireWriter();
-  if (error) return error;
+  const { profile, error: authError } = await requireWriter();
+  if (authError) return authError;
   const adminUser = { profile, email: profile.email };
 
   const { id } = await params;
@@ -68,8 +68,8 @@ export async function PATCH(request, { params }) {
 }
 
 export async function GET(request, { params }) {
-  const { error } = await requireAuth();
-  if (error) return error;
+  const { error: authError } = await requireAuth();
+  if (authError) return authError;
 
   const { id } = await params;
   const supabase = getSupabaseAdmin();

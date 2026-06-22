@@ -4,8 +4,8 @@ import { requireAuth, requireWriter } from '@/lib/authAdmin';
 
 // GET — list all deals with team info
 export async function GET() {
-  const { error } = await requireAuth();
-  if (error) return error;
+  const { error: authError } = await requireAuth();
+  if (authError) return authError;
   const admin = getSupabaseAdmin();
   const { data, error } = await admin
     .from('blue_panda_deals')
