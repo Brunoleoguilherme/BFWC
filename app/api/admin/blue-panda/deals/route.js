@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { requireAuth, requireWriter } from '@/lib/authAdmin';
 
 // GET — list all deals with team info
 export async function GET() {
+  const { error } = await requireAuth();
+  if (error) return error;
   const admin = getSupabaseAdmin();
   const { data, error } = await admin
     .from('blue_panda_deals')
@@ -22,6 +25,8 @@ export async function GET() {
 
 // POST — create deal (add team to pipeline)
 export async function POST(request) {
+  const { error: authError } = await requireWriter();
+  if (authError) return authError;
   const { team_id } = await request.json();
   if (!team_id) return NextResponse.json({ error: 'team_id obrigatório' }, { status: 400 });
 

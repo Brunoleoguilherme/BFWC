@@ -107,9 +107,12 @@ export default function Sidebar({ role = 'admin' }) {
   const currentStatus = searchParams.get('status');
   const currentCat = searchParams.get('category');
 
-  // Blue Panda users only see the Blue Panda section
+  // Blue Panda: only Blue Panda section
+  // Viewer: everything except Sistema
   const visibleGroups = role === 'blue_panda'
     ? GROUPS.filter(g => g.section === 'Blue Panda')
+    : role === 'viewer'
+    ? GROUPS.filter(g => g.section !== 'Sistema')
     : GROUPS;
 
   // Track which items are expanded

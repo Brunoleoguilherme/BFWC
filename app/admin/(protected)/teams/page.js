@@ -99,7 +99,7 @@ function Card({ team, onClick, isDragging, onDragStart, onDragEnd }) {
   );
 }
 
-function Modal({ team, onClose, onUpdate }) {
+function Modal({ team, onClose, onUpdate, readOnly = false }) {
   const [detail, setDetail] = useState(null);
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
@@ -221,46 +221,56 @@ function Modal({ team, onClose, onUpdate }) {
           <input style={S.mInput} value={teamEmail} onChange={e => setTeamEmail(e.target.value)} placeholder="email@clube.com" />
         </div>
 
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.25)', marginBottom: 10 }}>Mover para</div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {STATUSES.filter(s => s.key !== t.status).map(s => (
-              <button key={s.key} style={S.mActionBtn(s.color)} onClick={() => { updateStatus(s.key); onClose(); }}>{s.label}</button>
-            ))}
-            <button style={S.mActionBtn('#ff4444')} onClick={() => { updateStatus('spam_descartado'); onClose(); }}>🗑 Spam</button>
-            <button style={S.mActionBtn('#f4ff00')} onClick={toggleSuspect}>{t.flagged_suspect ? '✓ Desmarcar' : '⚠ Suspeito'}</button>
+        {!readOnly && (
+          <>
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.25)', marginBottom: 10 }}>Mover para</div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {STATUSES.filter(s => s.key !== t.status).map(s => (
+                  <button key={s.key} style={S.mActionBtn(s.color)} onClick={() => { updateStatus(s.key); onClose(); }}>{s.label}</button>
+                ))}
+                <button style={S.mActionBtn('#ff4444')} onClick={() => { updateStatus('spam_descartado'); onClose(); }}>🗑 Spam</button>
+                <button style={S.mActionBtn('#f4ff00')} onClick={toggleSuspect}>{t.flagged_suspect ? '✓ Desmarcar' : '⚠ Suspeito'}</button>
+              </div>
+            </div>
+
+            <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,.06)', margin: '24px 0' }} />
+
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.25)', marginBottom: 10 }}>Enviar e-mail</div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+                {[['aprovado','✓ Aprovado'],['info_adicional','? Pedir info'],['rejeitado','✕ Rejeitado']].map(([k,l]) => (
+                  <button key={k} style={S.mEmailOpt(emailTpl === k)} onClick={() => setEmailTpl(emailTpl === k ? '' : k)}>{l}</button>
+                ))}
+              </div>
+              {emailTpl && (
+                <button style={S.mSaveBtn(emailSent)} onClick={sendEmail} disabled={sendingEmail || !teamEmail}>
+                  {sendingEmail ? 'Enviando...' : emailSent ? '✓ Enviado!' : 'Enviar e-mail'}
+                </button>
+              )}
+            </div>
+
+            <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,.06)', margin: '24px 0' }} />
+
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.25)', marginBottom: 10 }}>Anotações internas</div>
+              <textarea
+                style={{ ...S.mInput, resize: 'vertical', minHeight: 80 }}
+                value={notes} onChange={e => setNotes(e.target.value)}
+                placeholder="Notas visíveis apenas para admins..."
+              />
+              <button style={S.mSaveBtn(false)} onClick={saveNotes} disabled={saving}>
+                {saving ? 'Salvando...' : 'Salvar anotação'}
+              </button>
+            </div>
+          </>
+        )}
+
+        {readOnly && (
+          <div style={{ padding: '14px 18px', borderRadius: 12, background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', fontSize: 12, color: 'rgba(255,255,255,.35)', textAlign: 'center', marginBottom: 20 }}>
+            Modo somente leitura — apenas admins podem alterar dados
           </div>
-        </div>
-
-        <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,.06)', margin: '24px 0' }} />
-
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.25)', marginBottom: 10 }}>Enviar e-mail</div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-            {[['aprovado','✓ Aprovado'],['info_adicional','? Pedir info'],['rejeitado','✕ Rejeitado']].map(([k,l]) => (
-              <button key={k} style={S.mEmailOpt(emailTpl === k)} onClick={() => setEmailTpl(emailTpl === k ? '' : k)}>{l}</button>
-            ))}
-          </div>
-          {emailTpl && (
-            <button style={S.mSaveBtn(emailSent)} onClick={sendEmail} disabled={sendingEmail || !teamEmail}>
-              {sendingEmail ? 'Enviando...' : emailSent ? '✓ Enviado!' : 'Enviar e-mail'}
-            </button>
-          )}
-        </div>
-
-        <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,.06)', margin: '24px 0' }} />
-
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.25)', marginBottom: 10 }}>Anotações internas</div>
-          <textarea
-            style={{ ...S.mInput, resize: 'vertical', minHeight: 80 }}
-            value={notes} onChange={e => setNotes(e.target.value)}
-            placeholder="Notas visíveis apenas para admins..."
-          />
-          <button style={S.mSaveBtn(false)} onClick={saveNotes} disabled={saving}>
-            {saving ? 'Salvando...' : 'Salvar anotação'}
-          </button>
-        </div>
+        )}
 
         {events.length > 0 && (
           <>
@@ -294,6 +304,11 @@ export default function TeamsPage() {
   const [selected, setSelected] = useState(null);
   const [search, setSearch] = useState('');
   const [showSpam, setShowSpam] = useState(false);
+  const [role, setRole] = useState('admin');
+
+  useEffect(() => {
+    fetch('/api/admin/me').then(r => r.json()).then(d => setRole(d.role || 'viewer'));
+  }, []);
 
   // Drag state
   const [dragId, setDragId] = useState(null);
@@ -310,7 +325,7 @@ export default function TeamsPage() {
   useEffect(() => { fetchTeams(); }, [fetchTeams]);
 
   async function handleDrop(colKey) {
-    if (!dragId) return;
+    if (!dragId || role === 'viewer') return;
     const team = teams.find(t => t.id === dragId);
     if (!team || team.status === colKey) { setDragId(null); setDragOver(null); return; }
 
@@ -501,7 +516,7 @@ export default function TeamsPage() {
       )}
 
       {selected && (
-        <Modal team={selected} onClose={() => setSelected(null)} onUpdate={() => { fetchTeams(); setSelected(null); }} />
+        <Modal team={selected} onClose={() => setSelected(null)} onUpdate={() => { fetchTeams(); setSelected(null); }} readOnly={role === 'viewer'} />
       )}
     </div>
   );

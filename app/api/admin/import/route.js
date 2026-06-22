@@ -1,23 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { getSupabaseServer } from '@/lib/supabaseServer';
-
-async function getAdminUser() {
-  const supabase = await getSupabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-  const { data: profile } = await supabase
-    .from('admin_profiles')
-    .select('name, role')
-    .eq('id', user.id)
-    .single();
-  if (!profile) return null;
-  return { ...user, profile };
-}
+import { requireAdmin } from '@/lib/authAdmin';
 
 export async function POST(request) {
-  const adminUser = await getAdminUser();
-  if (!adminUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const { error } = await requireAdmin();
+  if (error) return error;
 
   try {
     const body = await request.json();

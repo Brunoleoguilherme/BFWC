@@ -1,20 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { getSupabaseServer } from '@/lib/supabaseServer';
 import { getResend, fromEmail } from '@/lib/email';
-
-async function getAdminUser() {
-  const supabase = await getSupabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-  const { data: profile } = await supabase
-    .from('admin_profiles')
-    .select('name, role')
-    .eq('id', user.id)
-    .single();
-  if (!profile) return null;
-  return { ...user, profile };
-}
+import { requireWriter } from '@/lib/authAdmin';
 
 const templates = {
   aprovado: (team) => ({
@@ -59,8 +46,9 @@ const templates = {
 };
 
 export async function POST(request, { params }) {
-  const adminUser = await getAdminUser();
-  if (!adminUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const { profile, error } = await requireWriter();
+  if (error) return error;
+  const adminUser = { profile, email: profile.email };
 
   const { id } = await params;
   const { template, customSubject, customHtml, teamEmail } = await request.json();
