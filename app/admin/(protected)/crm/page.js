@@ -9,8 +9,10 @@ export default function CRMPage() {
   const [emailTpl, setEmailTpl] = useState('');
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState(false);
+  const [role, setRole] = useState('viewer');
 
   useEffect(() => {
+    fetch('/api/admin/me').then(r => r.json()).then(d => setRole(d.role || 'viewer'));
     fetch('/api/admin/teams').then(r => r.json()).then(d => {
       setTeams((d.teams || []).filter(t => t.status !== 'spam_descartado'));
       setLoading(false);
@@ -25,7 +27,7 @@ export default function CRMPage() {
   function clearAll() { setSelected([]); }
 
   async function sendBulk() {
-    if (!emailTpl || selected.length === 0) return;
+    if (!emailTpl || selected.length === 0 || role === 'viewer') return;
     setSending(true);
     await Promise.all(selected.map(id =>
       fetch(`/api/admin/teams/${id}/email`, {
@@ -143,24 +145,37 @@ export default function CRMPage() {
             ))}
           </div>
 
-          <button
-            onClick={sendBulk}
-            disabled={sending || selected.length === 0 || !emailTpl}
-            style={{
-              width: '100%', padding: '14px',
-              background: done ? '#20e33f' : (sending || !emailTpl || selected.length === 0) ? 'rgba(244,255,0,.3)' : '#f4ff00',
-              color: '#031020', border: 'none', borderRadius: 12,
-              fontSize: 13, fontWeight: 900, letterSpacing: 1.5, textTransform: 'uppercase',
-              cursor: sending || selected.length === 0 || !emailTpl ? 'not-allowed' : 'pointer',
-              fontFamily: "'Inter', sans-serif", transition: 'all .2s',
-            }}
-          >
-            {done ? '✓ Enviado!' : sending ? 'Enviando...' : `Enviar para ${selected.length} time${selected.length !== 1 ? 's' : ''}`}
-          </button>
-          {(!emailTpl || selected.length === 0) && (
-            <p style={{ fontSize: 11, color: 'rgba(255,255,255,.22)', textAlign: 'center', marginTop: 10 }}>
-              Selecione times e um template para enviar.
-            </p>
+          {role === 'viewer' ? (
+            <div style={{
+              width: '100%', padding: '14px', borderRadius: 12,
+              background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)',
+              fontSize: 12, color: 'rgba(255,255,255,.3)', textAlign: 'center',
+              fontFamily: "'Inter', sans-serif",
+            }}>
+              Somente leitura — apenas admins podem enviar e-mails
+            </div>
+          ) : (
+            <>
+              <button
+                onClick={sendBulk}
+                disabled={sending || selected.length === 0 || !emailTpl}
+                style={{
+                  width: '100%', padding: '14px',
+                  background: done ? '#20e33f' : (sending || !emailTpl || selected.length === 0) ? 'rgba(244,255,0,.3)' : '#f4ff00',
+                  color: '#031020', border: 'none', borderRadius: 12,
+                  fontSize: 13, fontWeight: 900, letterSpacing: 1.5, textTransform: 'uppercase',
+                  cursor: sending || selected.length === 0 || !emailTpl ? 'not-allowed' : 'pointer',
+                  fontFamily: "'Inter', sans-serif", transition: 'all .2s',
+                }}
+              >
+                {done ? '✓ Enviado!' : sending ? 'Enviando...' : `Enviar para ${selected.length} time${selected.length !== 1 ? 's' : ''}`}
+              </button>
+              {(!emailTpl || selected.length === 0) && (
+                <p style={{ fontSize: 11, color: 'rgba(255,255,255,.22)', textAlign: 'center', marginTop: 10 }}>
+                  Selecione times e um template para enviar.
+                </p>
+              )}
+            </>
           )}
         </div>
       </div>
