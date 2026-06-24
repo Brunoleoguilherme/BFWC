@@ -1,0 +1,78 @@
+import { NextResponse } from 'next/server';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { getResend, fromEmail } from '@/lib/email';
+
+function approvedHtml({ club_name, contact_name }) {
+  return `
+  <div style="font-family:Inter,sans-serif;background:#031020;color:#fff;padding:40px 24px;max-width:560px;margin:0 auto;border-radius:16px">
+    <h1 style="font-size:28px;font-weight:900;margin:0 0 6px">BFWC <span style="color:#f4ff00">2026</span></h1>
+    <p style="color:rgba(255,255,255,.4);font-size:13px;margin:0 0 28px">Portal Oficial</p>
+    <h2 style="font-size:20px;font-weight:800;margin:0 0 12px">✅ Cadastro aprovado!</h2>
+    <p style="color:#c8d8f5;font-size:14px;line-height:1.6;margin:0 0 24px">
+      Olá, <strong>${contact_name}</strong>! O cadastro do clube <strong>${club_name}</strong> foi <strong style="color:#20e33f">aprovado</strong>. Acesse o portal com seu e-mail e senha.
+    </p>
+    <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://brasilflagworldchampionship.com'}/portal/times/login"
+       style="display:inline-block;padding:14px 32px;background:#0D4BFF;color:#fff;font-weight:900;font-size:14px;text-decoration:none;border-radius:10px;letter-spacing:1px;text-transform:uppercase">
+      Acessar portal →
+    </a>
+  </div>`;
+}
+
+function rejectedHtml({ club_name, contact_name, admin_notes }) {
+  return `
+  <div style="font-family:Inter,sans-serif;background:#031020;color:#fff;padding:40px 24px;max-width:560px;margin:0 auto;border-radius:16px">
+    <h1 style="font-size:28px;font-weight:900;margin:0 0 6px">BFWC <span style="color:#f4ff00">2026</span></h1>
+    <p style="color:rgba(255,255,255,.4);font-size:13px;margin:0 0 28px">Portal Oficial</p>
+    <h2 style="font-size:20px;font-weight:800;margin:0 0 12px">❌ Cadastro não aprovado</h2>
+    <p style="color:#c8d8f5;font-size:14px;line-height:1.6;margin:0 0 16px">
+      Olá, <strong>${contact_name}</strong>. Após análise, o cadastro de <strong>${club_name}</strong> não foi aprovado neste momento.
+    </p>
+    ${admin_notes ? `<div style="padding:12px 16px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);font-size:13px;color:rgba(255,255,255,.6);margin-bottom:16px"><strong>Motivo:</strong> ${admin_notes}</div>` : ''}
+    <p style="color:rgba(255,255,255,.35);font-size:13px">Em caso de dúvidas, entre em contato com a organização do BFWC 2026.</p>
+  </div>`;
+}
+
+export async function PATCH(req, { params }) {
+  try {
+    const { id } = await params;
+    const { action, admin_notes } = await req.json();
+    if (!['approve', 'reject'].includes(action))
+      return NextResponse.json({ ok: false, message: 'Ação inválida.' }, { status: 400 });
+
+    const supabase = getSupabaseAdmin();
+    const { data: team } = await supabase
+      .from('portal_teams')
+      .select('id, club_name, contact_name, email, status')
+      .eq('id', id)
+      .single();
+
+    if (!team) return NextResponse.json({ ok: false, message: 'Time não encontrado.' }, { status: 404 });
+
+    const newStatus = action === 'approve' ? 'approved' : 'rejected';
+    await supabase.from('portal_teams').update({
+      status: newStatus,
+      admin_notes: admin_notes || null,
+      approved_at: action === 'approve' ? new Date().toISOString() : null,
+    }).eq('id', id);
+
+    // Notify team
+    try {
+      const resend = getResend();
+      await resend.emails.send({
+        from: fromEmail,
+        to: team.email,
+        subject: action === 'approve'
+          ? `BFWC 2026 — Cadastro aprovado! Bem-vindo ao portal`
+          : `BFWC 2026 — Atualização sobre seu cadastro`,
+        html: action === 'approve'
+          ? approvedHtml({ club_name: team.club_name, contact_name: team.contact_name })
+          : rejectedHtml({ club_name: team.club_name, contact_name: team.contact_name, admin_notes }),
+      });
+    } catch (_) {}
+
+    return NextResponse.json({ ok: true, status: newStatus });
+  } catch (err) {
+    console.error('portal-teams patch error', err);
+    return NextResponse.json({ ok: false, message: err.message }, { status: 500 });
+  }
+}

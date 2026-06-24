@@ -210,15 +210,14 @@ function NewsletterForm({ lang, placeholder, buttonText }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-      <div style={{ display: 'flex', gap: 0 }}>
+    <form onSubmit={handleSubmit} className="nlForm">
+      <div className="nlRow">
         <input
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder={placeholder}
           type="email"
           required
-          style={{ flex: 1 }}
         />
 
         <button type="submit" disabled={loading}>
@@ -341,7 +340,7 @@ export default function SitePage() {
                 {item.toUpperCase()}
               </button>
             ))}
-            <a href="/admin/login" className="adminLoginBtn">Login</a>
+            <a href="/portal" className="adminLoginBtn">Login</a>
           </div>
 
           <button className="mobileBtn" onClick={() => setMobile(!mobile)}>

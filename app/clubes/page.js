@@ -105,7 +105,7 @@ const texts = {
     athletes: 'Número estimado de atletas/comissão (total)',
     athletesByCat: 'Atletas por categoria',
     athletesCatHint: 'Informe quantos atletas (incluindo comissão) em cada categoria selecionada:',
-    travel: 'Apoio de viagem e hospedagem?',
+    travel: 'Assessoria para viagem e hospedagem?',
     yes: 'Sim, quero receber indicações e parcerias',
     no: 'Não',
     maybe: 'Talvez',

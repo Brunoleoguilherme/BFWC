@@ -1,0 +1,379 @@
+/* ── Shared Portal Styles — matches site.css visual language ── */
+
+.portalShell {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #031020 0%, #061b3a 50%, #031020 100%);
+  font-family: 'Inter', sans-serif;
+  color: #fff;
+}
+
+/* ── Top bar ── */
+.portalTop {
+  height: 82px;
+  padding: 0 44px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: rgba(3,16,32,.92);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.portalTopLogo {
+  font-size: 18px;
+  font-weight: 950;
+  font-style: italic;
+  letter-spacing: -.04em;
+  text-transform: uppercase;
+  color: var(--yellow);
+  text-decoration: none;
+}
+
+.portalTopSep {
+  width: 1px;
+  height: 28px;
+  background: rgba(255,255,255,.12);
+}
+
+.portalTopSection {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.45);
+}
+
+.portalTopBack {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.4);
+  text-decoration: none;
+  transition: color .2s;
+}
+.portalTopBack:hover { color: var(--yellow); }
+
+.portalLogoutBtn {
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.12);
+  color: rgba(255,255,255,.5);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .2s;
+  margin-left: auto;
+}
+.portalLogoutBtn:hover { border-color: rgba(255,68,68,.4); color: #ff6666; }
+
+/* ── Hero ── */
+.portalHero {
+  padding: 72px 58px 60px;
+  background: linear-gradient(180deg, rgba(13,75,255,.08) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+.portalHeroTag {
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--yellow);
+  margin-bottom: 14px;
+}
+
+.portalHeroTitle {
+  font-size: clamp(44px, 6vw, 86px);
+  font-weight: 950;
+  font-style: italic;
+  letter-spacing: -.055em;
+  line-height: .92;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 18px;
+}
+
+.portalHeroTitle strong { color: var(--yellow); }
+
+.portalHeroSub {
+  font-size: 16px;
+  color: #c8d8f5;
+  max-width: 540px;
+  line-height: 1.6;
+}
+
+/* ── Cards grid ── */
+.portalCardsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  padding: 48px 58px 64px;
+  background: #031020;
+}
+
+.portalCard {
+  padding: 40px 36px;
+  border-right: 1px solid rgba(255,255,255,.08);
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  transition: background .2s;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+.portalCard:last-child { border-right: none; }
+.portalCard:hover { background: rgba(255,255,255,.025); }
+
+.portalCardIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+  margin-bottom: 8px;
+}
+
+.portalCardTag {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.portalCardTitle {
+  font-size: 26px;
+  font-weight: 950;
+  font-style: italic;
+  letter-spacing: -.04em;
+  line-height: 1.05;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.portalCardDesc {
+  font-size: 14px;
+  color: #c8d8f5;
+  line-height: 1.6;
+  margin-top: 4px;
+}
+
+.portalCardCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform .2s, box-shadow .2s;
+  width: fit-content;
+}
+.portalCardCta:hover {
+  transform: translateY(-2px);
+}
+
+.portalCardCtaYellow {
+  background: linear-gradient(135deg, var(--yellow), #dfff00);
+  color: #00133d;
+  box-shadow: 0 8px 24px rgba(244,255,0,.2);
+}
+.portalCardCtaYellow:hover { box-shadow: 0 14px 36px rgba(244,255,0,.35); }
+
+.portalCardCtaBlue {
+  background: var(--blue);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(13,75,255,.25);
+}
+.portalCardCtaBlue:hover { box-shadow: 0 14px 36px rgba(13,75,255,.4); }
+
+.portalCardCtaGreen {
+  background: var(--green);
+  color: #00133d;
+  box-shadow: 0 8px 24px rgba(32,227,63,.2);
+}
+.portalCardCtaGreen:hover { box-shadow: 0 14px 36px rgba(32,227,63,.35); }
+
+/* ── Login form ── */
+.portalLoginWrap {
+  min-height: calc(100vh - 82px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+}
+
+.portalLoginBox {
+  width: 100%;
+  max-width: 440px;
+}
+
+.portalLoginTitle {
+  font-size: clamp(42px, 7vw, 64px);
+  font-weight: 950;
+  font-style: italic;
+  letter-spacing: -.055em;
+  line-height: .92;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.portalLoginTitle strong { color: var(--yellow); }
+
+.portalLoginSub {
+  font-size: 14px;
+  color: #c8d8f5;
+  margin-bottom: 36px;
+  line-height: 1.5;
+}
+
+.portalLoginCard {
+  background: rgba(6,27,58,.7);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 14px;
+  padding: 36px 32px;
+  backdrop-filter: blur(12px);
+}
+
+.portalLoginLabel {
+  display: block;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.35);
+  margin-bottom: 8px;
+}
+
+.portalLoginInput {
+  width: 100%;
+  padding: 14px 18px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 15px;
+  outline: none;
+  font-family: inherit;
+  margin-bottom: 18px;
+  transition: border-color .2s;
+}
+.portalLoginInput:focus { border-color: rgba(244,255,0,.4); }
+
+.portalLoginError {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: rgba(255,68,68,.08);
+  border: 1px solid rgba(255,68,68,.2);
+  font-size: 13px;
+  color: #ff8888;
+}
+
+.portalLoginBtn {
+  width: 100%;
+  padding: 15px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .2s;
+}
+
+.portalLoginBtnBlue {
+  background: var(--blue);
+  color: #fff;
+  box-shadow: 0 8px 28px rgba(13,75,255,.3);
+}
+.portalLoginBtnBlue:hover:not(:disabled) { box-shadow: 0 14px 40px rgba(13,75,255,.5); transform: translateY(-1px); }
+
+.portalLoginBtnGreen {
+  background: var(--green);
+  color: #00133d;
+  box-shadow: 0 8px 28px rgba(32,227,63,.25);
+}
+.portalLoginBtnGreen:hover:not(:disabled) { box-shadow: 0 14px 40px rgba(32,227,63,.4); transform: translateY(-1px); }
+
+.portalLoginBtn:disabled { opacity: .5; cursor: wait; }
+
+/* ── Tabs ── */
+.portalTabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  padding: 0 58px;
+}
+
+.portalTab {
+  padding: 18px 24px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: rgba(255,255,255,.4);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.portalTab.active {
+  color: var(--yellow);
+  border-bottom-color: var(--yellow);
+}
+
+/* ── Content section ── */
+.portalSection {
+  padding: 48px 58px 64px;
+}
+
+.portalSectionTitle {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.28);
+  margin-bottom: 20px;
+}
+
+.portalContentCard {
+  background: rgba(6,27,58,.5);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .portalTop { padding: 0 20px; }
+  .portalHero { padding: 48px 22px 40px; }
+  .portalCardsGrid { grid-template-columns: 1fr; padding: 0; }
+  .portalCard { border-right: none; border-bottom: 1px solid rgba(255,255,255,.08); }
+  .portalCard:last-child { border-bottom: none; }
+  .portalTabs { padding: 0 20px; overflow-x: auto; }
+  .portalTab { padding: 16px 16px; font-size: 11px; white-space: nowrap; }
+  .portalSection { padding: 32px 20px 48px; }
+}

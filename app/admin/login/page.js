@@ -66,6 +66,13 @@ function LoginForm() {
               {loading ? 'Entrando...' : 'Entrar no painel'}
             </button>
           </form>
+
+          <div style={{ marginTop: 20, textAlign: 'center' }}>
+            <a href="/portal" style={{ fontSize: 12, color: 'rgba(255,255,255,.22)', textDecoration: 'none', letterSpacing: '.5px', transition: 'color .2s' }}
+              onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,.5)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,.22)'}
+            >← Voltar ao portal</a>
+          </div>
         </div>
       </div>
   );

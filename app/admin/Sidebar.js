@@ -94,6 +94,12 @@ const GROUPS = [
     ],
   },
   {
+    section: 'Portal',
+    items: [
+      { href: '/admin/portal-teams', label: 'Clubes do Portal', icon: '🏟', matchPath: '/admin/portal-teams', matchStatus: null, color: '#0D4BFF' },
+    ],
+  },
+  {
     section: 'Sistema',
     items: [
       { href: '/admin/users', label: 'Usuários', icon: '👤', matchPath: '/admin/users', matchStatus: null },

@@ -54,24 +54,73 @@ button, input, textarea, select { font-family: 'Inter', sans-serif; }
 
 /* ── Login ── */
 .login-root {
-  min-height: 100vh; background: #031020;
+  min-height: 100vh;
   display: flex; align-items: center; justify-content: center;
   padding: 24px; position: relative; overflow: hidden;
+  /* Hero background */
+  background-image: url('/assets/hero-rio-athletes.png');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
 }
-.login-glow {
-  position: fixed; width: 700px; height: 700px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(244,255,0,.06) 0%, transparent 65%);
-  top: -200px; left: 50%; transform: translateX(-50%);
+
+/* Dark cinematic overlay — same style as the hero section */
+.login-root::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(3,16,32,.97) 0%,
+      rgba(3,16,32,.88) 40%,
+      rgba(3,16,32,.80) 70%,
+      rgba(3,16,32,.93) 100%
+    ),
+    linear-gradient(180deg, rgba(0,0,0,.15) 0%, rgba(0,0,0,.4) 100%);
   pointer-events: none;
+  z-index: 0;
 }
+
+.login-root > * {
+  position: relative;
+  z-index: 1;
+}
+
+.login-glow {
+  position: fixed; width: 800px; height: 800px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(244,255,0,.07) 0%, transparent 65%);
+  top: -240px; left: 50%; transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Subtle green ribbon accent (top-right) */
+.login-root::after {
+  content: '';
+  position: fixed;
+  top: -60px;
+  right: -120px;
+  width: 520px;
+  height: 52px;
+  background: linear-gradient(90deg, #20e33f22, #f4ff0022);
+  transform: rotate(20deg);
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: 1;
+}
+
 .login-card {
   position: relative; width: 100%; max-width: 420px;
   padding: 52px 44px;
   border-radius: 28px;
-  background: linear-gradient(145deg, rgba(5,18,55,.96), rgba(2,8,22,.95));
-  border: 1px solid rgba(255,255,255,.1);
-  box-shadow: 0 48px 130px rgba(0,0,0,.65);
-  backdrop-filter: blur(28px);
+  background: linear-gradient(145deg, rgba(3,14,44,.92), rgba(2,8,22,.90));
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow:
+    0 48px 130px rgba(0,0,0,.75),
+    0 0 0 1px rgba(255,255,255,.04) inset;
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
   animation: cardIn .55s cubic-bezier(.22,.61,.36,1) both;
 }
 @keyframes cardIn {

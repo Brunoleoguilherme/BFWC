@@ -2,6 +2,216 @@
 
 import { useState, useEffect } from 'react';
 
+// ── Country name → ISO-2 code ──────────────────────────────────────────────
+function countryCode(name = '') {
+  const map = {
+    // Português
+    'brasil': 'br', 'brazil': 'br',
+    'estados unidos': 'us', 'eua': 'us',
+    'méxico': 'mx', 'mexico': 'mx',
+    'argentina': 'ar',
+    'canadá': 'ca', 'canada': 'ca',
+    'alemanha': 'de', 'germany': 'de',
+    'japão': 'jp', 'japan': 'jp',
+    'itália': 'it', 'italy': 'it',
+    'espanha': 'es', 'spain': 'es',
+    'austrália': 'au', 'australia': 'au',
+    'chile': 'cl',
+    'colômbia': 'co', 'colombia': 'co',
+    'peru': 'pe', 'perú': 'pe',
+    'venezuela': 've',
+    'bolívia': 'bo', 'bolivia': 'bo',
+    'paraguai': 'py', 'paraguay': 'py',
+    'uruguai': 'uy', 'uruguay': 'uy',
+    'equador': 'ec', 'ecuador': 'ec',
+    'reino unido': 'gb', 'uk': 'gb', 'united kingdom': 'gb',
+    'irlanda': 'ie', 'ireland': 'ie',
+    'frança': 'fr', 'france': 'fr',
+    'portugal': 'pt',
+    'china': 'cn',
+    'coreia do sul': 'kr', 'korea': 'kr', 'south korea': 'kr',
+    'índia': 'in', 'india': 'in',
+    'rússia': 'ru', 'russia': 'ru',
+    'polônia': 'pl', 'poland': 'pl',
+    'holanda': 'nl', 'netherlands': 'nl', 'países baixos': 'nl',
+    'bélgica': 'be', 'belgium': 'be',
+    'suíça': 'ch', 'switzerland': 'ch',
+    'suécia': 'se', 'sweden': 'se',
+    'noruega': 'no', 'norway': 'no',
+    'dinamarca': 'dk', 'denmark': 'dk',
+    'finlândia': 'fi', 'finland': 'fi',
+    'áustria': 'at', 'austria': 'at',
+    'nova zelândia': 'nz', 'new zealand': 'nz',
+    'filipinas': 'ph', 'philippines': 'ph',
+    'tailândia': 'th', 'thailand': 'th',
+    'indonésia': 'id', 'indonesia': 'id',
+    'guatemala': 'gt',
+    'honduras': 'hn',
+    'costa rica': 'cr',
+    'panamá': 'pa', 'panama': 'pa',
+    'porto rico': 'pr', 'puerto rico': 'pr',
+    'república dominicana': 'do', 'dominican republic': 'do',
+    'cuba': 'cu',
+    'jamaica': 'jm',
+    'nicarágua': 'ni', 'nicaragua': 'ni',
+    'el salvador': 'sv',
+    'israel': 'il',
+    'turquia': 'tr', 'turkey': 'tr',
+    'egito': 'eg', 'egypt': 'eg',
+    'nigéria': 'ng', 'nigeria': 'ng',
+    'africa do sul': 'za', 'south africa': 'za',
+    'ghana': 'gh',
+    'quênia': 'ke', 'kenya': 'ke',
+    'haiti': 'ht',
+    'trinidad e tobago': 'tt',
+    'guiana': 'gy',
+    'suriname': 'sr',
+    'senegal': 'sn',
+    'marrocos': 'ma', 'morocco': 'ma',
+    'tunísia': 'tn', 'tunisia': 'tn',
+    'angola': 'ao',
+    'moçambique': 'mz',
+    'cabo verde': 'cv',
+    'taiwan': 'tw',
+    'hong kong': 'hk',
+    'singapura': 'sg', 'singapore': 'sg',
+    'malásia': 'my', 'malaysia': 'my',
+    'vietnã': 'vn', 'vietnam': 'vn',
+    'nova caledônia': 'nc',
+    'tahiti': 'pf', 'polinésia francesa': 'pf',
+  };
+  return map[name.trim().toLowerCase()] || null;
+}
+
+// ── Flag image component ───────────────────────────────────────────────────
+function FlagImg({ country, size = 24 }) {
+  const code = countryCode(country);
+  if (!code) {
+    return (
+      <span style={{
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        width: size + 8, height: Math.round(size * 0.67),
+        background: 'rgba(255,255,255,.08)', borderRadius: 3,
+        fontSize: 9, fontWeight: 800, color: 'rgba(255,255,255,.3)',
+        letterSpacing: .5,
+      }}>?</span>
+    );
+  }
+  return (
+    <img
+      src={`https://flagcdn.com/w40/${code}.png`}
+      srcSet={`https://flagcdn.com/w40/${code}.png 1x, https://flagcdn.com/w80/${code}.png 2x`}
+      width={size + 8}
+      height={Math.round((size + 8) * 0.67)}
+      alt={country}
+      style={{ borderRadius: 3, objectFit: 'cover', flexShrink: 0, display: 'block' }}
+      onError={e => { e.target.style.display = 'none'; }}
+    />
+  );
+}
+
+// ── Normalize country name for grouping ────────────────────────────────────
+function normalizeCountryDisplay(name = '') {
+  const overrides = {
+    'brasil': 'Brasil',
+    'brazil': 'Brasil',
+    'estados unidos': 'Estados Unidos',
+    'eua': 'Estados Unidos',
+    'usa': 'Estados Unidos',
+    'united states': 'Estados Unidos',
+    'méxico': 'México',
+    'mexico': 'México',
+    'irlanda': 'Irlanda',
+    'ireland': 'Irlanda',
+    'perú': 'Peru',
+    'peru': 'Peru',
+    'polônia': 'Polônia',
+    'poland': 'Polônia',
+    'alemanha': 'Alemanha',
+    'germany': 'Alemanha',
+    'argentina': 'Argentina',
+    'chile': 'Chile',
+    'portugal': 'Portugal',
+    'canadá': 'Canadá',
+    'canada': 'Canadá',
+    'colômbia': 'Colômbia',
+    'colombia': 'Colômbia',
+    'venezuela': 'Venezuela',
+    'paraguai': 'Paraguai',
+    'uruguai': 'Uruguai',
+    'chile': 'Chile',
+    'equador': 'Equador',
+    'bolívia': 'Bolívia',
+    'coreia do sul': 'Coreia do Sul',
+    'south korea': 'Coreia do Sul',
+    'japão': 'Japão',
+    'japan': 'Japão',
+    'china': 'China',
+    'itália': 'Itália',
+    'italy': 'Itália',
+    'espanha': 'Espanha',
+    'spain': 'Espanha',
+    'austrália': 'Austrália',
+    'australia': 'Austrália',
+    'reino unido': 'Reino Unido',
+    'uk': 'Reino Unido',
+    'united kingdom': 'Reino Unido',
+    'frança': 'França',
+    'france': 'França',
+  };
+  const key = name.trim().toLowerCase();
+  return overrides[key] || name.trim();
+}
+
+// ── Group teams by country ─────────────────────────────────────────────────
+function groupByCountry(teams) {
+  const map = {};
+  teams.forEach(t => {
+    const raw = (t.country || 'Desconhecido').trim();
+    // Normalize so "BRASIL" and "Brasil" group together
+    const display = normalizeCountryDisplay(raw);
+    const key = display.toLowerCase();
+    if (!map[key]) map[key] = { country: display, total: 0, masc: 0, fem: 0, sub12: 0, sub15: 0 };
+    const cat = (t.category || '').toLowerCase();
+    const hasMasc  = cat.includes('masculino') ? 1 : 0;
+    const hasFem   = cat.includes('feminino')  ? 1 : 0;
+    const hasSub12 = cat.includes('sub 12')    ? 1 : 0;
+    const hasSub15 = cat.includes('sub 15')    ? 1 : 0;
+    map[key].masc  += hasMasc;
+    map[key].fem   += hasFem;
+    map[key].sub12 += hasSub12;
+    map[key].sub15 += hasSub15;
+    map[key].total += hasMasc + hasFem + hasSub12 + hasSub15;
+  });
+  return Object.values(map).sort((a, b) => b.total - a.total);
+}
+
+// ── Category pill ──────────────────────────────────────────────────────────
+const CAT_COLORS = {
+  masc:  { bg: 'rgba(77,138,255,.15)',  border: 'rgba(77,138,255,.3)',  text: '#4d8aff',  label: 'Masc' },
+  fem:   { bg: 'rgba(232,77,255,.15)',  border: 'rgba(232,77,255,.3)',  text: '#e84dff',  label: 'Fem'  },
+  sub12: { bg: 'rgba(255,180,0,.12)',   border: 'rgba(255,180,0,.3)',   text: '#ffb400',  label: 'Sub 12' },
+  sub15: { bg: 'rgba(32,227,63,.12)',   border: 'rgba(32,227,63,.28)',  text: '#20e33f',  label: 'Sub 15' },
+};
+
+function CatPill({ count, type }) {
+  const c = CAT_COLORS[type];
+  if (!count) return (
+    <span style={{ fontSize: 11, color: 'rgba(255,255,255,.15)', fontWeight: 600, minWidth: 50, textAlign: 'center' }}>—</span>
+  );
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 4, minWidth: 50, justifyContent: 'center',
+      padding: '3px 8px', borderRadius: 20,
+      background: c.bg, border: `1px solid ${c.border}`,
+      fontSize: 11, fontWeight: 800, color: c.text, letterSpacing: .3,
+    }}>
+      {count} <span style={{ fontSize: 9, fontWeight: 600, opacity: .8 }}>{c.label}</span>
+    </span>
+  );
+}
+
+// ── Shared helpers ─────────────────────────────────────────────────────────
 const CATS = [
   { key: 'masc',  label: 'Masculino', match: 'masculino' },
   { key: 'fem',   label: 'Feminino',  match: 'feminino'  },
@@ -22,22 +232,7 @@ function catBreakdown(teams) {
   }));
 }
 
-function StatBlock({ label, value, color = '#fff', dim = false }) {
-  return (
-    <div style={{ textAlign: 'center' }}>
-      <div style={{
-        fontSize: 28, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1,
-        color: value > 0 ? color : 'rgba(255,255,255,.15)',
-      }}>
-        {value ?? '—'}
-      </div>
-      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginTop: 5 }}>
-        {label}
-      </div>
-    </div>
-  );
-}
-
+// ── Panel component ────────────────────────────────────────────────────────
 function Panel({ title, badge, badgeColor, total, totalLabel, cats, catKey, loading }) {
   return (
     <div style={{
@@ -46,7 +241,6 @@ function Panel({ title, badge, badgeColor, total, totalLabel, cats, catKey, load
       borderRadius: 22, padding: '28px 30px',
       boxShadow: `0 0 60px ${badgeColor}08`,
     }}>
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 22 }}>
         <span style={{
           fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase',
@@ -55,8 +249,6 @@ function Panel({ title, badge, badgeColor, total, totalLabel, cats, catKey, load
         }}>{badge}</span>
         <span style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>{title}</span>
       </div>
-
-      {/* Big number */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 24, marginBottom: 24 }}>
         <div>
           <div style={{
@@ -68,8 +260,7 @@ function Panel({ title, badge, badgeColor, total, totalLabel, cats, catKey, load
           <div style={{ fontSize: 11, color: 'rgba(255,255,255,.3)', marginTop: 4 }}>{totalLabel}</div>
         </div>
         {cats && (
-          <div style={{}}>
-
+          <div>
             <div style={{
               fontSize: 72, fontWeight: 900, letterSpacing: -4, lineHeight: 1,
               color: loading ? 'rgba(255,255,255,.1)' : '#f4ff00',
@@ -82,8 +273,6 @@ function Panel({ title, badge, badgeColor, total, totalLabel, cats, catKey, load
           </div>
         )}
       </div>
-
-      {/* Divider */}
       <div style={{ borderTop: '1px solid rgba(255,255,255,.06)', paddingTop: 20 }}>
         <div className="dash-grid-cats">
           {cats.map(c => (
@@ -108,6 +297,7 @@ function Panel({ title, badge, badgeColor, total, totalLabel, cats, catKey, load
   );
 }
 
+// ── Page ───────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const [teams, setTeams] = useState(null);
 
@@ -117,40 +307,34 @@ export default function DashboardPage() {
 
   const loading = teams === null;
 
-  const preInscritos  = (teams || []).filter(t => t.status === 'pre_inscrito');
-  const confirmados   = (teams || []).filter(t => t.status === 'inscricao_confirmada');
-  const pendentes     = (teams || []).filter(t => t.status === 'pendente_analise').length;
-  const rejeitados    = (teams || []).filter(t => t.status === 'rejeitado').length;
-  const emRevisao     = (teams || []).filter(t => t.status === 'em_revisao').length;
+  const preInscritos = (teams || []).filter(t => t.status === 'pre_inscrito');
+  const confirmados  = (teams || []).filter(t => t.status === 'inscricao_confirmada');
+  const pendentes    = (teams || []).filter(t => t.status === 'pendente_analise').length;
+  const rejeitados   = (teams || []).filter(t => t.status === 'rejeitado').length;
+  const emRevisao    = (teams || []).filter(t => t.status === 'em_revisao').length;
 
   const preCats  = catBreakdown(preInscritos);
   const confCats = catBreakdown(confirmados);
 
-  const allAthletes = [...preInscritos, ...confirmados];
+  const allAthletes   = [...preInscritos, ...confirmados];
   const totalAthletes = allAthletes.reduce((s, t) => s + (parseInt(t.athletes_count) || 0), 0);
 
-  // Per-category athlete counts (uses specific fields when available, else 0)
-  const athByCat = {
-    masc:  allAthletes.reduce((s, t) => s + (parseInt(t.athletes_masc)  || 0), 0),
-    fem:   allAthletes.reduce((s, t) => s + (parseInt(t.athletes_fem)   || 0), 0),
-    sub15: allAthletes.reduce((s, t) => s + (parseInt(t.athletes_sub15) || 0), 0),
-    sub12: allAthletes.reduce((s, t) => s + (parseInt(t.athletes_sub12) || 0), 0),
-  };
-  const hasCatData = Object.values(athByCat).some(v => v > 0);
+  const countries = groupByCountry([...preInscritos, ...confirmados]);
 
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", color: '#fff' }}>
       <style>{`
-        .dash-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-        .dash-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
-        .dash-grid-cats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .dash-grid-2    { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .dash-grid-3    { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 28px; }
+        .dash-grid-cats { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+        .dash-ctr { cursor: default; transition: background .15s; }
+        .dash-ctr:hover { background: rgba(255,255,255,.04) !important; }
         @media (max-width: 640px) {
-          .dash-grid-2 { grid-template-columns: 1fr !important; }
-          .dash-grid-3 { grid-template-columns: 1fr 1fr !important; }
-          .dash-grid-cats { grid-template-columns: repeat(2, 1fr) !important; }
-          .dash-title { font-size: 32px !important; letter-spacing: -1px !important; }
-          .dash-big-num { font-size: 52px !important; }
-          .dash-panel { padding: 20px 18px !important; }
+          .dash-grid-2    { grid-template-columns: 1fr !important; }
+          .dash-grid-3    { grid-template-columns: 1fr 1fr !important; }
+          .dash-grid-cats { grid-template-columns: repeat(2,1fr) !important; }
+          .dash-title     { font-size: 32px !important; letter-spacing: -1px !important; }
+          .hide-sm        { display: none !important; }
         }
       `}</style>
 
@@ -166,33 +350,18 @@ export default function DashboardPage() {
 
       {/* Pré-inscritos + Confirmados */}
       <div className="dash-grid-2">
-        <Panel
-          title="Times Pré-inscritos"
-          badge="Pré-inscritos"
-          badgeColor="#a855f7"
-          total={preInscritos.length}
-          totalLabel="times registrados"
-          cats={preCats}
-          catKey="teams"
-          loading={loading}
-        />
-        <Panel
-          title="Times Confirmados"
-          badge="Confirmados"
-          badgeColor="#20e33f"
-          total={confirmados.length}
-          totalLabel="inscrições confirmadas"
-          cats={confCats}
-          catKey="teams"
-          loading={loading}
-        />
+        <Panel title="Times Pré-inscritos" badge="Pré-inscritos" badgeColor="#a855f7"
+          total={preInscritos.length} totalLabel="times registrados"
+          cats={preCats} catKey="teams" loading={loading} />
+        <Panel title="Times Confirmados" badge="Confirmados" badgeColor="#20e33f"
+          total={confirmados.length} totalLabel="inscrições confirmadas"
+          cats={confCats} catKey="teams" loading={loading} />
       </div>
 
       {/* Atletas */}
       <div style={{
         background: 'linear-gradient(145deg, rgba(6,27,58,.55), rgba(2,8,22,.5))',
-        border: '1px solid rgba(13,75,255,.22)', borderRadius: 22, padding: '28px 30px',
-        marginBottom: 16,
+        border: '1px solid rgba(13,75,255,.22)', borderRadius: 22, padding: '28px 30px', marginBottom: 16,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 22 }}>
           <span style={{
@@ -213,11 +382,11 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Pendentes + Rejeitados + Em Revisão */}
+      {/* Pendentes + Em Revisão + Rejeitados */}
       <div className="dash-grid-3">
         {[
-          { label: 'Pendentes de Análise', value: pendentes, color: '#f4ff00', href: '/admin/teams?status=pendente_analise' },
-          { label: 'Em Revisão',           value: emRevisao, color: '#a855f7', href: '/admin/teams?status=em_revisao'       },
+          { label: 'Pendentes de Análise', value: pendentes,  color: '#f4ff00', href: '/admin/teams?status=pendente_analise' },
+          { label: 'Em Revisão',           value: emRevisao,  color: '#a855f7', href: '/admin/teams?status=em_revisao'       },
           { label: 'Rejeitados',           value: rejeitados, color: '#ff4444', href: '/admin/teams?status=rejeitado'        },
         ].map(s => (
           <a key={s.label} href={s.href} style={{ textDecoration: 'none' }}>
@@ -241,6 +410,147 @@ export default function DashboardPage() {
         ))}
       </div>
 
+      {/* ── Países ──────────────────────────────────────────────────────────── */}
+      <div style={{
+        background: 'linear-gradient(145deg, rgba(6,27,58,.55), rgba(2,8,22,.5))',
+        border: '1px solid rgba(255,255,255,.08)',
+        borderRadius: 22, padding: '28px 30px', marginBottom: 16,
+      }}>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
+          <span style={{
+            fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase',
+            padding: '4px 10px', borderRadius: 6,
+            background: 'rgba(244,255,0,.1)', color: '#f4ff00', border: '1px solid rgba(244,255,0,.25)',
+          }}>Países</span>
+          <span style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>Times por País</span>
+          {!loading && (
+            <span style={{
+              marginLeft: 'auto', fontSize: 12, fontWeight: 700,
+              color: 'rgba(255,255,255,.28)', letterSpacing: .3,
+            }}>
+              {countries.length} {countries.length === 1 ? 'país' : 'países'}
+            </span>
+          )}
+        </div>
+
+        {loading ? (
+          <div style={{ padding: '32px 0', textAlign: 'center', color: 'rgba(255,255,255,.2)', fontSize: 13 }}>
+            Carregando...
+          </div>
+        ) : countries.length === 0 ? (
+          <div style={{ padding: '32px 0', textAlign: 'center', color: 'rgba(255,255,255,.2)', fontSize: 13 }}>
+            Nenhum time registrado
+          </div>
+        ) : (
+          <>
+            {/* Column headers */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 72px 120px 120px 120px 120px',
+              padding: '6px 16px 10px',
+              fontSize: 9, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase',
+              color: 'rgba(255,255,255,.2)',
+              borderBottom: '1px solid rgba(255,255,255,.06)',
+              marginBottom: 6,
+            }}>
+              <span>País</span>
+              <span style={{ textAlign: 'center' }}>Equipes</span>
+              <span className="hide-sm" style={{ textAlign: 'center' }}>Masculino</span>
+              <span className="hide-sm" style={{ textAlign: 'center' }}>Feminino</span>
+              <span style={{ textAlign: 'center' }}>Sub 12</span>
+              <span style={{ textAlign: 'center' }}>Sub 15</span>
+            </div>
+
+            {/* Rows */}
+            {countries.map((c, i) => (
+              <div
+                key={c.country}
+                className="dash-ctr"
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 72px 120px 120px 120px 120px',
+                  padding: '12px 16px',
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  background: i === 0
+                    ? 'rgba(244,255,0,.04)'
+                    : i % 2 === 0 ? 'rgba(255,255,255,.02)' : 'transparent',
+                  borderLeft: i === 0 ? '2px solid rgba(244,255,0,.35)' : '2px solid transparent',
+                  marginBottom: 2,
+                }}
+              >
+                {/* Flag + name */}
+                <span style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <FlagImg country={c.country} size={22} />
+                  <span style={{
+                    fontSize: 13, fontWeight: i === 0 ? 800 : 700,
+                    color: i === 0 ? '#fff' : 'rgba(255,255,255,.85)',
+                  }}>
+                    {c.country}
+                  </span>
+                  {i === 0 && (
+                    <span style={{
+                      fontSize: 9, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase',
+                      padding: '2px 7px', borderRadius: 4,
+                      background: 'rgba(244,255,0,.12)', color: '#f4ff00', border: '1px solid rgba(244,255,0,.25)',
+                    }}>
+                      #1
+                    </span>
+                  )}
+                </span>
+
+                {/* Total */}
+                <span style={{
+                  textAlign: 'center',
+                  fontSize: i === 0 ? 22 : 18,
+                  fontWeight: 900, letterSpacing: -1,
+                  color: i === 0 ? '#f4ff00' : 'rgba(255,255,255,.9)',
+                }}>
+                  {c.total}
+                </span>
+
+                {/* Masc */}
+                <span className="hide-sm" style={{ textAlign: 'center' }}>
+                  <CatPill count={c.masc} type="masc" />
+                </span>
+
+                {/* Fem */}
+                <span className="hide-sm" style={{ textAlign: 'center' }}>
+                  <CatPill count={c.fem} type="fem" />
+                </span>
+
+                {/* Sub 12 */}
+                <span style={{ textAlign: 'center' }}>
+                  <CatPill count={c.sub12} type="sub12" />
+                </span>
+
+                {/* Sub 15 */}
+                <span style={{ textAlign: 'center' }}>
+                  <CatPill count={c.sub15} type="sub15" />
+                </span>
+              </div>
+            ))}
+
+            {/* Footer total */}
+            <div style={{
+              marginTop: 12, paddingTop: 12,
+              borderTop: '1px solid rgba(255,255,255,.06)',
+              display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8,
+            }}>
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,.25)', fontWeight: 600 }}>Total geral:</span>
+              <span style={{ fontSize: 14, fontWeight: 900, color: '#f4ff00', letterSpacing: -.5 }}>
+                {countries.reduce((s, c) => s + c.total, 0)} equipes
+              </span>
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,.2)' }}>em</span>
+              <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', letterSpacing: -.5 }}>
+                {countries.length} {countries.length === 1 ? 'país' : 'países'}
+              </span>
+            </div>
+          </>
+        )}
+      </div>
+
       {/* Quick access */}
       <div style={{
         padding: '18px 22px', background: 'rgba(255,255,255,.02)',
@@ -249,8 +559,8 @@ export default function DashboardPage() {
       }}>
         <span style={{ fontSize: 12, color: 'rgba(255,255,255,.3)', fontWeight: 600 }}>Acesso rápido →</span>
         {[
-          { href: '/admin/teams', label: 'Ver CRM' },
-          { href: '/admin/crm',   label: 'Comunicação' },
+          { href: '/admin/teams', label: 'Ver CRM'      },
+          { href: '/admin/crm',   label: 'Comunicação'  },
         ].map(b => (
           <a key={b.href} href={b.href} style={{
             padding: '7px 16px', borderRadius: 9, fontSize: 12, fontWeight: 700,
