@@ -41,6 +41,7 @@ const args = process.argv.slice(2);
 const isTest = args.includes('--test');
 const isSend = args.includes('--send');
 const langArg = (args.find(a => a.startsWith('--lang=')) || '').replace('--lang=', '') || 'pt';
+const toArg   = (args.find(a => a.startsWith('--to='))   || '').replace('--to=', '') || '';
 
 if (!isTest && !isSend) {
   console.log('Uso:\n  node scripts/send-welcome-email.mjs --test [--lang=pt|en|es]\n  node scripts/send-welcome-email.mjs --send');
@@ -170,8 +171,9 @@ async function main() {
     const c = COPY[langArg] || COPY.pt;
     const subject = `[TESTE] ${c.subject}`;
     const html = buildHtml(c, 'Bruno');
-    console.log(`\n📧 Enviando email de teste para ${TEST_TO} (idioma: ${langArg})...`);
-    const result = await sendEmail(TEST_TO, subject, html);
+    const dest = toArg || TEST_TO;
+    console.log(`\n📧 Enviando email para ${dest} (idioma: ${langArg})...`);
+    const result = await sendEmail(dest, subject, html);
     if (result.id) {
       console.log(`✅ Enviado! ID Resend: ${result.id}`);
     } else {

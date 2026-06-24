@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import '../../../../admin/admin.css';
+import '../../../admin/admin.css';
 
 export default function AdminSolicitarPage() {
   const [form, setForm] = useState({ name: '', email: '', role: '', justification: '' });
