@@ -448,6 +448,7 @@ export default function AtletasPortalPage() {
     emergency_name: '', emergency_phone: '', emergency_relation: '',
     position: '', shirt_size: '',
     photo_url: '', instagram: '', tiktok: '',
+    birthdate: '', history: '',
     terms_health: false, terms_image: false, terms_rules: false,
     terms_privacy: false, terms_conduct: false,
   });
@@ -493,6 +494,7 @@ export default function AtletasPortalPage() {
             emergency_relation: p.emergency_relation || '',
             position: p.position || '', shirt_size: p.shirt_size || '',
             photo_url: p.photo_url || '', instagram: p.instagram || '', tiktok: p.tiktok || '',
+            birthdate: p.birthdate || '', history: p.history || '',
             terms_health: !!p.terms_health, terms_image: !!p.terms_image,
             terms_rules: !!p.terms_rules, terms_privacy: !!p.terms_privacy, terms_conduct: !!p.terms_conduct,
           });
@@ -714,21 +716,54 @@ export default function AtletasPortalPage() {
             {/* Dados pessoais */}
             <div style={glass({ padding: '22px' })}>
               <div style={sectionHead}>{t('personalSection', lang)} <span style={{ color: '#ff6666' }}>*</span></div>
+
+              {/* Locked badge */}
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,.3)', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span>🔒</span> Campos preenchidos no cadastro não podem ser alterados
+              </div>
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <Field label={t('fullName', lang)}>
-                  <input style={{ ...inp(''), opacity: .45 }} value={athlete.name} readOnly />
-                </Field>
+                {/* Row 1: Nome + E-mail (locked) */}
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
+                  <Field label={t('fullName', lang)}>
+                    <div style={{ position: 'relative' }}>
+                      <input style={{ ...inp(''), opacity: .5, paddingRight: 32 }} value={athlete.name} readOnly />
+                      <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 12 }}>🔒</span>
+                    </div>
+                  </Field>
+                  <Field label="E-mail">
+                    <div style={{ position: 'relative' }}>
+                      <input style={{ ...inp(''), opacity: .5, paddingRight: 32 }} value={athlete.email || ''} readOnly />
+                      <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 12 }}>🔒</span>
+                    </div>
+                  </Field>
+                </div>
+
+                {/* Row 2: Nascimento + WhatsApp (locked) */}
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
+                  <Field label="Data de nascimento">
+                    <div style={{ position: 'relative' }}>
+                      <input style={{ ...inp(''), opacity: .5, paddingRight: 32 }} value={profile.birthdate || ''} readOnly />
+                      <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 12 }}>🔒</span>
+                    </div>
+                  </Field>
+                  <Field label="WhatsApp">
+                    <div style={{ position: 'relative' }}>
+                      <input style={{ ...inp(''), opacity: .5, paddingRight: 32 }} value={profile.whatsapp || profile.phone || ''} readOnly />
+                      <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 12 }}>🔒</span>
+                    </div>
+                  </Field>
+                </div>
+
+                {/* Row 3: Nationality (editable) + Document */}
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
                   <Field label={t('nationality', lang)}>
                     <input style={inp('nat')} {...ff('nat')} value={profile.nationality} onChange={e => set('nationality', e.target.value)} placeholder={t('nationalityPh', lang)} />
                   </Field>
-                  <Field label={t('phone', lang)}>
-                    <input style={inp('phone')} {...ff('phone')} value={profile.phone} onChange={e => set('phone', e.target.value)} placeholder="+55 61 9 9999-9999" />
+                  <Field label={t('document', lang)}>
+                    <input style={inp('doc')} {...ff('doc')} value={profile.document} onChange={e => set('document', e.target.value)} placeholder={t('documentPh', lang)} />
                   </Field>
                 </div>
-                <Field label={t('document', lang)}>
-                  <input style={inp('doc')} {...ff('doc')} value={profile.document} onChange={e => set('document', e.target.value)} placeholder={t('documentPh', lang)} />
-                </Field>
               </div>
             </div>
 
@@ -759,7 +794,7 @@ export default function AtletasPortalPage() {
             {/* Esporte */}
             <div style={glass({ padding: '22px' })}>
               <div style={sectionHead}>{t('sportSection', lang)} <span style={{ color: '#ff6666' }}>*</span></div>
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginBottom: 12 }}>
                 <Field label={t('position', lang)}>
                   <select style={selectSt} value={profile.position} onChange={e => set('position', e.target.value)}>
                     <option value="" style={{ background: '#0a1628' }}>{t('positionPh', lang)}</option>
@@ -773,6 +808,16 @@ export default function AtletasPortalPage() {
                   </select>
                 </Field>
               </div>
+
+              {/* Histórico esportivo */}
+              <Field label="Histórico esportivo">
+                <textarea
+                  style={{ ...inp('history'), minHeight: 100, resize: 'vertical', lineHeight: 1.6 }}
+                  value={profile.history}
+                  onChange={e => set('history', e.target.value)}
+                  placeholder="Conte sobre sua experiência com flag football: times que jogou, títulos, posições, tempo de prática..."
+                />
+              </Field>
             </div>
 
             {/* Redes sociais */}

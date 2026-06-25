@@ -9,87 +9,146 @@ function hashPassword(password) {
   return `${salt}:${hash}`;
 }
 
+async function uploadPhoto(supabase, file, athleteId) {
+  try {
+    const allowed = ['image/png', 'image/jpeg', 'image/jpg'];
+    if (!allowed.includes(file.type)) return null;
+    const bytes = await file.arrayBuffer();
+    if (bytes.byteLength > 2 * 1024 * 1024) return null;
+    const ext  = file.name.split('.').pop().toLowerCase() || 'jpg';
+    const path = `athletes/${athleteId}/profile.${ext}`;
+    const { error } = await supabase.storage
+      .from('portal-media')
+      .upload(path, bytes, { contentType: file.type, upsert: true });
+    if (error) { console.error('photo upload error', error); return null; }
+    const { data } = supabase.storage.from('portal-media').getPublicUrl(path);
+    return data.publicUrl;
+  } catch (e) {
+    console.error('photo upload exception', e);
+    return null;
+  }
+}
+
 export async function POST(req) {
   try {
-    const body = await req.json();
-    const { name, email, password, language = 'pt' } = body;
+    // Accept FormData (new) or JSON (legacy)
+    const ct = req.headers.get('content-type') || '';
+    let name, email, password, language, birthdate, nationality, whatsapp,
+        instagram, position, history, photoFile,
+        terms_health, terms_image, terms_rules, terms_privacy, terms_conduct;
+
+    if (ct.includes('multipart/form-data')) {
+      const fd   = await req.formData();
+      name       = fd.get('name');
+      email      = fd.get('email');
+      password   = fd.get('password');
+      language   = fd.get('language') || 'pt';
+      birthdate  = fd.get('birthdate');
+      nationality= fd.get('nationality');
+      whatsapp   = fd.get('whatsapp');
+      instagram  = fd.get('instagram');
+      position   = fd.get('position');
+      history    = fd.get('history');
+      terms_health  = fd.get('terms_health')  === 'true';
+      terms_image   = fd.get('terms_image')   === 'true';
+      terms_rules   = fd.get('terms_rules')   === 'true';
+      terms_privacy = fd.get('terms_privacy') === 'true';
+      terms_conduct = fd.get('terms_conduct') === 'true';
+      const photo = fd.get('photo');
+      if (photo && photo.size > 0) photoFile = photo;
+    } else {
+      const body = await req.json();
+      ({ name, email, password, language = 'pt', birthdate, nationality, whatsapp,
+         instagram, position, history } = body);
+    }
 
     if (!name || !email || !password)
       return NextResponse.json({ ok: false, message: 'Campos obrigatórios faltando.' }, { status: 400 });
     if (password.length < 8)
       return NextResponse.json({ ok: false, message: 'Senha deve ter pelo menos 8 caracteres.' }, { status: 400 });
 
-    const supabase = getSupabaseAdmin();
+    const supabase   = getSupabaseAdmin();
     const cleanEmail = email.toLowerCase().trim();
 
-    // 1. Check if already registered
+    // 1. Already registered?
     const { data: existing } = await supabase
-      .from('portal_athletes')
-      .select('id')
-      .eq('email', cleanEmail)
-      .single();
+      .from('portal_athletes').select('id').eq('email', cleanEmail).single();
     if (existing)
       return NextResponse.json({ ok: false, code: 'ALREADY_EXISTS', message: 'Este e-mail já está cadastrado.' }, { status: 409 });
 
-    // 2. Check if athlete email is on any approved team's roster
+    // 2. Email on roster?
     const { data: rosterEntry } = await supabase
       .from('team_athletes')
       .select('id, team_id, name, category, portal_teams(id, club_name, status)')
-      .ilike('email', cleanEmail)
-      .single();
+      .ilike('email', cleanEmail).single();
 
     if (!rosterEntry)
       return NextResponse.json({
-        ok: false,
-        code: 'NOT_IN_ROSTER',
+        ok: false, code: 'NOT_IN_ROSTER',
         message: 'Seu e-mail não foi encontrado na lista de atletas de nenhum clube. Solicite ao responsável do seu clube que te adicione na lista.',
       }, { status: 403 });
 
     const teamStatus = rosterEntry.portal_teams?.status;
     if (teamStatus && teamStatus !== 'approved')
       return NextResponse.json({
-        ok: false,
-        code: 'TEAM_NOT_APPROVED',
+        ok: false, code: 'TEAM_NOT_APPROVED',
         message: 'O clube ao qual você pertence ainda não foi aprovado no portal. Aguarde a aprovação.',
       }, { status: 403 });
 
-    // 3. Create athlete account
-    const password_hash = hashPassword(password);
-    const verification_token = randomUUID();
-    const token_expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    // 3. Create account
+    const password_hash        = hashPassword(password);
+    const verification_token   = randomUUID();
+    const token_expires        = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-    const { error } = await supabase.from('portal_athletes').insert({
+    const { data: athlete, error } = await supabase.from('portal_athletes').insert({
       team_athlete_id: rosterEntry.id,
-      team_id: rosterEntry.team_id,
-      name: name.trim(),
-      email: cleanEmail,
+      team_id:         rosterEntry.team_id,
+      name:            name.trim(),
+      email:           cleanEmail,
       password_hash,
-      email_verified: false,
-      email_verification_token: verification_token,
-      email_token_expires_at: token_expires,
-      status: 'pending_email',
-    });
+      email_verified:              false,
+      email_verification_token:    verification_token,
+      email_token_expires_at:      token_expires,
+      status:          'pending_email',
+      birthdate:       birthdate  || null,
+      nationality:     nationality|| null,
+      whatsapp:        whatsapp   || null,
+      instagram:       instagram  || null,
+      position:        position   || null,
+      history:         history    || null,
+      terms_health:    terms_health  || false,
+      terms_image:     terms_image   || false,
+      terms_rules:     terms_rules   || false,
+      terms_privacy:   terms_privacy || false,
+      terms_conduct:   terms_conduct || false,
+    }).select('id').single();
+
     if (error) throw error;
 
-    // 4. Send verification email
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://brasilflagworldchampionship.com';
-    const verifyUrl = `${siteUrl}/api/portal/atletas/verify-email?token=${verification_token}`;
+    // 4. Upload photo
+    if (photoFile && athlete?.id) {
+      const photo_url = await uploadPhoto(supabase, photoFile, athlete.id);
+      if (photo_url) await supabase.from('portal_athletes').update({ photo_url }).eq('id', athlete.id);
+    }
 
+    // 5. Send verification email
+    const siteUrl  = process.env.NEXT_PUBLIC_SITE_URL || 'https://brasilflagworldchampionship.com';
+    const verifyUrl = `${siteUrl}/api/portal/atletas/verify-email?token=${verification_token}`;
     try {
       const resend = getResend();
       await resend.emails.send({
         from: fromEmail,
-        to: email,
+        to:   email,
         subject: 'BFWC 2026 — Confirme seu e-mail (Atleta)',
         html: `
         <div style="font-family:Inter,sans-serif;background:#031020;color:#fff;padding:40px 24px;max-width:560px;margin:0 auto;border-radius:16px">
-          <h1 style="font-size:28px;font-weight:900;margin:0 0 6px">BFWC <span style="color:#20e33f">2026</span></h1>
+          <h1 style="font-size:28px;font-weight:900;margin:0 0 6px">BFWC <span style="color:#009c3b">2026</span></h1>
           <p style="color:rgba(255,255,255,.4);font-size:13px;margin:0 0 28px">Área dos Atletas</p>
           <h2 style="font-size:20px;font-weight:800;margin:0 0 12px">Confirme seu e-mail</h2>
           <p style="color:#c8d8f5;font-size:14px;line-height:1.6;margin:0 0 24px">
             Olá, <strong>${name}</strong>! Confirme seu e-mail para acessar o portal de atletas do BFWC 2026.
           </p>
-          <a href="${verifyUrl}" style="display:inline-block;padding:14px 32px;background:#20e33f;color:#031020;font-weight:900;font-size:14px;text-decoration:none;border-radius:10px;letter-spacing:1px;text-transform:uppercase">
+          <a href="${verifyUrl}" style="display:inline-block;padding:14px 32px;background:#009c3b;color:#fff;font-weight:900;font-size:14px;text-decoration:none;border-radius:10px;letter-spacing:1px;text-transform:uppercase">
             Confirmar e-mail →
           </a>
           <p style="color:rgba(255,255,255,.3);font-size:12px;margin:24px 0 0">Este link expira em 24 horas.</p>

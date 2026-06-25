@@ -40,12 +40,11 @@ export default function AdminShell({ children, topbarContent, role }) {
 
       {/* Topbar */}
       <header className="admin-topbar" style={{
-        position: 'sticky', top: 0, zIndex: 200,
+        position: 'sticky', top: 0, zIndex: 200, isolation: 'isolate',
         height: 58, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 32px',
-        background: 'rgba(3,16,32,.97)',
-        borderBottom: '1px solid rgba(255,255,255,.07)',
-        backdropFilter: 'blur(20px)',
+        background: '#031020',
+        borderBottom: '1px solid rgba(255,255,255,.08)',
         fontFamily: "'Inter', sans-serif",
       }}>
         {/* Left: hamburger + logo */}
@@ -90,7 +89,7 @@ export default function AdminShell({ children, topbarContent, role }) {
       </header>
 
       {/* Body */}
-      <div style={{ display: 'flex', position: 'relative' }}>
+      <div style={{ display: 'flex', position: 'relative', zIndex: 1 }}>
         {/* Sidebar — desktop */}
         <div className="admin-sidebar-desktop">
           <Sidebar role={role} />
@@ -147,8 +146,24 @@ export default function AdminShell({ children, topbarContent, role }) {
         )}
 
         {/* Main content */}
-        <main className="admin-main" style={{ flex: 1, padding: '32px 36px', minWidth: 0, overflowX: 'hidden' }}>
-          {children}
+        <main className="admin-main" style={{ flex: 1, padding: '32px 36px', minWidth: 0, overflowX: 'hidden', position: 'relative' }}>
+          {/* Decorative hero — fixed to right edge, low opacity */}
+          <div style={{
+            position: 'fixed',
+            right: 0, bottom: 0,
+            width: '38vw', height: '80vh',
+            backgroundImage: "url('/assets/hero-rio-athletes.png')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'center top',
+            opacity: 0.35,
+            pointerEvents: 'none',
+            maskImage: 'linear-gradient(to left, rgba(0,0,0,.6) 0%, transparent 100%), linear-gradient(to top, rgba(0,0,0,.6) 0%, transparent 30%)',
+            WebkitMaskImage: 'linear-gradient(to left, rgba(0,0,0,.6) 0%, transparent 100%)',
+            zIndex: 0,
+          }} />
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            {children}
+          </div>
         </main>
       </div>
 

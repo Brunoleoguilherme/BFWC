@@ -5,9 +5,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 const STAGES = [
   { key: 'novo_lead',         label: 'Novo Lead',        color: '#a855f7', desc: 'Identificado' },
   { key: 'contato_feito',     label: 'Contato Feito',    color: '#4d8aff', desc: 'Primeiro contato' },
-  { key: 'proposta_enviada',  label: 'Proposta Enviada', color: '#f4ff00', desc: 'Aguardando retorno' },
+  { key: 'proposta_enviada',  label: 'Proposta Enviada', color: '#009c3b', desc: 'Aguardando retorno' },
   { key: 'em_negociacao',     label: 'Em Negociação',    color: '#f97316', desc: 'Negociando valores' },
-  { key: 'fechado',           label: 'Fechado ✓',        color: '#20e33f', desc: 'Venda concluída' },
+  { key: 'fechado',           label: 'Fechado ✓',        color: '#009c3b', desc: 'Venda concluída' },
   { key: 'perdido',           label: 'Perdido',          color: '#ff4444', desc: 'Não convertido' },
 ];
 
@@ -59,8 +59,8 @@ function DealModal({ deal, onClose, onUpdate, onRemove, readOnly = false }) {
 
   const inp = {
     width: '100%', padding: '12px 16px', borderRadius: 12, fontSize: 13, boxSizing: 'border-box',
-    background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.1)',
-    color: '#fff', outline: 'none', fontFamily: 'inherit',
+    background: '#f8fafc', border: '1px solid #e2e8f0',
+    color: '#0f172a', outline: 'none', fontFamily: 'inherit',
   };
 
   const fields = [
@@ -73,34 +73,34 @@ function DealModal({ deal, onClose, onUpdate, onRemove, readOnly = false }) {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,.85)',
-      backdropFilter: 'blur(12px)', zIndex: 1000,
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)',
+      backdropFilter: 'blur(6px)', zIndex: 1000,
       display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
       padding: '32px 16px', overflowY: 'auto', fontFamily: "'Inter', sans-serif",
     }} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{
         width: '100%', maxWidth: 700, position: 'relative',
-        background: 'linear-gradient(145deg, #030d1f, #020814)',
-        border: '1px solid rgba(255,255,255,.1)', borderRadius: 28,
-        padding: '44px 48px', boxShadow: '0 60px 180px rgba(0,0,0,.9)',
+        background: '#ffffff',
+        border: '1px solid #e2e8f0', borderRadius: 28,
+        padding: '44px 48px', boxShadow: '0 20px 60px rgba(0,0,0,.15)',
       }}>
         <button onClick={onClose} style={{
           position: 'absolute', top: 20, right: 20, width: 34, height: 34, borderRadius: 10,
-          background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)',
-          color: 'rgba(255,255,255,.4)', fontSize: 15, cursor: 'pointer',
+          background: '#f1f5f9', border: '1px solid #e2e8f0',
+          color: '#64748b', fontSize: 15, cursor: 'pointer',
         }}>✕</button>
 
         {/* Header */}
         <div style={{ marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-            <h2 style={{ fontSize: 24, fontWeight: 900, letterSpacing: -1, color: '#fff', margin: 0 }}>{t.club_name}</h2>
+            <h2 style={{ fontSize: 24, fontWeight: 900, letterSpacing: -1, color: '#0f172a', margin: 0 }}>{t.club_name}</h2>
             <span style={{
               fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase',
               padding: '3px 10px', borderRadius: 6,
               color: stage.color, background: stage.color + '14', border: `1px solid ${stage.color}30`,
             }}>{stage.label}</span>
           </div>
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,.3)', margin: 0 }}>
+          <p style={{ fontSize: 12, color: '#64748b', margin: 0 }}>
             {[t.city, t.country].filter(Boolean).join(' · ')}
           </p>
         </div>
@@ -109,26 +109,26 @@ function DealModal({ deal, onClose, onUpdate, onRemove, readOnly = false }) {
         <div style={{
           display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 40px',
           padding: '20px 24px', borderRadius: 16,
-          background: 'rgba(255,255,255,.025)', border: '1px solid rgba(255,255,255,.06)',
+          background: '#f8fafc', border: '1px solid #e2e8f0',
           marginBottom: 24,
         }}>
           {fields.map(([label, value]) => (
             <div key={label} style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: 2 }}>{label}</div>
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,.8)' }}>{String(value)}</div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 2 }}>{label}</div>
+              <div style={{ fontSize: 13, color: '#0f172a' }}>{String(value)}</div>
             </div>
           ))}
         </div>
 
         {readOnly ? (
-          <div style={{ padding: '14px 18px', borderRadius: 12, background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', fontSize: 12, color: 'rgba(255,255,255,.35)', textAlign: 'center', marginBottom: 20 }}>
+          <div style={{ padding: '14px 18px', borderRadius: 12, background: '#f1f5f9', border: '1px solid #e2e8f0', fontSize: 12, color: '#64748b', textAlign: 'center', marginBottom: 20 }}>
             Modo somente leitura — apenas admins podem alterar dados
           </div>
         ) : (
           <>
             {/* Deal value */}
             <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 6 }}>
+              <label style={{ display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 6 }}>
                 Valor do negócio (R$)
               </label>
               <input style={inp} type="number" placeholder="ex: 15000" value={value} onChange={e => setValue(e.target.value)} />
@@ -136,7 +136,7 @@ function DealModal({ deal, onClose, onUpdate, onRemove, readOnly = false }) {
 
             {/* Notes */}
             <div style={{ marginBottom: 20 }}>
-              <label style={{ display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 6 }}>
+              <label style={{ display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 6 }}>
                 Anotações / Andamento
               </label>
               <textarea
@@ -146,7 +146,7 @@ function DealModal({ deal, onClose, onUpdate, onRemove, readOnly = false }) {
               />
               <button onClick={save} disabled={saving} style={{
                 marginTop: 8, padding: '11px 24px', borderRadius: 12, border: 'none',
-                background: saved ? '#20e33f' : '#f4ff00', color: '#031020',
+                background: saved ? '#009c3b' : '#009c3b', color: '#031020',
                 fontSize: 12, fontWeight: 900, letterSpacing: 1.5, textTransform: 'uppercase',
                 cursor: 'pointer', fontFamily: 'inherit',
               }}>
@@ -154,11 +154,11 @@ function DealModal({ deal, onClose, onUpdate, onRemove, readOnly = false }) {
               </button>
             </div>
 
-            <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,.06)', margin: '20px 0' }} />
+            <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '20px 0' }} />
 
             {/* Move stage */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.25)', marginBottom: 10 }}>Mover para</div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 10 }}>Mover para</div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {STAGES.filter(s => s.key !== deal.status).map(s => (
                   <button key={s.key} onClick={() => moveTo(s.key)} style={{
@@ -170,7 +170,7 @@ function DealModal({ deal, onClose, onUpdate, onRemove, readOnly = false }) {
               </div>
             </div>
 
-            <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,.06)', margin: '20px 0' }} />
+            <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '20px 0' }} />
           </>
         )}
 
@@ -213,17 +213,17 @@ function DealCard({ deal, onClick, isDragging, onDragStart, onDragEnd, readOnly 
       onMouseLeave={() => setHov(false)}
       style={{
         padding: '16px 18px', marginBottom: 10, borderRadius: 14,
-        background: 'linear-gradient(145deg, rgba(6,27,58,.7), rgba(2,8,22,.6))',
-        border: `1px solid ${hov && !isDragging ? stage.color + '40' : 'rgba(255,255,255,.08)'}`,
-        boxShadow: hov && !isDragging ? '0 8px 30px rgba(0,0,0,.5)' : '0 2px 10px rgba(0,0,0,.3)',
+        background: '#ffffff',
+        border: `1px solid ${hov && !isDragging ? stage.color + '40' : '#e2e8f0'}`,
+        boxShadow: hov && !isDragging ? '0 6px 20px rgba(0,0,0,.1)' : '0 1px 4px rgba(0,0,0,.06)',
         transform: hov && !isDragging ? 'translateY(-2px)' : 'none',
         opacity: isDragging ? 0.35 : 1,
         cursor: isDragging ? 'grabbing' : 'grab',
         transition: 'all .15s', userSelect: 'none',
       }}
     >
-      <div style={{ fontSize: 13, fontWeight: 800, color: '#fff', marginBottom: 3 }}>{t.club_name}</div>
-      <div style={{ fontSize: 11, color: 'rgba(255,255,255,.3)', marginBottom: 10 }}>
+      <div style={{ fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 3 }}>{t.club_name}</div>
+      <div style={{ fontSize: 11, color: '#64748b', marginBottom: 10 }}>
         {[t.city, t.country].filter(Boolean).join(' · ')}
       </div>
 
@@ -239,20 +239,20 @@ function DealCard({ deal, onClick, isDragging, onDragStart, onDragEnd, readOnly 
           <span style={{
             fontSize: 9, fontWeight: 700, letterSpacing: .5, textTransform: 'uppercase',
             padding: '2px 7px', borderRadius: 5,
-            color: 'rgba(255,255,255,.4)', background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)',
+            color: '#64748b', background: '#f1f5f9', border: '1px solid #e2e8f0',
           }}>{t.athletes_count} atletas</span>
         )}
       </div>
 
       {deal.deal_value && (
-        <div style={{ fontSize: 13, fontWeight: 800, color: '#20e33f', marginBottom: 6 }}>
+        <div style={{ fontSize: 13, fontWeight: 800, color: '#009c3b', marginBottom: 6 }}>
           {fmt(deal.deal_value)}
         </div>
       )}
 
       {deal.notes && (
         <div style={{
-          fontSize: 11, color: 'rgba(255,255,255,.35)', lineHeight: 1.4,
+          fontSize: 11, color: '#64748b', lineHeight: 1.4,
           overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
         }}>
           {deal.notes}
@@ -305,34 +305,35 @@ export default function BluePandaCRMPage() {
     .reduce((s, d) => s + (Number(d.deal_value) || 0), 0);
 
   return (
-    <div style={{ fontFamily: "'Inter', sans-serif", color: '#fff' }}>
+    <div style={{ fontFamily: "'Inter', sans-serif", color: '#0f172a' }}>
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: '#4d8aff', marginBottom: 8 }}>Blue Panda · CRM</div>
-        <h1 style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1.5, color: '#fff', margin: 0 }}>Pipeline de Vendas</h1>
+        <h1 style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1.5, color: '#0f172a', margin: 0 }}>Pipeline de Vendas</h1>
       </div>
 
       {/* Stats */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 28, flexWrap: 'wrap' }}>
         {[
           { label: 'Total no pipeline', value: deals.filter(d => d.status !== 'perdido').length, color: '#4d8aff' },
-          { label: 'Fechados',          value: deals.filter(d => d.status === 'fechado').length, color: '#20e33f' },
+          { label: 'Fechados',          value: deals.filter(d => d.status === 'fechado').length, color: '#009c3b' },
           { label: 'Em negociação',     value: deals.filter(d => d.status === 'em_negociacao').length, color: '#f97316' },
-          { label: 'Receita fechada',   value: totalValue > 0 ? fmt(totalValue) : '—', color: '#20e33f', big: false },
+          { label: 'Receita fechada',   value: totalValue > 0 ? fmt(totalValue) : '—', color: '#009c3b', big: false },
         ].map(s => (
           <div key={s.label} style={{
             flex: 1, minWidth: 140, padding: '18px 22px', borderRadius: 16,
-            background: s.color + '08', border: `1px solid ${s.color}18`,
+            background: '#ffffff', border: '1px solid #e2e8f0',
+            boxShadow: '0 1px 4px rgba(0,0,0,.06)',
           }}>
             <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: s.color, marginBottom: 8 }}>{s.label}</div>
-            <div style={{ fontSize: typeof s.value === 'string' ? 20 : 36, fontWeight: 900, letterSpacing: -2, lineHeight: 1, color: '#fff' }}>{s.value}</div>
+            <div style={{ fontSize: typeof s.value === 'string' ? 20 : 36, fontWeight: 900, letterSpacing: -2, lineHeight: 1, color: '#0f172a' }}>{s.value}</div>
           </div>
         ))}
       </div>
 
       {/* Board */}
       {loading ? (
-        <div style={{ color: 'rgba(255,255,255,.25)', textAlign: 'center', paddingTop: 80, fontSize: 14 }}>Carregando...</div>
+        <div style={{ color: '#94a3b8', textAlign: 'center', paddingTop: 80, fontSize: 14 }}>Carregando...</div>
       ) : (
         <div style={{ display: 'flex', overflowX: 'auto', alignItems: 'flex-start', paddingBottom: 32, gap: 0 }}>
           {STAGES.map((stage, idx) => {
@@ -343,7 +344,7 @@ export default function BluePandaCRMPage() {
             return (
               <div key={stage.key} style={{ display: 'flex', flexShrink: 0 }}>
                 {idx > 0 && (
-                  <div style={{ width: 1, alignSelf: 'stretch', background: 'rgba(255,255,255,.05)', margin: '0 10px', flexShrink: 0 }} />
+                  <div style={{ width: 1, alignSelf: 'stretch', background: '#e2e8f0', margin: '0 10px', flexShrink: 0 }} />
                 )}
                 <div
                   style={{ width: 252 }}
@@ -356,8 +357,8 @@ export default function BluePandaCRMPage() {
                   <div style={{ marginBottom: 14, padding: '0 2px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                       <span style={{ width: 8, height: 8, borderRadius: '50%', background: stage.color, flexShrink: 0 }} />
-                      <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,.55)' }}>{stage.label}</span>
-                      <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 9px', borderRadius: 20, background: 'rgba(255,255,255,.06)', color: 'rgba(255,255,255,.3)' }}>{items.length}</span>
+                      <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: '#475569' }}>{stage.label}</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 9px', borderRadius: 20, background: '#e2e8f0', color: '#64748b' }}>{items.length}</span>
                     </div>
                     {stageTotal > 0 && (
                       <div style={{ fontSize: 11, color: stage.color, paddingLeft: 16, fontWeight: 700 }}>{fmt(stageTotal)}</div>
@@ -384,8 +385,8 @@ export default function BluePandaCRMPage() {
                     ))}
                     {items.length === 0 && !isOver && (
                       <div style={{
-                        border: '1px dashed rgba(255,255,255,.06)', borderRadius: 14,
-                        padding: 28, textAlign: 'center', color: 'rgba(255,255,255,.14)', fontSize: 12,
+                        border: '1px dashed #e2e8f0', borderRadius: 14,
+                        padding: 28, textAlign: 'center', color: '#94a3b8', fontSize: 12,
                       }}>Nenhum lead</div>
                     )}
                   </div>

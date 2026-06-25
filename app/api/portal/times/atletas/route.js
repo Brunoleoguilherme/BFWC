@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { getResend, fromEmail, athleteInviteHtml } from '@/lib/email';
 
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
@@ -49,6 +50,14 @@ export async function POST(req) {
   if (!team_id || !name) return NextResponse.json({ ok: false, message: 'team_id e name obrigatórios' }, { status: 400 });
 
   const supabase = getSupabaseAdmin();
+
+  // Get club name for the invite email
+  const { data: team } = await supabase
+    .from('portal_teams')
+    .select('club_name')
+    .eq('id', team_id)
+    .single();
+
   const { data, error } = await supabase
     .from('team_athletes')
     .insert({ team_id, name, email: email || null, category: category || null, jersey_number: jersey_number ? parseInt(jersey_number) : null, birth_date: birth_date || null, document: document || null })
@@ -56,5 +65,26 @@ export async function POST(req) {
     .single();
 
   if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
+
+  // Send invite email to athlete if they have an email
+  if (email) {
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://brasilflagworldchampionship.com';
+      const registerUrl = `${baseUrl}/portal/atletas/cadastro?ref=${data.id}`;
+      const clubName = team?.club_name || 'seu clube';
+
+      const resend = getResend();
+      await resend.emails.send({
+        from: fromEmail,
+        to: email,
+        subject: `${clubName} te convocou para o BFWC 2026! 🏈`,
+        html: athleteInviteHtml({ athlete_name: name, club_name: clubName, register_url: registerUrl }),
+      });
+    } catch (emailErr) {
+      // Don't fail the request if email sending fails — athlete was added successfully
+      console.error('[athlete-invite] email error:', emailErr.message);
+    }
+  }
+
   return NextResponse.json({ ok: true, athlete: { ...data, portal_registered: false, portal_email_verified: false, portal_status: null } });
 }

@@ -32,7 +32,10 @@ export default async function ProtectedLayout({ children }) {
   const initials = profile.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'A';
 
   return (
-    <div style={{ minHeight: '100vh', background: '#031020', fontFamily: "'Inter', sans-serif", color: '#fff' }}>
+    <div style={{
+      minHeight: '100vh', fontFamily: "'Inter', sans-serif",
+      background: '#f1f5f9', color: '#0f172a',
+    }}>
       <AdminShell
         role={profile.role}
         topbarContent={

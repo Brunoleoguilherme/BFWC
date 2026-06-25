@@ -4,15 +4,15 @@ import { useState, useEffect } from 'react';
 
 const STATUS_LABEL = {
   pending_email:    { label: 'Aguard. e-mail',  color: '#a855f7' },
-  pending_approval: { label: 'Aguard. aprovação', color: '#f4ff00' },
-  approved:         { label: 'Aprovado',         color: '#20e33f' },
+  pending_approval: { label: 'Aguard. aprovação', color: '#009c3b' },
+  approved:         { label: 'Aprovado',         color: '#009c3b' },
   rejected:         { label: 'Recusado',         color: '#ff4444' },
 };
 
 const FILTER_TABS = [
   { key: 'all',              label: 'Todos' },
-  { key: 'pending_approval', label: 'Aguardando aprovação', color: '#f4ff00' },
-  { key: 'approved',         label: 'Aprovados',            color: '#20e33f' },
+  { key: 'pending_approval', label: 'Aguardando aprovação', color: '#009c3b' },
+  { key: 'approved',         label: 'Aprovados',            color: '#009c3b' },
   { key: 'rejected',         label: 'Recusados',            color: '#ff4444' },
   { key: 'pending_email',    label: 'Aguard. e-mail',       color: '#a855f7' },
 ];
@@ -75,9 +75,9 @@ export default function PortalTeamsPage() {
 
   const cardStyle = {
     padding: '16px 20px', marginBottom: 10,
-    background: 'linear-gradient(145deg, rgba(6,27,58,.65), rgba(2,8,22,.55))',
-    border: '1px solid rgba(255,255,255,.08)', borderRadius: 16,
-    boxShadow: '0 2px 12px rgba(0,0,0,.3)',
+    background: '#ffffff',
+    border: '1px solid #e2e8f0', borderRadius: 16,
+    boxShadow: '0 1px 4px rgba(0,0,0,.06)',
   };
 
   return (
@@ -87,8 +87,8 @@ export default function PortalTeamsPage() {
         <div style={{
           position: 'fixed', top: 20, right: 24, zIndex: 999,
           padding: '12px 20px', borderRadius: 12, fontSize: 13, fontWeight: 700,
-          background: 'rgba(5,18,55,.97)', border: '1px solid rgba(255,255,255,.12)',
-          color: '#fff', boxShadow: '0 8px 32px rgba(0,0,0,.5)',
+          background: '#ffffff', border: '1px solid #e2e8f0',
+          color: '#0f172a', boxShadow: '0 8px 32px rgba(0,0,0,.12)',
           animation: 'cardIn .3s ease',
         }}>{toast}</div>
       )}
@@ -96,14 +96,14 @@ export default function PortalTeamsPage() {
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 900, color: '#fff', margin: 0 }}>Clubes do Portal</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 900, color: '#0f172a', margin: 0 }}>Clubes do Portal</h1>
           {pendingCount > 0 && (
-            <span style={{ padding: '3px 10px', borderRadius: 20, background: 'rgba(244,255,0,.12)', color: '#f4ff00', fontSize: 11, fontWeight: 900, border: '1px solid rgba(244,255,0,.25)' }}>
+            <span style={{ padding: '3px 10px', borderRadius: 20, background: 'rgba(244,255,0,.12)', color: '#009c3b', fontSize: 11, fontWeight: 900, border: '1px solid rgba(244,255,0,.25)' }}>
               {pendingCount} aguardando
             </span>
           )}
         </div>
-        <p style={{ fontSize: 13, color: 'rgba(255,255,255,.35)', margin: 0 }}>Gerencie as contas de clubes cadastrados no portal.</p>
+        <p style={{ fontSize: 13, color: '#64748b', margin: 0 }}>Gerencie as contas de clubes cadastrados no portal.</p>
       </div>
 
       {/* Filter tabs */}
@@ -112,9 +112,9 @@ export default function PortalTeamsPage() {
           <button key={tab.key} onClick={() => setFilter(tab.key)} style={{
             padding: '7px 14px', borderRadius: 9, fontSize: 12, fontWeight: 700,
             cursor: 'pointer', fontFamily: 'inherit', transition: 'all .15s',
-            background: filter === tab.key ? (tab.color ? tab.color + '18' : 'rgba(255,255,255,.1)') : 'rgba(255,255,255,.04)',
-            color: filter === tab.key ? (tab.color || '#fff') : 'rgba(255,255,255,.4)',
-            border: filter === tab.key ? `1px solid ${tab.color ? tab.color + '35' : 'rgba(255,255,255,.2)'}` : '1px solid rgba(255,255,255,.07)',
+            background: filter === tab.key ? (tab.color ? tab.color + '18' : '#e2e8f0') : '#f1f5f9',
+            color: filter === tab.key ? (tab.color || '#0f172a') : '#64748b',
+            border: filter === tab.key ? `1px solid ${tab.color ? tab.color + '35' : '#cbd5e1'}` : '1px solid #e2e8f0',
           }}>
             {tab.label}
             {tab.key !== 'all' && (
@@ -128,9 +128,9 @@ export default function PortalTeamsPage() {
 
       {/* List */}
       {loading ? (
-        <div style={{ color: 'rgba(255,255,255,.3)', fontSize: 13 }}>Carregando...</div>
+        <div style={{ color: '#94a3b8', fontSize: 13 }}>Carregando...</div>
       ) : filtered.length === 0 ? (
-        <div style={{ ...cardStyle, textAlign: 'center', color: 'rgba(255,255,255,.25)', fontSize: 13, padding: '32px' }}>
+        <div style={{ ...cardStyle, textAlign: 'center', color: '#94a3b8', fontSize: 13, padding: '32px' }}>
           Nenhum clube neste filtro.
         </div>
       ) : filtered.map(team => {
@@ -143,20 +143,20 @@ export default function PortalTeamsPage() {
               {/* Info */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-                  <span style={{ fontWeight: 800, fontSize: 15, color: '#fff' }}>{team.club_name}</span>
+                  <span style={{ fontWeight: 800, fontSize: 15, color: '#0f172a' }}>{team.club_name}</span>
                   <Tag status={team.status} />
                   {!team.email_verified && (
                     <span style={{ fontSize: 10, fontWeight: 700, color: '#a855f7', background: 'rgba(168,85,247,.1)', border: '1px solid rgba(168,85,247,.2)', borderRadius: 6, padding: '2px 8px' }}>e-mail não verificado</span>
                   )}
                 </div>
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,.4)', display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+                <div style={{ fontSize: 12, color: '#64748b', display: 'flex', gap: 14, flexWrap: 'wrap' }}>
                   <span>👤 {team.contact_name}{team.contact_role ? ` · ${team.contact_role}` : ''}</span>
                   {team.country && <span>🌍 {team.country}{team.city ? `, ${team.city}` : ''}</span>}
                   <span>✉ {team.email}</span>
                   {team.whatsapp && <span>📱 {team.whatsapp}</span>}
                 </div>
                 {team.category && (
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,.3)', marginTop: 4 }}>
+                  <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>
                     🏷 {team.category}{team.athletes_count ? ` · ${team.athletes_count} atletas` : ''}
                   </div>
                 )}
@@ -168,7 +168,7 @@ export default function PortalTeamsPage() {
                   <>
                     <button onClick={() => act(team.id, 'approve')} disabled={!!acting} style={{
                       padding: '8px 16px', borderRadius: 9, fontSize: 12, fontWeight: 800,
-                      background: '#20e33f', color: '#031020', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                      background: '#009c3b', color: '#031020', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
                       opacity: acting ? .5 : 1,
                     }}>
                       {acting === team.id + 'approve' ? '...' : '✓ Aprovar'}
@@ -184,7 +184,7 @@ export default function PortalTeamsPage() {
                 {!isPending && (
                   <button onClick={() => setExpanded(isOpen ? null : team.id)} style={{
                     padding: '7px 12px', borderRadius: 9, fontSize: 11, fontWeight: 700,
-                    background: 'rgba(255,255,255,.05)', color: 'rgba(255,255,255,.4)', border: '1px solid rgba(255,255,255,.08)', cursor: 'pointer', fontFamily: 'inherit',
+                    background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', cursor: 'pointer', fontFamily: 'inherit',
                   }}>
                     {isOpen ? '▲' : '▼'} Detalhes
                   </button>
@@ -194,10 +194,10 @@ export default function PortalTeamsPage() {
 
             {/* Expanded: reject form or details */}
             {isOpen && (
-              <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,.06)' }}>
+              <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #e2e8f0' }}>
                 {isPending ? (
                   <div>
-                    <label style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.4)', letterSpacing: 1, textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>
+                    <label style={{ fontSize: 11, fontWeight: 700, color: '#64748b', letterSpacing: 1, textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>
                       Motivo da recusa (opcional — será enviado ao clube)
                     </label>
                     <textarea
@@ -207,30 +207,30 @@ export default function PortalTeamsPage() {
                       rows={3}
                       style={{
                         width: '100%', boxSizing: 'border-box', padding: '12px 14px',
-                        background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.09)',
-                        borderRadius: 10, color: '#fff', fontSize: 13, resize: 'vertical',
+                        background: '#f8fafc', border: '1px solid #e2e8f0',
+                        borderRadius: 10, color: '#0f172a', fontSize: 13, resize: 'vertical',
                         fontFamily: 'inherit', outline: 'none', marginBottom: 10,
                       }}
                     />
                     <button onClick={() => act(team.id, 'reject')} disabled={!!acting} style={{
                       padding: '10px 22px', borderRadius: 10, fontSize: 12, fontWeight: 800,
-                      background: 'rgba(255,68,68,.15)', color: '#ff4444', border: '1px solid rgba(255,68,68,.3)', cursor: 'pointer', fontFamily: 'inherit',
+                      background: 'rgba(255,68,68,.1)', color: '#ff4444', border: '1px solid rgba(255,68,68,.25)', cursor: 'pointer', fontFamily: 'inherit',
                       opacity: acting ? .5 : 1,
                     }}>
                       {acting === team.id + 'reject' ? 'Recusando...' : 'Confirmar recusa'}
                     </button>
                   </div>
                 ) : (
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,.4)', lineHeight: 1.8 }}>
-                    <div><strong style={{ color: 'rgba(255,255,255,.6)' }}>Status:</strong> {STATUS_LABEL[team.status]?.label}</div>
-                    {team.admin_notes && <div><strong style={{ color: 'rgba(255,255,255,.6)' }}>Notas admin:</strong> {team.admin_notes}</div>}
-                    {team.approved_at && <div><strong style={{ color: 'rgba(255,255,255,.6)' }}>Aprovado em:</strong> {new Date(team.approved_at).toLocaleString('pt-BR')}</div>}
-                    <div><strong style={{ color: 'rgba(255,255,255,.6)' }}>Cadastrado em:</strong> {new Date(team.created_at).toLocaleString('pt-BR')}</div>
-                    <div><strong style={{ color: 'rgba(255,255,255,.6)' }}>Idioma:</strong> {team.preferred_language?.toUpperCase()}</div>
+                  <div style={{ fontSize: 12, color: '#64748b', lineHeight: 1.8 }}>
+                    <div><strong style={{ color: '#475569' }}>Status:</strong> {STATUS_LABEL[team.status]?.label}</div>
+                    {team.admin_notes && <div><strong style={{ color: '#475569' }}>Notas admin:</strong> {team.admin_notes}</div>}
+                    {team.approved_at && <div><strong style={{ color: '#475569' }}>Aprovado em:</strong> {new Date(team.approved_at).toLocaleString('pt-BR')}</div>}
+                    <div><strong style={{ color: '#475569' }}>Cadastrado em:</strong> {new Date(team.created_at).toLocaleString('pt-BR')}</div>
+                    <div><strong style={{ color: '#475569' }}>Idioma:</strong> {team.preferred_language?.toUpperCase()}</div>
                     {team.status === 'rejected' && (
                       <button onClick={() => act(team.id, 'approve')} style={{
                         marginTop: 10, padding: '8px 16px', borderRadius: 9, fontSize: 12, fontWeight: 800,
-                        background: '#20e33f', color: '#031020', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                        background: '#009c3b', color: '#031020', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
                       }}>
                         ✓ Aprovar mesmo assim
                       </button>

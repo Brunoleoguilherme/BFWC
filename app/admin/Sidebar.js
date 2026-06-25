@@ -36,7 +36,7 @@ const GROUPS = [
         icon: '✓',
         matchPath: '/admin/teams',
         matchStatus: 'inscricao_confirmada',
-        color: '#20e33f',
+        color: '#009c3b',
         withCats: true,
       },
       {
@@ -84,7 +84,7 @@ const GROUPS = [
     section: 'Blue Panda',
     items: [
       { href: '/admin/blue-panda',     label: 'Logística & Hospedagem', icon: '🐼', matchPath: '/admin/blue-panda',     matchStatus: null, color: '#4d8aff' },
-      { href: '/admin/blue-panda/crm', label: 'Pipeline de Vendas',     icon: '📋', matchPath: '/admin/blue-panda/crm', matchStatus: null, color: '#20e33f' },
+      { href: '/admin/blue-panda/crm', label: 'Pipeline de Vendas',     icon: '📋', matchPath: '/admin/blue-panda/crm', matchStatus: null, color: '#009c3b' },
     ],
   },
   {
@@ -139,10 +139,10 @@ export default function Sidebar({ role = 'admin' }) {
     display: 'flex', alignItems: 'center', gap: 9,
     padding: '8px 12px', borderRadius: 9,
     fontSize: 12.5, fontWeight: active ? 700 : 500,
-    color: active ? '#fff' : 'rgba(255,255,255,.42)',
+    color: active ? '#031020' : '#475569',
     textDecoration: 'none',
-    background: active ? (color ? color + '12' : 'rgba(244,255,0,.08)') : 'transparent',
-    border: active ? `1px solid ${color ? color + '28' : 'rgba(244,255,0,.18)'}` : '1px solid transparent',
+    background: active ? (color ? color + '18' : '#f4ff0022') : 'transparent',
+    border: active ? `1px solid ${color ? color + '40' : '#f4ff0060'}` : '1px solid transparent',
     transition: 'all .15s',
     cursor: 'pointer',
   });
@@ -152,8 +152,8 @@ export default function Sidebar({ role = 'admin' }) {
       width: 222, flexShrink: 0,
       minHeight: 'calc(100vh - 58px)',
       padding: '18px 12px',
-      borderRight: '1px solid rgba(255,255,255,.06)',
-      background: 'rgba(3,16,32,.4)',
+      borderRight: '1px solid #e2e8f0',
+      background: '#ffffff',
       fontFamily: "'Inter', sans-serif",
       display: 'flex', flexDirection: 'column',
       overflowY: 'auto',
@@ -163,7 +163,7 @@ export default function Sidebar({ role = 'admin' }) {
           {section && (
             <div style={{
               fontSize: 9.5, fontWeight: 800, letterSpacing: 2,
-              textTransform: 'uppercase', color: 'rgba(255,255,255,.2)',
+              textTransform: 'uppercase', color: '#94a3b8',
               padding: '0 12px', marginBottom: 5,
             }}>{section}</div>
           )}
@@ -229,9 +229,9 @@ export default function Sidebar({ role = 'admin' }) {
         </div>
       ))}
 
-      <div style={{ marginTop: 'auto', paddingTop: 14, borderTop: '1px solid rgba(255,255,255,.05)' }}>
-        <p style={{ fontSize: 9.5, color: 'rgba(255,255,255,.15)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>BFWC 2026 Admin</p>
-        <p style={{ fontSize: 9.5, color: 'rgba(255,255,255,.1)' }}>v1.0</p>
+      <div style={{ marginTop: 'auto', paddingTop: 14, borderTop: '1px solid #f1f5f9' }}>
+        <p style={{ fontSize: 9.5, color: '#94a3b8', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>BFWC 2026 Admin</p>
+        <p style={{ fontSize: 9.5, color: '#cbd5e1' }}>v1.0</p>
       </div>
     </aside>
   );

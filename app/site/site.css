@@ -588,6 +588,11 @@
   max-width: 480px;
 }
 
+.partnerGroupLogos img.logoIncentivou {
+  height: 60px !important;
+  max-width: 223px;
+}
+
 .partnerDivider {
   width: 1px;
   height: 80px;

@@ -472,6 +472,7 @@ export default function SitePage() {
                 <Image src="/assets/underarmour-white.png" alt="Under Armour" width={140} height={70} />
                 <Image src="/assets/blue-panda.png" alt="Blue Panda Travel" width={600} height={282} className="logoBluePanda" />
                 <Image src="/assets/new-players.png" alt="New Players Sports" width={120} height={70} />
+                <Image src="/assets/incentivou.png" alt="Incentivou" width={260} height={70} className="logoIncentivou" />
               </div>
             </div>
 

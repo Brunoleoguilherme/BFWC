@@ -32,7 +32,7 @@ const T = {
 
 const CARDS = [
   { key: 'teams',    loginHref: '/portal/times/login',   registerHref: '/portal/times/cadastro',    accent: '#0D4BFF', glow: 'rgba(13,75,255,.12)',  btnColor: '#fff',    btnBg: '#0D4BFF' },
-  { key: 'athletes', loginHref: '/portal/atletas/login',  registerHref: '/portal/atletas/cadastro',  accent: '#20e33f', glow: 'rgba(32,227,63,.1)',   btnColor: '#031020', btnBg: '#20e33f' },
+  { key: 'athletes', loginHref: '/portal/atletas/login',  registerHref: '/portal/atletas/cadastro',  accent: '#009c3b', glow: 'rgba(0,156,59,.1)',    btnColor: '#fff',    btnBg: '#009c3b' },
   { key: 'admin',    loginHref: '/admin/login',            registerHref: '/portal/admin/solicitar',   accent: '#f4ff00', glow: 'rgba(244,255,0,.1)',   btnColor: '#031020', btnBg: '#f4ff00' },
 ];
 
@@ -48,39 +48,53 @@ export default function PortalPage() {
 
   return (
     <div className="login-root" style={{ alignItems: 'center', overflowY: 'auto', minHeight: '100vh' }}>
-      <div className="login-glow" />
+      <style>{`
+        .portal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: stretch; }
+        .portal-wrap { width: 100%; max-width: 900px; padding: 32px 16px 24px; animation: cardIn .55s cubic-bezier(.22,.61,.36,1) both; }
+        @media (max-width: 768px) {
+          .portal-grid { grid-template-columns: 1fr; gap: 12px; }
+          .portal-wrap { padding: 20px 16px 16px; }
+          .portal-title { font-size: 32px !important; }
+        }
+      `}</style>
 
-      <div style={{ width: '100%', maxWidth: 900, animation: 'cardIn .55s cubic-bezier(.22,.61,.36,1) both', padding: '32px 0 24px' }}>
+      <div className="portal-wrap">
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div className="login-badge">{t.badge}</div>
-          <h1 className="login-title" style={{ fontSize: 42, justifyContent: 'center', display: 'flex', gap: 10 }}>
+          <div className="login-badge" style={{ background: 'rgba(255,255,255,.85)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}>{t.badge}</div>
+          <h1 className="login-title portal-title" style={{
+            fontSize: 42, justifyContent: 'center', display: 'flex', gap: 10,
+            textShadow: '0 2px 12px rgba(255,255,255,.9), 0 0 32px rgba(255,255,255,.7)',
+          }}>
             BFWC <span>2026</span>
           </h1>
-          <p className="login-sub" style={{ marginBottom: 0 }}>{t.sub}</p>
+          <p className="login-sub" style={{
+            marginBottom: 0, color: '#1e293b', fontWeight: 600,
+            textShadow: '0 1px 8px rgba(255,255,255,.9)',
+          }}>{t.sub}</p>
         </div>
 
         {/* Three cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, alignItems: 'stretch' }}>
+        <div className="portal-grid">
           {CARDS.map(card => {
             const info = t[card.key];
             return (
               <div key={card.key} style={{
                 padding: '28px 24px',
                 background: 'linear-gradient(145deg, rgba(5,18,55,.96), rgba(2,8,22,.95))',
-                border: '1px solid rgba(255,255,255,.1)',
+                border: '1px solid rgba(255,255,255,.18)',
                 borderRadius: 20,
                 boxShadow: '0 24px 80px rgba(0,0,0,.5)',
                 transition: 'border-color .2s, transform .2s, box-shadow .2s',
                 display: 'flex', flexDirection: 'column',
               }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.borderColor = card.accent + '55';
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,.35)';
                   e.currentTarget.style.transform = 'translateY(-4px)';
                   e.currentTarget.style.boxShadow = `0 32px 100px rgba(0,0,0,.6), 0 0 40px ${card.glow}`;
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,.1)';
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,.18)';
                   e.currentTarget.style.transform = 'none';
                   e.currentTarget.style.boxShadow = '0 24px 80px rgba(0,0,0,.5)';
                 }}
@@ -89,8 +103,8 @@ export default function PortalPage() {
                 <div style={{
                   display: 'inline-block', fontSize: 10, fontWeight: 700, letterSpacing: '2px',
                   textTransform: 'uppercase', color: card.accent,
-                  border: `1px solid ${card.accent}35`, borderRadius: 20,
-                  padding: '3px 12px', marginBottom: 16, background: card.accent + '12',
+                  border: `1px solid ${card.accent}70`, borderRadius: 20,
+                  padding: '3px 12px', marginBottom: 16, background: card.accent + '25',
                   alignSelf: 'flex-start',
                 }}>{info.tag}</div>
 
@@ -98,8 +112,8 @@ export default function PortalPage() {
                 <h2 style={{ fontSize: 24, fontWeight: 900, letterSpacing: '-1px', color: '#fff', marginBottom: 4, lineHeight: 1 }}>
                   {info.title} <span style={{ color: card.accent }}>2026</span>
                 </h2>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,.65)', marginBottom: 6 }}>{info.label}</div>
-                <p style={{ fontSize: 12, color: 'rgba(255,255,255,.35)', lineHeight: 1.6, marginBottom: 20, flexGrow: 1 }}>{info.desc}</p>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,.9)', marginBottom: 6 }}>{info.label}</div>
+                <p style={{ fontSize: 12, color: 'rgba(255,255,255,.65)', lineHeight: 1.6, marginBottom: 20, flexGrow: 1 }}>{info.desc}</p>
 
                 {/* Login button */}
                 <a href={card.loginHref} style={{
@@ -120,14 +134,14 @@ export default function PortalPage() {
                 <a href={card.registerHref} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                   fontSize: 11, fontWeight: 700, letterSpacing: '.5px', textTransform: 'uppercase',
-                  color: card.accent + 'bb', textDecoration: 'none',
+                  color: card.accent, textDecoration: 'none',
                   padding: '8px', borderRadius: 8,
-                  border: `1px solid ${card.accent}20`,
-                  background: card.accent + '08',
+                  border: `1px solid ${card.accent}50`,
+                  background: card.accent + '18',
                   transition: 'all .15s',
                 }}
-                  onMouseEnter={e => { e.currentTarget.style.background = card.accent + '18'; e.currentTarget.style.borderColor = card.accent + '45'; e.currentTarget.style.color = card.accent; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = card.accent + '08'; e.currentTarget.style.borderColor = card.accent + '20'; e.currentTarget.style.color = card.accent + 'bb'; }}
+                  onMouseEnter={e => { e.currentTarget.style.background = card.accent + '30'; e.currentTarget.style.borderColor = card.accent + '80'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = card.accent + '18'; e.currentTarget.style.borderColor = card.accent + '50'; }}
                 >
                   + {info.register}
                 </a>
@@ -142,13 +156,13 @@ export default function PortalPage() {
             display: 'inline-flex', alignItems: 'center', gap: 8,
             padding: '10px 22px', borderRadius: 10,
             fontSize: 12, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase',
-            color: 'rgba(255,255,255,.35)', textDecoration: 'none',
-            border: '1px solid rgba(255,255,255,.08)',
-            background: 'rgba(255,255,255,.03)',
+            color: '#64748b', textDecoration: 'none',
+            border: '1px solid #cbd5e1',
+            background: 'rgba(255,255,255,.7)',
             transition: 'all .2s',
           }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,.2)'; e.currentTarget.style.color = '#fff'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,.08)'; e.currentTarget.style.color = 'rgba(255,255,255,.35)'; }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#94a3b8'; e.currentTarget.style.color = '#0f172a'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#cbd5e1'; e.currentTarget.style.color = '#64748b'; }}
           >
             ← {t.back}
           </a>

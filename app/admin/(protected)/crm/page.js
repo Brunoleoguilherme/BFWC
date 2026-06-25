@@ -41,53 +41,54 @@ export default function CRMPage() {
   }
 
   const S = {
-    label: { fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: 10 },
+    label: { fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 10 },
     tplBtn: (sel) => ({
       padding: '10px 20px', borderRadius: 12, fontSize: 13, fontWeight: 700,
       cursor: 'pointer', fontFamily: 'inherit',
-      background: sel ? 'rgba(244,255,0,.09)' : 'rgba(255,255,255,.04)',
-      border: `1px solid ${sel ? 'rgba(244,255,0,.3)' : 'rgba(255,255,255,.09)'}`,
-      color: sel ? '#f4ff00' : 'rgba(255,255,255,.45)',
+      background: sel ? '#031020' : '#f1f5f9',
+      border: `1px solid ${sel ? '#031020' : '#e2e8f0'}`,
+      color: sel ? '#fff' : '#475569',
       transition: 'all .2s',
     }),
   };
 
   return (
-    <div style={{ fontFamily: "'Inter', sans-serif", color: '#fff' }}>
+    <div style={{ fontFamily: "'Inter', sans-serif", color: '#0f172a' }}>
       <div style={{ marginBottom: 32 }}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: '#f4ff00', marginBottom: 8 }}>E-mail</div>
-        <h1 style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1.5, color: '#fff' }}>Comunicação</h1>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: '#009c3b', marginBottom: 8 }}>E-mail</div>
+        <h1 style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1.5, color: '#0f172a' }}>Comunicação</h1>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 24, alignItems: 'flex-start' }}>
         {/* Lista de times */}
         <div style={{
-          background: 'linear-gradient(145deg, rgba(6,27,58,.5), rgba(2,8,22,.5))',
-          border: '1px solid rgba(255,255,255,.07)', borderRadius: 20, overflow: 'hidden',
+          background: '#ffffff',
+          border: '1px solid #e2e8f0', borderRadius: 20, overflow: 'hidden',
+          boxShadow: '0 1px 4px rgba(0,0,0,.06)',
         }}>
-          <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>Times ({teams.length})</span>
+          <div style={{ padding: '18px 22px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>Times ({teams.length})</span>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={selectAll} style={{ fontSize: 12, fontWeight: 600, color: '#f4ff00', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Selecionar todos</button>
-              <span style={{ color: 'rgba(255,255,255,.2)' }}>·</span>
-              <button onClick={clearAll} style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,.35)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Limpar</button>
+              <button onClick={selectAll} style={{ fontSize: 12, fontWeight: 600, color: '#009c3b', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Selecionar todos</button>
+              <span style={{ color: '#e2e8f0' }}>·</span>
+              <button onClick={clearAll} style={{ fontSize: 12, fontWeight: 600, color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Limpar</button>
             </div>
           </div>
 
           {loading ? (
-            <div style={{ padding: 40, textAlign: 'center', color: 'rgba(255,255,255,.2)', fontSize: 13 }}>Carregando...</div>
+            <div style={{ padding: 40, textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>Carregando...</div>
           ) : (
             <div style={{ maxHeight: 520, overflowY: 'auto' }}>
               {teams.map(t => {
                 const isSel = selected.includes(t.id);
                 const st = {
                   pre_inscrito: { color: '#a855f7', label: 'Pré-inscrito' },
-                  pendente_analise: { color: 'rgba(255,255,255,.5)', label: 'Pendente' },
-                  em_revisao: { color: '#f4ff00', label: 'Em Revisão' },
-                  aprovado: { color: '#20e33f', label: 'Aprovado' },
+                  pendente_analise: { color: '#94a3b8', label: 'Pendente' },
+                  em_revisao: { color: '#009c3b', label: 'Em Revisão' },
+                  aprovado: { color: '#009c3b', label: 'Aprovado' },
                   inscricao_confirmada: { color: '#0D4BFF', label: 'Confirmado' },
                   rejeitado: { color: '#ff4444', label: 'Rejeitado' },
-                }[t.status] || { color: 'rgba(255,255,255,.3)', label: t.status };
+                }[t.status] || { color: '#64748b', label: t.status };
 
                 return (
                   <div
@@ -97,20 +98,20 @@ export default function CRMPage() {
                       display: 'flex', alignItems: 'center', gap: 14,
                       padding: '14px 22px',
                       background: isSel ? 'rgba(244,255,0,.04)' : 'transparent',
-                      borderBottom: '1px solid rgba(255,255,255,.04)',
+                      borderBottom: '1px solid #f1f5f9',
                       cursor: 'pointer', transition: 'background .15s',
                     }}
                   >
                     <div style={{
                       width: 18, height: 18, borderRadius: 6, flexShrink: 0,
-                      background: isSel ? '#f4ff00' : 'rgba(255,255,255,.07)',
-                      border: `1px solid ${isSel ? '#f4ff00' : 'rgba(255,255,255,.15)'}`,
+                      background: isSel ? '#009c3b' : '#f1f5f9',
+                      border: `1px solid ${isSel ? '#009c3b' : '#e2e8f0'}`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 11, color: '#031020', fontWeight: 900,
                     }}>{isSel ? '✓' : ''}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: '#fff', marginBottom: 2 }}>{t.club_name}</div>
-                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,.3)' }}>{t.email || 'Sem e-mail'} · {t.city}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#0f172a', marginBottom: 2 }}>{t.club_name}</div>
+                      <div style={{ fontSize: 11, color: '#64748b' }}>{t.email || 'Sem e-mail'} · {t.city}</div>
                     </div>
                     <span style={{
                       fontSize: 10, fontWeight: 700, letterSpacing: .5, textTransform: 'uppercase',
@@ -126,15 +127,16 @@ export default function CRMPage() {
 
         {/* Painel de envio */}
         <div style={{
-          background: 'linear-gradient(145deg, rgba(6,27,58,.5), rgba(2,8,22,.5))',
-          border: '1px solid rgba(255,255,255,.07)', borderRadius: 20, padding: 24,
+          background: '#ffffff',
+          border: '1px solid #e2e8f0', borderRadius: 20, padding: 24,
+          boxShadow: '0 1px 4px rgba(0,0,0,.06)',
           position: 'sticky', top: 80,
         }}>
-          <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', marginBottom: 20, letterSpacing: -.3 }}>Envio em lote</div>
+          <div style={{ fontSize: 16, fontWeight: 800, color: '#0f172a', marginBottom: 20, letterSpacing: -.3 }}>Envio em lote</div>
 
           <div style={S.label}>Selecionados</div>
           <div style={{
-            fontSize: 40, fontWeight: 900, letterSpacing: -2, color: selected.length > 0 ? '#f4ff00' : 'rgba(255,255,255,.2)',
+            fontSize: 40, fontWeight: 900, letterSpacing: -2, color: selected.length > 0 ? '#009c3b' : '#94a3b8',
             marginBottom: 24, lineHeight: 1,
           }}>{selected.length}</div>
 
@@ -148,8 +150,8 @@ export default function CRMPage() {
           {role === 'viewer' ? (
             <div style={{
               width: '100%', padding: '14px', borderRadius: 12,
-              background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)',
-              fontSize: 12, color: 'rgba(255,255,255,.3)', textAlign: 'center',
+              background: '#f1f5f9', border: '1px solid #e2e8f0',
+              fontSize: 12, color: '#64748b', textAlign: 'center',
               fontFamily: "'Inter', sans-serif",
             }}>
               Somente leitura — apenas admins podem enviar e-mails
@@ -161,7 +163,7 @@ export default function CRMPage() {
                 disabled={sending || selected.length === 0 || !emailTpl}
                 style={{
                   width: '100%', padding: '14px',
-                  background: done ? '#20e33f' : (sending || !emailTpl || selected.length === 0) ? 'rgba(244,255,0,.3)' : '#f4ff00',
+                  background: done ? '#009c3b' : (sending || !emailTpl || selected.length === 0) ? 'rgba(244,255,0,.3)' : '#009c3b',
                   color: '#031020', border: 'none', borderRadius: 12,
                   fontSize: 13, fontWeight: 900, letterSpacing: 1.5, textTransform: 'uppercase',
                   cursor: sending || selected.length === 0 || !emailTpl ? 'not-allowed' : 'pointer',
@@ -171,7 +173,7 @@ export default function CRMPage() {
                 {done ? '✓ Enviado!' : sending ? 'Enviando...' : `Enviar para ${selected.length} time${selected.length !== 1 ? 's' : ''}`}
               </button>
               {(!emailTpl || selected.length === 0) && (
-                <p style={{ fontSize: 11, color: 'rgba(255,255,255,.22)', textAlign: 'center', marginTop: 10 }}>
+                <p style={{ fontSize: 11, color: '#94a3b8', textAlign: 'center', marginTop: 10 }}>
                   Selecione times e um template para enviar.
                 </p>
               )}

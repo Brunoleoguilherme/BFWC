@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import '../../../admin/admin.css';
 
 const CATEGORIES = [
@@ -40,6 +40,10 @@ const T = {
     contactRole: 'Cargo / Função',
     email: 'E-mail *',
     whatsapp: 'WhatsApp',
+    logoLabel: 'Logo do clube',
+    logoHint: 'PNG, JPG ou JPEG · Máx. 2 MB',
+    logoBtn: 'Escolher arquivo',
+    logoChange: 'Trocar imagem',
     categories: 'Categorias que pretende participar *',
     athletesPerCat: 'Número de atletas por categoria',
     password: 'Senha *',
@@ -61,6 +65,8 @@ const T = {
     passwordMatch: 'As senhas não coincidem',
     categoryMin: 'Selecione ao menos uma categoria',
     termsRequired: 'Você deve aceitar os termos',
+    logoInvalidType: 'Formato inválido. Use PNG, JPG ou JPEG.',
+    logoTooLarge: 'Arquivo muito grande. Máximo 2 MB.',
   },
   en: {
     badge: 'Club Registration',
@@ -76,6 +82,10 @@ const T = {
     contactRole: 'Role / Position',
     email: 'Email *',
     whatsapp: 'WhatsApp',
+    logoLabel: 'Club logo',
+    logoHint: 'PNG, JPG or JPEG · Max 2 MB',
+    logoBtn: 'Choose file',
+    logoChange: 'Change image',
     categories: 'Categories you plan to enter *',
     athletesPerCat: 'Number of athletes per category',
     password: 'Password *',
@@ -97,6 +107,8 @@ const T = {
     passwordMatch: 'Passwords do not match',
     categoryMin: 'Select at least one category',
     termsRequired: 'You must accept the terms',
+    logoInvalidType: 'Invalid format. Use PNG, JPG or JPEG.',
+    logoTooLarge: 'File too large. Maximum 2 MB.',
   },
   es: {
     badge: 'Registro de Club',
@@ -112,6 +124,10 @@ const T = {
     contactRole: 'Cargo / Función',
     email: 'Correo electrónico *',
     whatsapp: 'WhatsApp',
+    logoLabel: 'Logo del club',
+    logoHint: 'PNG, JPG o JPEG · Máx. 2 MB',
+    logoBtn: 'Elegir archivo',
+    logoChange: 'Cambiar imagen',
     categories: 'Categorías en las que planea participar *',
     athletesPerCat: 'Número de atletas por categoría',
     password: 'Contraseña *',
@@ -133,6 +149,8 @@ const T = {
     passwordMatch: 'Las contraseñas no coinciden',
     categoryMin: 'Selecciona al menos una categoría',
     termsRequired: 'Debes aceptar los términos',
+    logoInvalidType: 'Formato inválido. Usa PNG, JPG o JPEG.',
+    logoTooLarge: 'Archivo demasiado grande. Máximo 2 MB.',
   },
 };
 
@@ -143,6 +161,9 @@ export default function CadastroPage() {
   const [success, setSuccess] = useState(false);
   const [serverError, setServerError] = useState('');
   const [errors, setErrors] = useState({});
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const fileInputRef = useRef(null);
 
   const [form, setForm] = useState({
     club_name: '', country: '', city: '',
@@ -166,12 +187,30 @@ export default function CadastroPage() {
     setErrors(e => ({ ...e, [field]: '' }));
   }
 
+  function handleLogoChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const allowed = ['image/png', 'image/jpeg', 'image/jpg'];
+    if (!allowed.includes(file.type)) {
+      setErrors(er => ({ ...er, logo: t.logoInvalidType }));
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setErrors(er => ({ ...er, logo: t.logoTooLarge }));
+      return;
+    }
+    setLogoFile(file);
+    setErrors(er => ({ ...er, logo: '' }));
+    const reader = new FileReader();
+    reader.onload = ev => setLogoPreview(ev.target.result);
+    reader.readAsDataURL(file);
+  }
+
   function toggleCategory(val) {
     setForm(f => {
       const next = f.categories.includes(val)
         ? f.categories.filter(c => c !== val)
         : [...f.categories, val];
-      // remove count when unchecked
       const apc = { ...f.athletes_per_category };
       if (!next.includes(val)) delete apc[val];
       return { ...f, categories: next, athletes_per_category: apc };
@@ -217,21 +256,26 @@ export default function CadastroPage() {
 
     setLoading(true); setServerError('');
     try {
+      const fd = new FormData();
+      fd.append('club_name', form.club_name);
+      fd.append('country', form.country);
+      fd.append('city', form.city);
+      fd.append('contact_name', form.contact_name);
+      fd.append('contact_role', form.contact_role);
+      fd.append('email', form.email);
+      fd.append('whatsapp', form.whatsapp);
+      fd.append('category', form.categories.map(c => {
+        const n = form.athletes_per_category[c];
+        return n ? `${c} (${n})` : c;
+      }).join(', '));
+      fd.append('athletes_count', Object.values(form.athletes_per_category).reduce((s, v) => s + (parseInt(v) || 0), 0) || '');
+      fd.append('password', form.password);
+      fd.append('language', lang);
+      if (logoFile) fd.append('logo', logoFile);
+
       const res = await fetch('/api/portal/times/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          club_name: form.club_name, country: form.country, city: form.city,
-          contact_name: form.contact_name, contact_role: form.contact_role,
-          email: form.email, whatsapp: form.whatsapp,
-          category: form.categories.map(c => {
-            const n = form.athletes_per_category[c];
-            return n ? `${c} (${n})` : c;
-          }).join(', '),
-          athletes_count: Object.values(form.athletes_per_category).reduce((s, v) => s + (parseInt(v) || 0), 0) || null,
-          password: form.password,
-          language: lang,
-        }),
+        body: fd,
       });
       const data = await res.json();
       if (data.ok) setSuccess(true);
@@ -249,22 +293,21 @@ export default function CadastroPage() {
   if (success) {
     return (
       <div className="login-root">
-        <div className="login-glow" style={{ background: 'radial-gradient(circle, rgba(13,75,255,.08) 0%, transparent 65%)' }} />
         <div className="login-card" style={{ maxWidth: 480, textAlign: 'center' }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
           <div className="login-badge">{t.badge}</div>
           <h1 className="login-title" style={{ justifyContent: 'center' }}>{t.successTitle}</h1>
-          <p style={{ fontSize: 14, color: '#c8d8f5', lineHeight: 1.7, margin: '16px 0' }}
+          <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.7, margin: '16px 0' }}
             dangerouslySetInnerHTML={{ __html: t.successMsg.replace('{email}', form.email) }}
           />
-          <div style={{ padding: '14px 16px', borderRadius: 10, background: 'rgba(244,255,0,.05)', border: '1px solid rgba(244,255,0,.15)', fontSize: 12, color: 'rgba(255,255,255,.5)', lineHeight: 1.6 }}>
+          <div style={{ padding: '14px 16px', borderRadius: 10, background: 'rgba(13,75,255,.05)', border: '1px solid rgba(13,75,255,.15)', fontSize: 12, color: '#64748b', lineHeight: 1.6 }}>
             💡 {t.successNote}
           </div>
           <a href="/portal/times/login" className="login-btn" style={{ display: 'block', textAlign: 'center', marginTop: 24, background: '#0D4BFF', color: '#fff', textDecoration: 'none' }}>
             {t.login}
           </a>
           <div style={{ marginTop: 12, textAlign: 'center' }}>
-            <a href="/portal" style={{ fontSize: 12, color: 'rgba(255,255,255,.2)', textDecoration: 'none' }}>{t.back}</a>
+            <a href="/portal" style={{ fontSize: 12, color: '#94a3b8', textDecoration: 'none' }}>{t.back}</a>
           </div>
         </div>
       </div>
@@ -273,21 +316,19 @@ export default function CadastroPage() {
 
   return (
     <div className="login-root" style={{ alignItems: 'flex-start', paddingTop: 40, paddingBottom: 40 }}>
-      <div className="login-glow" style={{ background: 'radial-gradient(circle, rgba(13,75,255,.08) 0%, transparent 65%)' }} />
-
       <div style={{ width: '100%', maxWidth: 560, animation: 'cardIn .55s cubic-bezier(.22,.61,.36,1) both' }}>
         {/* Steps indicator */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 24, justifyContent: 'center' }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 24, justifyContent: 'center', background: 'rgba(0,0,0,.45)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderRadius: 24, padding: '8px 20px', width: 'fit-content', margin: '0 auto 24px' }}>
           {[1, 2, 3].map(n => (
             <div key={n} style={{
               display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700,
-              color: step === n ? '#fff' : step > n ? '#20e33f' : 'rgba(255,255,255,.25)',
+              color: step === n ? '#fff' : step > n ? '#4ade80' : 'rgba(255,255,255,.6)',
             }}>
               <div style={{
                 width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 11, fontWeight: 900,
-                background: step === n ? '#0D4BFF' : step > n ? '#20e33f' : 'rgba(255,255,255,.08)',
-                color: step > n ? '#031020' : '#fff',
+                background: step === n ? '#0D4BFF' : step > n ? '#009c3b' : 'rgba(255,255,255,.08)',
+                color: step > n ? '#fff' : '#fff',
                 border: step === n ? '2px solid #0D4BFF' : '1px solid rgba(255,255,255,.1)',
               }}>
                 {step > n ? '✓' : n}
@@ -298,9 +339,12 @@ export default function CadastroPage() {
           ))}
         </div>
 
-        <div className="login-card" style={{ maxWidth: '100%' }}>
+        <div className="login-card" style={{ maxWidth: '100%', overflow: 'hidden', paddingTop: 0 }}>
+          {/* Accent stripe */}
+          <div style={{ height: 4, background: 'linear-gradient(90deg, #0D4BFF, #60a5fa)', margin: '0 -44px 36px', width: 'calc(100% + 88px)' }} />
+
           <div className="login-badge">{t.badge}</div>
-          <h1 className="login-title">{t.title} <span>2026</span></h1>
+          <h1 className="login-title">{t.title} <span style={{ color: '#0D4BFF' }}>2026</span></h1>
           <p className="login-sub">{t.sub}</p>
 
           {/* Step 1: Club info */}
@@ -314,7 +358,7 @@ export default function CadastroPage() {
                 </div>
                 <div>
                   <label className="login-label">{t.country}</label>
-                  <input className="login-input" style={inputStyle} value={form.country} onChange={e => set('country', e.target.value)} placeholder="Ex: Brasil, EUA, Argentina..." />
+                  <input className="login-input" style={inputStyle} value={form.country} onChange={e => set('country', e.target.value)} placeholder="Ex: Brasil, EUA..." />
                   {errors.country && <div className="login-error" style={{ marginTop: 4 }}>{errors.country}</div>}
                 </div>
                 <div>
@@ -339,8 +383,54 @@ export default function CadastroPage() {
                   <label className="login-label">{t.whatsapp}</label>
                   <input className="login-input" style={inputStyle} value={form.whatsapp} onChange={e => set('whatsapp', e.target.value)} placeholder="+55 11 99999-0000" />
                 </div>
+
+                {/* Logo upload */}
+                <div style={{ gridColumn: '1 / -1', marginTop: 4 }}>
+                  <label className="login-label">{t.logoLabel}</label>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+                    style={{ display: 'none' }}
+                    onChange={handleLogoChange}
+                  />
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 14,
+                    padding: '12px 14px', borderRadius: 12,
+                    border: errors.logo ? '1px solid #fca5a5' : '1px solid #e2e8f0',
+                    background: '#f8fafc',
+                    cursor: 'pointer',
+                  }} onClick={() => fileInputRef.current?.click()}>
+                    {logoPreview ? (
+                      <img src={logoPreview} alt="Preview" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'contain', background: '#e2e8f0' }} />
+                    ) : (
+                      <div style={{
+                        width: 48, height: 48, borderRadius: 8, flexShrink: 0,
+                        background: '#e2e8f0', border: '1.5px dashed #cbd5e1',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 20,
+                      }}>🏟</div>
+                    )}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: logoPreview ? '#0f172a' : '#94a3b8', marginBottom: 2 }}>
+                        {logoPreview ? logoFile?.name : 'Nenhuma imagem selecionada'}
+                      </div>
+                      <div style={{ fontSize: 10, color: '#94a3b8', letterSpacing: '.5px' }}>{t.logoHint}</div>
+                    </div>
+                    <div style={{
+                      fontSize: 11, fontWeight: 700, letterSpacing: '.5px',
+                      color: '#0D4BFF', padding: '6px 12px', borderRadius: 8,
+                      border: '1px solid rgba(13,75,255,.35)', background: 'rgba(13,75,255,.1)',
+                      flexShrink: 0,
+                    }}>
+                      {logoPreview ? t.logoChange : t.logoBtn}
+                    </div>
+                  </div>
+                  {errors.logo && <div className="login-error" style={{ marginTop: 4 }}>{errors.logo}</div>}
+                </div>
               </div>
-              <button className="login-btn" onClick={nextStep} style={{ background: '#0D4BFF', color: '#fff', boxShadow: '0 8px 28px rgba(13,75,255,.35)', marginTop: 8 }}>
+
+              <button className="login-btn" onClick={nextStep} style={{ background: '#0D4BFF', color: '#fff', boxShadow: '0 8px 28px rgba(13,75,255,.35)', marginTop: 16 }}>
                 {t.btnNext}
               </button>
             </div>
@@ -360,9 +450,9 @@ export default function CadastroPage() {
                       onClick={() => toggleCategory(cat.value)}
                       style={{
                         padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
-                        border: checked ? '2px solid #0D4BFF' : '1px solid rgba(255,255,255,.1)',
-                        background: checked ? 'rgba(13,75,255,.12)' : 'rgba(255,255,255,.03)',
-                        color: checked ? '#fff' : 'rgba(255,255,255,.45)',
+                        border: checked ? '2px solid #0D4BFF' : '1px solid #e2e8f0',
+                        background: checked ? 'rgba(13,75,255,.08)' : '#f8fafc',
+                        color: checked ? '#0D4BFF' : '#64748b',
                         fontSize: 13, fontWeight: 700, fontFamily: 'inherit',
                         display: 'flex', alignItems: 'center', gap: 10,
                         transition: 'all .15s',
@@ -370,7 +460,7 @@ export default function CadastroPage() {
                     >
                       <div style={{
                         width: 18, height: 18, borderRadius: 4, flexShrink: 0,
-                        border: checked ? '2px solid #0D4BFF' : '2px solid rgba(255,255,255,.2)',
+                        border: checked ? '2px solid #0D4BFF' : '2px solid #cbd5e1',
                         background: checked ? '#0D4BFF' : 'transparent',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: 11, color: '#fff',
@@ -384,14 +474,13 @@ export default function CadastroPage() {
               </div>
               {errors.categories && <div className="login-error">{errors.categories}</div>}
 
-              {/* Atletas por categoria */}
               {form.categories.length > 0 && (
                 <div style={{ marginTop: 20 }}>
                   <label className="login-label">{t.athletesPerCat}</label>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 8 }}>
                     {form.categories.map(cat => (
                       <div key={cat}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.4)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>{cat}</div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>{cat}</div>
                         <input
                           className="login-input"
                           style={{ width: '100%', boxSizing: 'border-box' }}
@@ -406,8 +495,8 @@ export default function CadastroPage() {
                 </div>
               )}
 
-              <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-                <button className="login-btn" onClick={() => setStep(1)} style={{ background: 'rgba(255,255,255,.07)', color: 'rgba(255,255,255,.6)', boxShadow: 'none', flex: 1 }}>
+              <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+                <button className="login-btn" onClick={() => setStep(1)} style={{ background: '#f1f5f9', color: '#475569', boxShadow: 'none', border: '1px solid #e2e8f0', flex: 1 }}>
                   {t.btnBack}
                 </button>
                 <button className="login-btn" onClick={nextStep} style={{ background: '#0D4BFF', color: '#fff', boxShadow: '0 8px 28px rgba(13,75,255,.35)', flex: 2 }}>
@@ -428,13 +517,12 @@ export default function CadastroPage() {
               <input className="login-input" style={inputStyle} type="password" value={form.confirmPassword} onChange={e => set('confirmPassword', e.target.value)} placeholder="Repita a senha" autoComplete="new-password" />
               {errors.confirmPassword && <div className="login-error" style={{ marginTop: 4 }}>{errors.confirmPassword}</div>}
 
-              {/* Terms */}
               <div style={{ marginTop: 20 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.4)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 8 }}>{t.terms}</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#475569', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 8 }}>{t.terms}</div>
                 <div style={{
                   height: 140, overflowY: 'auto', padding: '12px 14px', borderRadius: 10,
-                  background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.08)',
-                  fontSize: 11, color: 'rgba(255,255,255,.3)', lineHeight: 1.7, whiteSpace: 'pre-line',
+                  background: '#f8fafc', border: '1px solid #e2e8f0',
+                  fontSize: 11, color: '#64748b', lineHeight: 1.7, whiteSpace: 'pre-line',
                 }}>
                   {TERMS_PT}
                 </div>
@@ -442,13 +530,13 @@ export default function CadastroPage() {
 
               <label style={{
                 display: 'flex', alignItems: 'flex-start', gap: 10, marginTop: 14, cursor: 'pointer',
-                fontSize: 13, color: form.terms ? 'rgba(255,255,255,.8)' : 'rgba(255,255,255,.4)',
+                fontSize: 13, color: form.terms ? '#0f172a' : '#94a3b8',
               }}>
                 <div
-                  onClick={() => { set('terms', !form.terms); }}
+                  onClick={() => set('terms', !form.terms)}
                   style={{
                     width: 18, height: 18, borderRadius: 4, flexShrink: 0, marginTop: 1,
-                    border: form.terms ? '2px solid #0D4BFF' : '2px solid rgba(255,255,255,.2)',
+                    border: form.terms ? '2px solid #0D4BFF' : '2px solid #cbd5e1',
                     background: form.terms ? '#0D4BFF' : 'transparent',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 11, color: '#fff', transition: 'all .15s', cursor: 'pointer',
@@ -463,7 +551,7 @@ export default function CadastroPage() {
               {serverError && <div className="login-error" style={{ marginTop: 12 }}>{serverError}</div>}
 
               <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-                <button type="button" className="login-btn" onClick={() => setStep(2)} style={{ background: 'rgba(255,255,255,.07)', color: 'rgba(255,255,255,.6)', boxShadow: 'none', flex: 1 }}>
+                <button type="button" className="login-btn" onClick={() => setStep(2)} style={{ background: '#f1f5f9', color: '#475569', boxShadow: 'none', border: '1px solid #e2e8f0', flex: 1 }}>
                   {t.btnBack}
                 </button>
                 <button type="submit" className="login-btn" disabled={loading} style={{ background: '#0D4BFF', color: '#fff', boxShadow: '0 8px 28px rgba(13,75,255,.35)', flex: 2 }}>
@@ -473,12 +561,12 @@ export default function CadastroPage() {
             </form>
           )}
 
-          <div style={{ marginTop: 20, textAlign: 'center', fontSize: 13, color: 'rgba(255,255,255,.3)' }}>
+          <div style={{ marginTop: 20, textAlign: 'center', fontSize: 13, color: '#94a3b8' }}>
             {t.loginLink}{' '}
             <a href="/portal/times/login" style={{ color: '#0D4BFF', textDecoration: 'none', fontWeight: 700 }}>{t.login}</a>
           </div>
           <div style={{ marginTop: 10, textAlign: 'center' }}>
-            <a href="/portal" style={{ fontSize: 12, color: 'rgba(255,255,255,.2)', textDecoration: 'none' }}>{t.back}</a>
+            <a href="/portal" style={{ fontSize: 12, color: '#94a3b8', textDecoration: 'none' }}>{t.back}</a>
           </div>
         </div>
       </div>

@@ -3,9 +3,9 @@
 import LogoutButton from './LogoutButton';
 
 const ROLE_COLORS = {
-  admin:      '#f4ff00',
-  viewer:     '#4d8aff',
-  blue_panda: '#4d8aff',
+  admin:      '#eab308',
+  viewer:     '#60a5fa',
+  blue_panda: '#60a5fa',
 };
 
 export default function TopbarUser({ name, role, initials }) {

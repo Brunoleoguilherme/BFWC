@@ -45,31 +45,36 @@ export default function ImportPage() {
     setSaving(false);
   }
 
+  const inputStyle = {
+    width: '100%', padding: '11px 14px', boxSizing: 'border-box',
+    background: '#f8fafc', border: '1px solid #e2e8f0',
+    borderRadius: 10, color: '#0f172a', fontSize: 13, outline: 'none',
+    fontFamily: "'Inter', sans-serif",
+  };
+
+  const labelStyle = {
+    display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: 2,
+    textTransform: 'uppercase', color: '#94a3b8', marginBottom: 5,
+  };
+
   const inp = (label, field, props = {}) => (
     <div style={{ marginBottom: 14 }}>
-      <label style={{ display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 5 }}>
-        {label}
-      </label>
+      <label style={labelStyle}>{label}</label>
       <input
         value={form[field]}
         onChange={e => set(field, e.target.value)}
-        style={{
-          width: '100%', padding: '11px 14px', boxSizing: 'border-box',
-          background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.1)',
-          borderRadius: 10, color: '#fff', fontSize: 13, outline: 'none',
-          fontFamily: "'Inter', sans-serif",
-        }}
+        style={inputStyle}
         {...props}
       />
     </div>
   );
 
   return (
-    <div style={{ fontFamily: "'Inter', sans-serif", color: '#fff', maxWidth: 900 }}>
+    <div style={{ fontFamily: "'Inter', sans-serif", color: '#0f172a', maxWidth: 900 }}>
       <div style={{ marginBottom: 32 }}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: '#f4ff00', marginBottom: 8 }}>CRM</div>
-        <h1 style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1.5, color: '#fff' }}>Importar Time</h1>
-        <p style={{ fontSize: 13, color: 'rgba(255,255,255,.3)', marginTop: 6 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: '#009c3b', marginBottom: 8 }}>CRM</div>
+        <h1 style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1.5, color: '#0f172a' }}>Importar Time</h1>
+        <p style={{ fontSize: 13, color: '#64748b', marginTop: 6 }}>
           Cadastre manualmente times que enviaram inscrição por e-mail ou outro canal.
         </p>
       </div>
@@ -77,8 +82,9 @@ export default function ImportPage() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 24, alignItems: 'flex-start' }}>
         {/* Form */}
         <form onSubmit={submit} style={{
-          background: 'linear-gradient(145deg, rgba(6,27,58,.5), rgba(2,8,22,.5))',
-          border: '1px solid rgba(255,255,255,.07)', borderRadius: 20, padding: 28,
+          background: '#ffffff',
+          border: '1px solid #e2e8f0', borderRadius: 20, padding: 28,
+          boxShadow: '0 1px 4px rgba(0,0,0,.06)',
         }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px' }}>
             {inp('Nome do Clube *', 'club_name', { required: true })}
@@ -92,18 +98,11 @@ export default function ImportPage() {
             {inp('Categoria (Flag, Touch, etc.)', 'category')}
 
             <div style={{ marginBottom: 14 }}>
-              <label style={{ display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 5 }}>
-                Apoio de Viagem
-              </label>
+              <label style={labelStyle}>Apoio de Viagem</label>
               <select
                 value={form.travel_support}
                 onChange={e => set('travel_support', e.target.value)}
-                style={{
-                  width: '100%', padding: '11px 14px', boxSizing: 'border-box',
-                  background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.1)',
-                  borderRadius: 10, color: '#fff', fontSize: 13, outline: 'none',
-                  fontFamily: "'Inter', sans-serif",
-                }}
+                style={inputStyle}
               >
                 <option value="no">Não necessário</option>
                 <option value="yes">Sim, precisa de apoio</option>
@@ -111,18 +110,11 @@ export default function ImportPage() {
             </div>
 
             <div style={{ marginBottom: 14 }}>
-              <label style={{ display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 5 }}>
-                Idioma
-              </label>
+              <label style={labelStyle}>Idioma</label>
               <select
                 value={form.language}
                 onChange={e => set('language', e.target.value)}
-                style={{
-                  width: '100%', padding: '11px 14px', boxSizing: 'border-box',
-                  background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.1)',
-                  borderRadius: 10, color: '#fff', fontSize: 13, outline: 'none',
-                  fontFamily: "'Inter', sans-serif",
-                }}
+                style={inputStyle}
               >
                 <option value="pt">Português</option>
                 <option value="en">English</option>
@@ -132,36 +124,22 @@ export default function ImportPage() {
           </div>
 
           <div style={{ marginBottom: 14 }}>
-            <label style={{ display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 5 }}>
-              Histórico Competitivo
-            </label>
+            <label style={labelStyle}>Histórico Competitivo</label>
             <textarea
               value={form.competitive_history}
               onChange={e => set('competitive_history', e.target.value)}
               rows={2}
-              style={{
-                width: '100%', padding: '11px 14px', boxSizing: 'border-box',
-                background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.1)',
-                borderRadius: 10, color: '#fff', fontSize: 13, outline: 'none', resize: 'vertical',
-                fontFamily: "'Inter', sans-serif",
-              }}
+              style={{ ...inputStyle, resize: 'vertical' }}
             />
           </div>
 
           <div style={{ marginBottom: 20 }}>
-            <label style={{ display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 5 }}>
-              Observações / Notas
-            </label>
+            <label style={labelStyle}>Observações / Notas</label>
             <textarea
               value={form.notes}
               onChange={e => set('notes', e.target.value)}
               rows={2}
-              style={{
-                width: '100%', padding: '11px 14px', boxSizing: 'border-box',
-                background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.1)',
-                borderRadius: 10, color: '#fff', fontSize: 13, outline: 'none', resize: 'vertical',
-                fontFamily: "'Inter', sans-serif",
-              }}
+              style={{ ...inputStyle, resize: 'vertical' }}
               placeholder="Anotações internas sobre este time..."
             />
           </div>
@@ -171,7 +149,7 @@ export default function ImportPage() {
               padding: '12px 16px', borderRadius: 10, marginBottom: 16,
               background: result.ok ? 'rgba(32,227,63,.08)' : 'rgba(255,68,68,.08)',
               border: `1px solid ${result.ok ? 'rgba(32,227,63,.25)' : 'rgba(255,68,68,.25)'}`,
-              color: result.ok ? '#20e33f' : '#ff6666', fontSize: 13, fontWeight: 600,
+              color: result.ok ? '#009c3b' : '#ff6666', fontSize: 13, fontWeight: 600,
             }}>
               {result.msg}
             </div>
@@ -182,7 +160,7 @@ export default function ImportPage() {
             disabled={saving || !form.club_name}
             style={{
               width: '100%', padding: 14,
-              background: saving ? 'rgba(244,255,0,.3)' : '#f4ff00',
+              background: saving ? 'rgba(244,255,0,.3)' : '#009c3b',
               color: '#031020', border: 'none', borderRadius: 12,
               fontSize: 13, fontWeight: 900, letterSpacing: 1.5, textTransform: 'uppercase',
               cursor: saving || !form.club_name ? 'not-allowed' : 'pointer',
@@ -195,29 +173,30 @@ export default function ImportPage() {
 
         {/* History */}
         <div style={{
-          background: 'linear-gradient(145deg, rgba(6,27,58,.5), rgba(2,8,22,.5))',
-          border: '1px solid rgba(255,255,255,.07)', borderRadius: 20, overflow: 'hidden',
+          background: '#ffffff',
+          border: '1px solid #e2e8f0', borderRadius: 20, overflow: 'hidden',
+          boxShadow: '0 1px 4px rgba(0,0,0,.06)',
           position: 'sticky', top: 80,
         }}>
-          <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,.07)' }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0' }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>
               Adicionados nesta sessão ({history.length})
             </span>
           </div>
           {history.length === 0 ? (
-            <div style={{ padding: 28, textAlign: 'center', color: 'rgba(255,255,255,.18)', fontSize: 12 }}>
+            <div style={{ padding: 28, textAlign: 'center', color: '#94a3b8', fontSize: 12 }}>
               Nenhum time adicionado ainda
             </div>
           ) : (
             history.map(t => (
               <div key={t.id} style={{
-                padding: '12px 20px', borderBottom: '1px solid rgba(255,255,255,.04)',
+                padding: '12px 20px', borderBottom: '1px solid #f1f5f9',
                 display: 'flex', alignItems: 'center', gap: 10,
               }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#20e33f', flexShrink: 0 }} />
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#009c3b', flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>{t.club_name}</div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,.3)' }}>{t.city}, {t.country}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#0f172a' }}>{t.club_name}</div>
+                  <div style={{ fontSize: 11, color: '#64748b' }}>{t.city}, {t.country}</div>
                 </div>
               </div>
             ))

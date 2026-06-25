@@ -66,7 +66,6 @@ export default function TimesLoginPage() {
     const saved = localStorage.getItem('bfwc_language');
     if (saved && T[saved]) setLang(saved);
     if (sessionStorage.getItem('bfwc_team_session')) router.replace('/portal/times');
-    // Check if redirected after email verification
     if (typeof window !== 'undefined' && window.location.search.includes('verified=1')) {
       setJustVerified(true);
     }
@@ -98,22 +97,33 @@ export default function TimesLoginPage() {
     }
   }
 
+  const ACCENT = '#0D4BFF';
+
   return (
     <div className="login-root">
-      <div className="login-glow" style={{ background: 'radial-gradient(circle, rgba(13,75,255,.08) 0%, transparent 65%)' }} />
+      <div className="login-card" style={{ overflow: 'hidden', paddingTop: 0 }}>
+        {/* Accent stripe */}
+        <div style={{ height: 4, background: `linear-gradient(90deg, ${ACCENT}, #60a5fa)`, margin: '0 -44px 36px', width: 'calc(100% + 88px)' }} />
 
-      <div className="login-card">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
-          <Image src="/assets/bfwc-logo.jpg" alt="BFWC" width={52} height={52} style={{ borderRadius: 12, objectFit: 'cover' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+          <div style={{
+            width: 52, height: 52, borderRadius: 14, flexShrink: 0,
+            background: ACCENT + '12', border: `1.5px solid ${ACCENT}30`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+          }}>
+            <Image src="/assets/bfwc-logo.jpg" alt="BFWC" width={52} height={52} style={{ objectFit: 'cover' }} />
+          </div>
           <div>
-            <div className="login-badge" style={{ marginBottom: 4 }}>{t.badge}</div>
-            <h1 className="login-title" style={{ fontSize: 28, marginBottom: 0 }}>{t.title} <span>2026</span></h1>
+            <div className="login-badge" style={{ marginBottom: 4, borderColor: ACCENT + '30', color: ACCENT }}>{t.badge}</div>
+            <h1 className="login-title" style={{ fontSize: 26, marginBottom: 0 }}>
+              {t.title} <span style={{ color: ACCENT }}>2026</span>
+            </h1>
           </div>
         </div>
-        <p className="login-sub">{t.sub}</p>
+        <p className="login-sub" style={{ marginBottom: 28 }}>{t.sub}</p>
 
         {justVerified && (
-          <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 10, background: 'rgba(32,227,63,.08)', border: '1px solid rgba(32,227,63,.2)', fontSize: 13, color: '#20e33f', lineHeight: 1.5 }}>
+          <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 10, background: 'rgba(0,156,59,.08)', border: '1px solid rgba(0,156,59,.25)', fontSize: 13, color: '#009c3b', lineHeight: 1.5 }}>
             {t.verified}
           </div>
         )}
@@ -143,19 +153,22 @@ export default function TimesLoginPage() {
 
           <button
             className="login-btn" type="submit" disabled={loading}
-            style={{ background: '#0D4BFF', color: '#fff', boxShadow: '0 8px 28px rgba(13,75,255,.35)' }}
+            style={{ background: ACCENT, color: '#fff', boxShadow: `0 4px 18px ${ACCENT}40` }}
           >
             {loading ? t.loading : t.btn}
           </button>
         </form>
 
-        <div style={{ marginTop: 24, textAlign: 'center', fontSize: 13, color: 'rgba(255,255,255,.3)' }}>
+        <div style={{ marginTop: 20, textAlign: 'center', fontSize: 13, color: '#64748b' }}>
           {t.noAccount}{' '}
-          <a href="/portal/times/cadastro" style={{ color: '#0D4BFF', textDecoration: 'none', fontWeight: 700 }}>{t.register}</a>
+          <a href="/portal/times/cadastro" style={{ color: ACCENT, textDecoration: 'none', fontWeight: 700 }}>{t.register}</a>
         </div>
 
-        <div style={{ marginTop: 14, textAlign: 'center' }}>
-          <a href="/portal" style={{ fontSize: 12, color: 'rgba(255,255,255,.2)', textDecoration: 'none' }}>{t.back}</a>
+        <div style={{ marginTop: 12, textAlign: 'center' }}>
+          <a href="/portal" style={{ fontSize: 12, color: '#94a3b8', textDecoration: 'none', transition: 'color .2s' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#475569'}
+            onMouseLeave={e => e.currentTarget.style.color = '#94a3b8'}
+          >{t.back}</a>
         </div>
       </div>
     </div>

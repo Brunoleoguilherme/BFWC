@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getResend, fromEmail, adminEmails } from '@/lib/email';
 import { randomUUID } from 'crypto';
-import { createHash, pbkdf2Sync, randomBytes } from 'crypto';
+import { pbkdf2Sync, randomBytes } from 'crypto';
 
 function hashPassword(password) {
   const salt = randomBytes(16).toString('hex');
@@ -26,28 +26,77 @@ function verifyEmailHtml({ club_name, contact_name, verifyUrl }) {
   </div>`;
 }
 
-function adminNewTeamHtml({ club_name, contact_name, email, country, city, category, approveUrl }) {
+function adminNewTeamHtml({ club_name, contact_name, email, country, city, category, logo_url, approveUrl }) {
   return `
   <div style="font-family:Inter,sans-serif;background:#031020;color:#fff;padding:40px 24px;max-width:560px;margin:0 auto;border-radius:16px">
     <h1 style="font-size:28px;font-weight:900;margin:0 0 6px">BFWC <span style="color:#f4ff00">2026</span></h1>
     <p style="color:rgba(255,255,255,.4);font-size:13px;margin:0 0 28px">Novo cadastro no Portal</p>
     <h2 style="font-size:18px;font-weight:800;margin:0 0 16px">✅ Novo clube aguardando aprovação</h2>
+    ${logo_url ? `<img src="${logo_url}" alt="Logo do clube" style="width:64px;height:64px;object-fit:contain;border-radius:8px;background:rgba(255,255,255,.05);margin-bottom:16px;display:block">` : ''}
     <table style="width:100%;border-collapse:collapse;margin-bottom:24px">
       ${[['Clube', club_name],['Contato', contact_name],['E-mail', email],['País', country],['Cidade', city],['Categoria', category]].map(([l,v]) => `
         <tr><td style="padding:8px 0;color:rgba(255,255,255,.4);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;width:100px">${l}</td>
         <td style="padding:8px 0;color:#fff;font-size:14px">${v || '—'}</td></tr>`).join('')}
     </table>
-    <a href="${approveUrl}" style="display:inline-block;padding:14px 32px;background:#20e33f;color:#031020;font-weight:900;font-size:14px;text-decoration:none;border-radius:10px;letter-spacing:1px;text-transform:uppercase">
+    <a href="${approveUrl}" style="display:inline-block;padding:14px 32px;background:#009c3b;color:#fff;font-weight:900;font-size:14px;text-decoration:none;border-radius:10px;letter-spacing:1px;text-transform:uppercase">
       Aprovar cadastro →
     </a>
     <p style="color:rgba(255,255,255,.3);font-size:12px;margin:16px 0 0">Ou acesse o painel admin para gerenciar.</p>
   </div>`;
 }
 
+async function uploadLogo(supabase, file, teamId) {
+  try {
+    const allowed = ['image/png', 'image/jpeg', 'image/jpg'];
+    if (!allowed.includes(file.type)) return null;
+
+    const bytes = await file.arrayBuffer();
+    if (bytes.byteLength > 2 * 1024 * 1024) return null;
+
+    const ext = file.name.split('.').pop().toLowerCase() || 'png';
+    const path = `teams/${teamId}/logo.${ext}`;
+
+    const { error } = await supabase.storage
+      .from('portal-media')
+      .upload(path, bytes, { contentType: file.type, upsert: true });
+
+    if (error) { console.error('logo upload error', error); return null; }
+
+    const { data } = supabase.storage.from('portal-media').getPublicUrl(path);
+    return data.publicUrl;
+  } catch (e) {
+    console.error('logo upload exception', e);
+    return null;
+  }
+}
+
 export async function POST(req) {
   try {
-    const body = await req.json();
-    const { club_name, country, city, contact_name, contact_role, email, whatsapp, category, athletes_count, password, language = 'pt' } = body;
+    // Support both FormData (new) and JSON (legacy)
+    const contentType = req.headers.get('content-type') || '';
+    let club_name, country, city, contact_name, contact_role, email, whatsapp,
+        category, athletes_count, password, language, logoFile;
+
+    if (contentType.includes('multipart/form-data')) {
+      const fd = await req.formData();
+      club_name     = fd.get('club_name');
+      country       = fd.get('country');
+      city          = fd.get('city');
+      contact_name  = fd.get('contact_name');
+      contact_role  = fd.get('contact_role');
+      email         = fd.get('email');
+      whatsapp      = fd.get('whatsapp');
+      category      = fd.get('category');
+      athletes_count= fd.get('athletes_count');
+      password      = fd.get('password');
+      language      = fd.get('language') || 'pt';
+      const logo    = fd.get('logo');
+      if (logo && logo.size > 0) logoFile = logo;
+    } else {
+      const body = await req.json();
+      ({ club_name, country, city, contact_name, contact_role, email, whatsapp,
+         category, athletes_count, password, language = 'pt' } = body);
+    }
 
     const required = { club_name, contact_name, email, password };
     const missing = Object.entries(required).filter(([,v]) => !v).map(([k]) => k);
@@ -77,6 +126,15 @@ export async function POST(req) {
 
     if (error) throw error;
 
+    // Upload logo if provided
+    let logo_url = null;
+    if (logoFile && team?.id) {
+      logo_url = await uploadLogo(supabase, logoFile, team.id);
+      if (logo_url) {
+        await supabase.from('portal_teams').update({ logo_url }).eq('id', team.id);
+      }
+    }
+
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://brasilflagworldchampionship.com';
     const verifyUrl = `${siteUrl}/api/portal/times/verify-email?token=${verification_token}`;
     const approveUrl = `${siteUrl}/admin/portal-teams`;
@@ -93,7 +151,7 @@ export async function POST(req) {
         from: fromEmail,
         to,
         subject: `[BFWC Portal] Novo clube aguardando aprovação: ${club_name}`,
-        html: adminNewTeamHtml({ club_name, contact_name, email, country, city, category, approveUrl }),
+        html: adminNewTeamHtml({ club_name, contact_name, email, country, city, category, logo_url, approveUrl }),
       })),
     ]);
 

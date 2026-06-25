@@ -6,10 +6,10 @@ import { useSearchParams } from 'next/navigation';
 const S = {
   card: {
     padding: '16px 18px', marginBottom: 10,
-    background: 'linear-gradient(145deg, rgba(6,27,58,.65), rgba(2,8,22,.55))',
-    border: '1px solid rgba(255,255,255,.08)',
+    background: '#ffffff',
+    border: '1px solid #e2e8f0',
     borderRadius: 16,
-    boxShadow: '0 2px 12px rgba(0,0,0,.3)',
+    boxShadow: '0 1px 4px rgba(0,0,0,.06)',
     transition: 'border-color .15s, transform .15s, box-shadow .15s, opacity .15s',
   },
   tag: (color) => ({
@@ -19,14 +19,14 @@ const S = {
   }),
   mInput: {
     width: '100%', padding: '13px 16px',
-    background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.09)',
-    borderRadius: 12, color: '#fff', fontSize: 13, outline: 'none', marginBottom: 12,
+    background: '#f8fafc', border: '1px solid #e2e8f0',
+    borderRadius: 12, color: '#0f172a', fontSize: 13, outline: 'none', marginBottom: 12,
     fontFamily: "'Inter', sans-serif",
   },
   mSaveBtn: (sent) => ({
     padding: '11px 24px', borderRadius: 12,
     fontSize: 12, fontWeight: 900, letterSpacing: 1.5, textTransform: 'uppercase',
-    background: sent ? '#20e33f' : '#f4ff00',
+    background: sent ? '#009c3b' : '#009c3b',
     color: '#031020', border: 'none', cursor: 'pointer',
     fontFamily: "'Inter', sans-serif",
   }),
@@ -39,18 +39,18 @@ const S = {
   mEmailOpt: (sel) => ({
     padding: '9px 16px', borderRadius: 10, fontSize: 12, fontWeight: 600,
     cursor: 'pointer', fontFamily: 'inherit',
-    background: sel ? 'rgba(244,255,0,.09)' : 'rgba(255,255,255,.04)',
-    border: `1px solid ${sel ? 'rgba(244,255,0,.3)' : 'rgba(255,255,255,.09)'}`,
-    color: sel ? '#f4ff00' : 'rgba(255,255,255,.45)',
+    background: sel ? '#031020' : '#f1f5f9',
+    border: `1px solid ${sel ? '#031020' : '#e2e8f0'}`,
+    color: sel ? '#fff' : '#475569',
     transition: 'all .2s',
   }),
 };
 
 const STATUSES = [
   { key: 'pre_inscrito',         label: 'Pré-inscritos', color: '#a855f7' },
-  { key: 'pendente_analise',     label: 'Pendente',      color: 'rgba(255,255,255,.5)' },
-  { key: 'em_revisao',           label: 'Em Revisão',    color: '#f4ff00' },
-  { key: 'aprovado',             label: 'Aprovado',      color: '#20e33f' },
+  { key: 'pendente_analise',     label: 'Pendente',      color: '#94a3b8' },
+  { key: 'em_revisao',           label: 'Em Revisão',    color: '#009c3b' },
+  { key: 'aprovado',             label: 'Aprovado',      color: '#009c3b' },
   { key: 'inscricao_confirmada', label: 'Confirmado',    color: '#0D4BFF' },
   { key: 'rejeitado',            label: 'Rejeitado',     color: '#ff4444' },
 ];
@@ -71,9 +71,9 @@ function Card({ team, onClick, isDragging, onDragStart, onDragEnd }) {
         ...S.card,
         cursor: isDragging ? 'grabbing' : 'grab',
         opacity: isDragging ? 0.35 : 1,
-        borderColor: hov && !isDragging ? 'rgba(244,255,0,.28)' : 'rgba(255,255,255,.08)',
+        borderColor: hov && !isDragging ? '#334155' : '#e2e8f0',
         transform: hov && !isDragging ? 'translateY(-2px)' : 'none',
-        boxShadow: hov && !isDragging ? '0 12px 40px rgba(0,0,0,.5)' : '0 2px 12px rgba(0,0,0,.3)',
+        boxShadow: hov && !isDragging ? '0 6px 20px rgba(0,0,0,.1)' : '0 1px 4px rgba(0,0,0,.06)',
         userSelect: 'none',
       }}
       onClick={() => !isDragging && onClick(team)}
@@ -81,18 +81,18 @@ function Card({ team, onClick, isDragging, onDragStart, onDragEnd }) {
       onMouseLeave={() => setHov(false)}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{team.club_name}</span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>{team.club_name}</span>
         {team.travel_support === 'yes' && <span style={{ fontSize: 12 }}>✈️</span>}
       </div>
-      <div style={{ fontSize: 11, color: 'rgba(255,255,255,.32)', margin: '4px 0 10px' }}>
+      <div style={{ fontSize: 11, color: '#64748b', margin: '4px 0 10px' }}>
         {[team.city, team.country].filter(Boolean).join(' · ')}
       </div>
       <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>
         {team.category && <Tag label={team.category.split(',')[0].trim()} color="#0D4BFF" />}
-        {team.athletes_count && <Tag label={`${team.athletes_count} atletas`} color="rgba(255,255,255,.38)" />}
+        {team.athletes_count && <Tag label={`${team.athletes_count} atletas`} color="#64748b" />}
         {team.flagged_suspect && <Tag label="⚠ Suspeito" color="#ff4444" />}
       </div>
-      <div style={{ fontSize: 10, color: 'rgba(255,255,255,.2)' }}>
+      <div style={{ fontSize: 10, color: '#94a3b8' }}>
         {new Date(team.created_at).toLocaleDateString('pt-BR')}
       </div>
     </div>
@@ -118,7 +118,7 @@ function Modal({ team, onClose, onUpdate, readOnly = false }) {
 
   const t = detail?.team || team;
   const events = detail?.events || [];
-  const statusInfo = STATUS_MAP[t.status] || { color: 'rgba(255,255,255,.4)', label: t.status };
+  const statusInfo = STATUS_MAP[t.status] || { color: '#94a3b8', label: t.status };
 
   async function updateStatus(s) {
     await fetch(`/api/admin/teams/${t.id}`, {
@@ -173,8 +173,8 @@ function Modal({ team, onClose, onUpdate, readOnly = false }) {
   return (
     <div
       style={{
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,.82)',
-        backdropFilter: 'blur(10px)', zIndex: 1000,
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)',
+        backdropFilter: 'blur(6px)', zIndex: 1000,
         display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
         padding: '32px 16px', overflowY: 'auto', fontFamily: "'Inter', sans-serif",
       }}
@@ -182,62 +182,62 @@ function Modal({ team, onClose, onUpdate, readOnly = false }) {
     >
       <div style={{
         width: '100%', maxWidth: 760, position: 'relative', padding: '44px 48px',
-        background: 'linear-gradient(145deg, #030d1f, #020814)',
-        border: '1px solid rgba(255,255,255,.1)', borderRadius: 28,
-        boxShadow: '0 60px 180px rgba(0,0,0,.9)',
+        background: '#ffffff',
+        border: '1px solid #e2e8f0', borderRadius: 28,
+        boxShadow: '0 20px 60px rgba(0,0,0,.15)',
       }}>
         <button style={{
           position: 'absolute', top: 20, right: 20, width: 34, height: 34, borderRadius: 10,
-          background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)',
-          color: 'rgba(255,255,255,.4)', fontSize: 15, cursor: 'pointer',
+          background: '#f1f5f9', border: '1px solid #e2e8f0',
+          color: '#64748b', fontSize: 15, cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit',
         }} onClick={onClose}>✕</button>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4, flexWrap: 'wrap' }}>
-          <h2 style={{ fontSize: 26, fontWeight: 900, letterSpacing: -1, color: '#fff' }}>{t.club_name}</h2>
+          <h2 style={{ fontSize: 26, fontWeight: 900, letterSpacing: -1, color: '#0f172a' }}>{t.club_name}</h2>
           <Tag label={statusInfo.label} color={statusInfo.color} />
           {t.flagged_suspect && <Tag label="⚠ Suspeito" color="#ff4444" />}
         </div>
-        <p style={{ fontSize: 12, color: 'rgba(255,255,255,.28)', marginBottom: 28 }}>
+        <p style={{ fontSize: 12, color: '#64748b', marginBottom: 28 }}>
           Cadastro em {new Date(t.created_at).toLocaleString('pt-BR')}
         </p>
 
         <div style={{
           display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 40px',
           padding: '22px 24px', borderRadius: 16,
-          background: 'rgba(255,255,255,.025)', border: '1px solid rgba(255,255,255,.06)',
+          background: '#f8fafc', border: '1px solid #e2e8f0',
           marginBottom: 24,
         }}>
           {fields.map(([label, value]) => (
             <div key={label}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: 3 }}>{label}</div>
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,.8)', marginBottom: 14 }}>{String(value)}</div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 3 }}>{label}</div>
+              <div style={{ fontSize: 13, color: '#0f172a', marginBottom: 14 }}>{String(value)}</div>
             </div>
           ))}
         </div>
 
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.25)', marginBottom: 10 }}>E-mail do clube</div>
+          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 10 }}>E-mail do clube</div>
           <input style={S.mInput} value={teamEmail} onChange={e => setTeamEmail(e.target.value)} placeholder="email@clube.com" />
         </div>
 
         {!readOnly && (
           <>
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.25)', marginBottom: 10 }}>Mover para</div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 10 }}>Mover para</div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {STATUSES.filter(s => s.key !== t.status).map(s => (
                   <button key={s.key} style={S.mActionBtn(s.color)} onClick={() => { updateStatus(s.key); onClose(); }}>{s.label}</button>
                 ))}
                 <button style={S.mActionBtn('#ff4444')} onClick={() => { updateStatus('spam_descartado'); onClose(); }}>🗑 Spam</button>
-                <button style={S.mActionBtn('#f4ff00')} onClick={toggleSuspect}>{t.flagged_suspect ? '✓ Desmarcar' : '⚠ Suspeito'}</button>
+                <button style={S.mActionBtn('#009c3b')} onClick={toggleSuspect}>{t.flagged_suspect ? '✓ Desmarcar' : '⚠ Suspeito'}</button>
               </div>
             </div>
 
-            <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,.06)', margin: '24px 0' }} />
+            <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '24px 0' }} />
 
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.25)', marginBottom: 10 }}>Enviar e-mail</div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 10 }}>Enviar e-mail</div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
                 {[['aprovado','✓ Aprovado'],['info_adicional','? Pedir info'],['rejeitado','✕ Rejeitado']].map(([k,l]) => (
                   <button key={k} style={S.mEmailOpt(emailTpl === k)} onClick={() => setEmailTpl(emailTpl === k ? '' : k)}>{l}</button>
@@ -250,10 +250,10 @@ function Modal({ team, onClose, onUpdate, readOnly = false }) {
               )}
             </div>
 
-            <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,.06)', margin: '24px 0' }} />
+            <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '24px 0' }} />
 
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.25)', marginBottom: 10 }}>Anotações internas</div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 10 }}>Anotações internas</div>
               <textarea
                 style={{ ...S.mInput, resize: 'vertical', minHeight: 80 }}
                 value={notes} onChange={e => setNotes(e.target.value)}
@@ -267,22 +267,22 @@ function Modal({ team, onClose, onUpdate, readOnly = false }) {
         )}
 
         {readOnly && (
-          <div style={{ padding: '14px 18px', borderRadius: 12, background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', fontSize: 12, color: 'rgba(255,255,255,.35)', textAlign: 'center', marginBottom: 20 }}>
+          <div style={{ padding: '14px 18px', borderRadius: 12, background: '#f1f5f9', border: '1px solid #e2e8f0', fontSize: 12, color: '#64748b', textAlign: 'center', marginBottom: 20 }}>
             Modo somente leitura — apenas admins podem alterar dados
           </div>
         )}
 
         {events.length > 0 && (
           <>
-            <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,.06)', margin: '24px 0' }} />
-            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.25)', marginBottom: 10 }}>Histórico</div>
+            <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '24px 0' }} />
+            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 10 }}>Histórico</div>
             {events.map(ev => (
               <div key={ev.id} style={{
                 padding: '12px 16px', borderRadius: 12, marginBottom: 8,
-                background: 'rgba(255,255,255,.025)', border: '1px solid rgba(255,255,255,.06)',
-                fontSize: 12, color: 'rgba(255,255,255,.55)',
+                background: '#f8fafc', border: '1px solid #e2e8f0',
+                fontSize: 12, color: '#475569',
               }}>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,.24)', marginBottom: 4 }}>
+                <div style={{ fontSize: 10, color: '#94a3b8', marginBottom: 4 }}>
                   {new Date(ev.created_at).toLocaleString('pt-BR')} · {ev.created_by}
                 </div>
                 {ev.description}
@@ -364,7 +364,7 @@ export default function TeamsPage() {
     : STATUSES;
 
   return (
-    <div style={{ fontFamily: "'Inter', sans-serif", color: '#fff' }}>
+    <div style={{ fontFamily: "'Inter', sans-serif", color: '#0f172a' }}>
       <style>{`
         .teams-stats { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
         .teams-stat-card { flex: 1; min-width: 100px; padding: 18px 20px; border-radius: 16px; }
@@ -382,12 +382,12 @@ export default function TeamsPage() {
       `}</style>
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: '#f4ff00', marginBottom: 8 }}>CRM</div>
-        <h1 className="teams-title" style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1.5, color: '#fff', marginBottom: 0 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: '#009c3b', marginBottom: 8 }}>CRM</div>
+        <h1 className="teams-title" style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1.5, color: '#0f172a', marginBottom: 0 }}>
           {filterStatus ? (STATUS_MAP[filterStatus]?.label || filterStatus) : 'Times Inscritos'}
         </h1>
         {filterStatus && (
-          <a href="/admin/teams" style={{ display: 'inline-block', marginTop: 8, fontSize: 12, color: 'rgba(255,255,255,.35)', textDecoration: 'none' }}>
+          <a href="/admin/teams" style={{ display: 'inline-block', marginTop: 8, fontSize: 12, color: '#64748b', textDecoration: 'none' }}>
             ← Ver todos
           </a>
         )}
@@ -403,14 +403,13 @@ export default function TeamsPage() {
         ].map(s => (
           <div key={s.label} style={{
             flex: 1, minWidth: 130, padding: '18px 22px',
-            background: s.alert
-              ? 'linear-gradient(145deg, rgba(244,255,0,.06), rgba(2,8,22,.7))'
-              : 'linear-gradient(145deg, rgba(13,75,255,.08), rgba(2,8,22,.7))',
-            border: `1px solid ${s.alert ? 'rgba(244,255,0,.22)' : 'rgba(255,255,255,.07)'}`,
+            background: s.alert ? '#fffde7' : '#ffffff',
+            border: `1px solid ${s.alert ? 'rgba(244,255,0,.4)' : '#e2e8f0'}`,
             borderRadius: 16,
+            boxShadow: '0 1px 4px rgba(0,0,0,.06)',
           }}>
-            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: s.alert ? '#f4ff00' : 'rgba(255,255,255,.32)', marginBottom: 8 }}>{s.label}</div>
-            <div style={{ fontSize: 38, fontWeight: 900, letterSpacing: -2, lineHeight: 1, color: '#fff' }}>{s.value}</div>
+            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: s.alert ? '#009c3b' : '#64748b', marginBottom: 8 }}>{s.label}</div>
+            <div style={{ fontSize: 38, fontWeight: 900, letterSpacing: -2, lineHeight: 1, color: '#0f172a' }}>{s.value}</div>
           </div>
         ))}
       </div>
@@ -420,8 +419,8 @@ export default function TeamsPage() {
         <input
           style={{
             flex: 1, minWidth: 280, padding: '12px 18px',
-            background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.09)',
-            borderRadius: 12, color: '#fff', fontSize: 14, outline: 'none',
+            background: '#ffffff', border: '1px solid #e2e8f0',
+            borderRadius: 12, color: '#0f172a', fontSize: 14, outline: 'none',
             fontFamily: "'Inter', sans-serif",
           }}
           placeholder="Buscar por clube, cidade, país..."
@@ -434,9 +433,9 @@ export default function TeamsPage() {
           <button key={b.label} onClick={b.fn} style={{
             padding: '12px 18px', borderRadius: 12, fontSize: 12, fontWeight: 700,
             letterSpacing: 1, cursor: 'pointer',
-            background: b.active ? 'rgba(244,255,0,.09)' : 'rgba(255,255,255,.04)',
-            border: `1px solid ${b.active ? 'rgba(244,255,0,.28)' : 'rgba(255,255,255,.09)'}`,
-            color: b.active ? '#f4ff00' : 'rgba(255,255,255,.45)',
+            background: b.active ? '#031020' : '#f1f5f9',
+            border: `1px solid ${b.active ? '#031020' : '#e2e8f0'}`,
+            color: b.active ? '#fff' : '#475569',
             textTransform: 'uppercase', fontFamily: "'Inter', sans-serif",
           }}>{b.label}</button>
         ))}
@@ -444,11 +443,11 @@ export default function TeamsPage() {
 
       {/* Board / List */}
       {loading ? (
-        <div style={{ color: 'rgba(255,255,255,.25)', textAlign: 'center', paddingTop: 80, fontSize: 14 }}>Carregando...</div>
+        <div style={{ color: '#94a3b8', textAlign: 'center', paddingTop: 80, fontSize: 14 }}>Carregando...</div>
       ) : filterStatus ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
           {filtered.length === 0 ? (
-            <div style={{ border: '1px dashed rgba(255,255,255,.07)', borderRadius: 14, padding: 40, textAlign: 'center', color: 'rgba(255,255,255,.2)', fontSize: 13 }}>
+            <div style={{ border: '1px dashed #e2e8f0', borderRadius: 14, padding: 40, textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>
               Nenhum time com este status
             </div>
           ) : (
@@ -469,7 +468,7 @@ export default function TeamsPage() {
                   <div className="teams-col-divider" style={{
                     width: 1,
                     alignSelf: 'stretch',
-                    background: 'rgba(255,255,255,.05)',
+                    background: '#e2e8f0',
                     margin: '0 10px',
                     flexShrink: 0,
                   }} />
@@ -489,8 +488,8 @@ export default function TeamsPage() {
                   {/* Column header */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, padding: '0 2px' }}>
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: col.color, flexShrink: 0 }} />
-                    <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,.55)' }}>{col.label}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 9px', borderRadius: 20, background: 'rgba(255,255,255,.06)', color: 'rgba(255,255,255,.3)' }}>{items.length}</span>
+                    <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: '#475569' }}>{col.label}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 9px', borderRadius: 20, background: '#e2e8f0', color: '#64748b' }}>{items.length}</span>
                   </div>
 
                   {/* Drop zone */}
@@ -517,8 +516,8 @@ export default function TeamsPage() {
                     ))}
                     {items.length === 0 && !isOver && (
                       <div style={{
-                        border: '1px dashed rgba(255,255,255,.06)', borderRadius: 14,
-                        padding: 28, textAlign: 'center', color: 'rgba(255,255,255,.14)', fontSize: 12,
+                        border: '1px dashed #e2e8f0', borderRadius: 14,
+                        padding: 28, textAlign: 'center', color: '#94a3b8', fontSize: 12,
                       }}>
                         Nenhum time
                       </div>

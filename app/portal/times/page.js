@@ -8,16 +8,18 @@ const YELLOW = '#f4ff00';
 const GREEN  = '#20e33f';
 
 const card = (extra = {}) => ({
-  background: 'rgba(3,16,32,.72)',
-  backdropFilter: 'blur(18px)',
-  border: '1px solid rgba(255,255,255,.1)',
+  background: 'rgba(255,255,255,.10)',
+  backdropFilter: 'blur(24px)',
+  WebkitBackdropFilter: 'blur(24px)',
+  border: '1px solid rgba(255,255,255,.18)',
   borderRadius: 16, padding: '20px 20px', ...extra,
 });
 
 const miniCard = (extra = {}) => ({
-  background: 'rgba(3,16,32,.55)',
-  backdropFilter: 'blur(10px)',
-  border: '1px solid rgba(255,255,255,.09)',
+  background: 'rgba(255,255,255,.07)',
+  backdropFilter: 'blur(14px)',
+  WebkitBackdropFilter: 'blur(14px)',
+  border: '1px solid rgba(255,255,255,.12)',
   borderRadius: 12, padding: '12px 14px', ...extra,
 });
 
@@ -194,6 +196,20 @@ function AthleteCard({ a, onEdit, onDelete, deletingId }) {
   );
 }
 
+// ── Validação de idade por categoria ─────────────────────────────
+function checkCategoryAge(birthDate, category) {
+  if (!birthDate || !category) return null;
+  const EVENT_YEAR = 2026;
+  const limits = { 'Sub-15': 15, 'Sub-12': 12 };
+  const maxAge = limits[category];
+  if (!maxAge) return null;
+  const minBirthYear = EVENT_YEAR - maxAge;
+  const birthYear = new Date(birthDate + 'T00:00:00').getFullYear();
+  if (birthYear < minBirthYear)
+    return `${category}: nascimento deve ser a partir de ${minBirthYear} (atleta nascido em ${birthYear} é muito velho para esta categoria).`;
+  return null;
+}
+
 // ── Edit modal (mobile-friendly overlay) ─────────────────────────
 function EditModal({ athlete, onSave, onCancel, cats = [] }) {
   const [data, setData] = useState({
@@ -202,12 +218,20 @@ function EditModal({ athlete, onSave, onCancel, cats = [] }) {
     birth_date: athlete.birth_date || '', document: athlete.document || '',
   });
   const [saving, setSaving] = useState(false);
+  const [saveErr, setSaveErr] = useState('');
+
+  // Validação de idade em tempo real
+  const ageError = checkCategoryAge(data.birth_date, data.category);
 
   async function save() {
-    setSaving(true);
+    if (ageError) { setSaveErr(ageError); return; }
+    setSaving(true); setSaveErr('');
     await onSave(athlete.id, data);
     setSaving(false);
   }
+
+  const subCategory = ['Sub-15', 'Sub-12'].includes(data.category);
+  const minBirthYear = data.category === 'Sub-15' ? 2011 : data.category === 'Sub-12' ? 2014 : null;
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(2,8,20,.92)', zIndex: 1000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', backdropFilter: 'blur(6px)' }}>
@@ -228,15 +252,31 @@ function EditModal({ athlete, onSave, onCancel, cats = [] }) {
           </div>
           <div><label style={lbl}>E-mail</label><input style={inputSt} type="email" value={data.email} onChange={e => setData(p => ({ ...p, email: e.target.value }))} placeholder="email@atleta.com" /></div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <div><label style={lbl}>Nascimento</label><input style={inputSt} type="date" value={data.birth_date} onChange={e => setData(p => ({ ...p, birth_date: e.target.value }))} /></div>
+            <div>
+              <label style={lbl}>
+                Nascimento{subCategory && <span style={{ color: '#f97316', marginLeft: 4 }}>≥ {minBirthYear}</span>}
+              </label>
+              <input
+                style={{ ...inputSt, borderColor: ageError ? '#ff4444' : 'rgba(255,255,255,.1)' }}
+                type="date"
+                value={data.birth_date}
+                onChange={e => setData(p => ({ ...p, birth_date: e.target.value }))}
+              />
+            </div>
             <div><label style={lbl}>CPF / Passaporte</label><input style={inputSt} value={data.document} onChange={e => setData(p => ({ ...p, document: e.target.value }))} placeholder="000.000.000-00" /></div>
           </div>
+          {ageError && (
+            <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(255,68,68,.1)', border: '1px solid rgba(255,68,68,.25)', fontSize: 12, color: '#ff8888', lineHeight: 1.5 }}>
+              🚫 {ageError}
+            </div>
+          )}
         </div>
+        {(saveErr && !ageError) && <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(255,68,68,.1)', border: '1px solid rgba(255,68,68,.2)', fontSize: 12, color: '#ff8888', marginBottom: 10 }}>{saveErr}</div>}
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={onCancel} style={{ flex: 1, padding: '14px', borderRadius: 12, border: '1px solid rgba(255,255,255,.1)', background: 'rgba(255,255,255,.05)', color: 'rgba(255,255,255,.5)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
             Cancelar
           </button>
-          <button onClick={save} disabled={saving} style={{ flex: 2, padding: '14px', borderRadius: 12, border: 'none', background: GREEN, color: '#031020', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
+          <button onClick={save} disabled={saving || !!ageError} style={{ flex: 2, padding: '14px', borderRadius: 12, border: 'none', background: ageError ? 'rgba(255,68,68,.3)' : GREEN, color: ageError ? '#ff8888' : '#031020', fontSize: 14, fontWeight: 800, cursor: ageError ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
             {saving ? 'Salvando...' : '✓ Salvar'}
           </button>
         </div>
@@ -529,9 +569,25 @@ export default function TimesPortalPage() {
     });
   }
 
+  function validateCategoryAge(birthDate, category) {
+    if (!birthDate || !category) return null;
+    const EVENT_YEAR = 2026;
+    const limits = { 'Sub-15': 15, 'Sub-12': 12 };
+    const maxAge = limits[category];
+    if (!maxAge) return null;
+    const minBirthYear = EVENT_YEAR - maxAge;
+    const birthYear = new Date(birthDate + 'T00:00:00').getFullYear();
+    if (birthYear < minBirthYear) {
+      return `Categoria ${category}: nascimento deve ser a partir de ${minBirthYear}. Este atleta (${birthYear}) é muito velho para esta categoria.`;
+    }
+    return null;
+  }
+
   async function addAthlete(e) {
     e.preventDefault();
     if (!newAth.name.trim()) { setAthError('Nome obrigatório.'); return; }
+    const ageErr = validateCategoryAge(newAth.birth_date, newAth.category);
+    if (ageErr) { setAthError(ageErr); return; }
     setAthSaving(true); setAthError('');
     const r = await fetch('/api/portal/times/atletas', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -655,9 +711,9 @@ export default function TimesPortalPage() {
 
   return (
     <div style={{ minHeight: '100vh', fontFamily: "'Inter', sans-serif", color: '#fff', position: 'relative' }}>
-      {/* Background — mesmo padrão do site */}
-      <div style={{ position: 'fixed', inset: 0, zIndex: 0, backgroundImage: "url('/assets/hero-rio-athletes.png')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }} />
-      <div style={{ position: 'fixed', inset: 0, zIndex: 1, background: 'linear-gradient(180deg,rgba(3,16,32,.96) 0%,rgba(6,27,58,.92) 50%,rgba(3,16,32,.97) 100%)' }} />
+      {/* Background — hero image com overlay claro */}
+      <div style={{ position: 'fixed', inset: 0, zIndex: 0, backgroundImage: "url('/assets/hero-rio-athletes.png')", backgroundSize: 'cover', backgroundPosition: 'center top', backgroundAttachment: 'fixed' }} />
+      <div style={{ position: 'fixed', inset: 0, zIndex: 1, background: 'linear-gradient(180deg,rgba(3,16,32,.70) 0%,rgba(6,27,58,.62) 50%,rgba(3,16,32,.72) 100%)' }} />
       <div style={{ position: 'relative', zIndex: 2 }}>
 
       {/* Edit modal */}
@@ -676,7 +732,7 @@ export default function TimesPortalPage() {
       </div>
 
       {/* ── Tabs ── */}
-      <div style={{ background: 'rgba(3,16,32,.6)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,.08)', overflowX: 'auto' }}>
+      <div style={{ background: 'rgba(255,255,255,.10)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,.15)', overflowX: 'auto' }}>
         <div style={{ display: 'flex', maxWidth: 960, margin: '0 auto', alignItems: 'stretch' }}>
           {TABS.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)} style={{
@@ -1086,9 +1142,9 @@ export default function TimesPortalPage() {
                     Plano de pagamento — 3× parcelas
                   </div>
                   {[
-                    { n: '1ª parcela', date: '15 de julho de 2025',    due: '2025-07-15' },
-                    { n: '2ª parcela', date: '15 de agosto de 2025',   due: '2025-08-15' },
-                    { n: '3ª parcela', date: '15 de setembro de 2025', due: '2025-09-15' },
+                    { n: '1ª parcela', date: '15 de julho de 2026',    due: '2026-07-15' },
+                    { n: '2ª parcela', date: '15 de agosto de 2026',   due: '2026-08-15' },
+                    { n: '3ª parcela', date: '15 de setembro de 2026', due: '2026-09-15' },
                   ].map((p, i) => {
                     const installment = Math.ceil(total / 3);
                     const isLast      = i === 2;
