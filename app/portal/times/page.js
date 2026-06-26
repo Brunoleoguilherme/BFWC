@@ -514,11 +514,16 @@ export default function TimesPortalPage() {
   const [sendingLineup, setSendingLineup]     = useState(false);
   const [lineupMsg, setLineupMsg]             = useState('');
   const [catFilter, setCatFilter]             = useState('all');
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutErr, setCheckoutErr]         = useState('');
+  const [payPolling, setPayPolling]           = useState(false);
   const [payMethod, setPayMethod]             = useState('pix');
-  const [pixCopied, setPixCopied]             = useState(false);
-  const [cardData, setCardData]               = useState({ name: '', number: '', expiry: '', cvv: '' });
-  const [cardProcessing, setCardProcessing]   = useState(false);
-  const [cardMsg, setCardMsg]                 = useState('');
+  const [pixData, setPixData]                 = useState(null);   // { emv, qrcode_url }
+  const [pixLoading, setPixLoading]           = useState(false);
+  const [pixErr, setPixErr]                   = useState('');
+  const [needDoc, setNeedDoc]                 = useState(false);
+  const [docInput, setDocInput]               = useState('');
+  const [emvCopied, setEmvCopied]             = useState(false);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 640);
@@ -560,6 +565,112 @@ export default function TimesPortalPage() {
     if (tab === 'atletas')    loadAthletes(team.id);
     if (tab === 'campeonato') loadGames(team.id);
   }, [tab, team]);
+
+  // Atualiza o status de pagamento a partir do servidor (fonte da verdade = webhook Stripe)
+  const refreshPaymentStatus = useCallback(async (tid) => {
+    try {
+      const r = await fetch(`/api/portal/times/payment-status?team_id=${tid}`);
+      const d = await r.json();
+      if (d.ok && d.payment_confirmed) {
+        setTeam(prev => {
+          if (!prev || prev.payment_confirmed) return prev;
+          const updated = { ...prev, payment_confirmed: true, payment_date: d.payment_date };
+          sessionStorage.setItem('bfwc_team_session', JSON.stringify(updated));
+          return updated;
+        });
+        return true;
+      }
+    } catch {}
+    return false;
+  }, []);
+
+  // Ao abrir a aba de pagamento (ou voltar do Stripe com ?paid=1), confere o status.
+  // Se acabou de voltar do checkout, faz polling pois o webhook pode levar alguns segundos
+  // (PIX é assíncrono e pode demorar mais).
+  useEffect(() => {
+    if (!team || tab !== 'pagamento' || team.payment_confirmed) return;
+    const justPaid = new URLSearchParams(window.location.search).get('paid') === '1';
+    let active = true;
+    let tries = 0;
+    const maxTries = justPaid ? 12 : 1;
+    if (justPaid) setPayPolling(true);
+    const tick = async () => {
+      if (!active) return;
+      tries++;
+      const done = await refreshPaymentStatus(team.id);
+      if (done || tries >= maxTries) { if (active) setPayPolling(false); return; }
+      setTimeout(tick, 4000);
+    };
+    tick();
+    return () => { active = false; };
+  }, [tab, team, refreshPaymentStatus]);
+
+  async function startCheckout() {
+    if (!team) return;
+    setCheckoutErr(''); setCheckoutLoading(true);
+    try {
+      const r = await fetch('/api/payments/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ team_id: team.id }),
+      });
+      const d = await r.json();
+      if (!d.ok || !d.url) throw new Error(d.message || 'Não foi possível iniciar o pagamento.');
+      window.location.href = d.url; // redireciona para o Checkout hospedado da Stripe
+    } catch (e) {
+      setCheckoutErr(e.message);
+      setCheckoutLoading(false);
+    }
+  }
+
+  // Gera (ou regenera) a cobrança Pix via Cora
+  async function generatePix() {
+    if (!team) return;
+    setPixErr(''); setPixLoading(true);
+    try {
+      const body = { team_id: team.id };
+      if (docInput) body.document = docInput;
+      const r = await fetch('/api/payments/pix/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const d = await r.json();
+      if (r.status === 422 || d.code === 'NEED_DOCUMENT') {
+        setNeedDoc(true);
+        setPixErr(d.message || 'Informe um CPF ou CNPJ para gerar o Pix.');
+        return;
+      }
+      if (!d.ok) throw new Error(d.message || 'Não foi possível gerar o Pix.');
+      setNeedDoc(false);
+      setPixData({ emv: d.emv, qrcode_url: d.qrcode_url });
+    } catch (e) {
+      setPixErr(e.message);
+    } finally {
+      setPixLoading(false);
+    }
+  }
+
+  function copyEmv() {
+    if (!pixData?.emv) return;
+    navigator.clipboard.writeText(pixData.emv).then(() => {
+      setEmvCopied(true);
+      setTimeout(() => setEmvCopied(false), 2500);
+    });
+  }
+
+  // Enquanto há um Pix gerado e ainda não pago, consulta o status periodicamente
+  useEffect(() => {
+    if (!team || !pixData || team.payment_confirmed) return;
+    let active = true;
+    const tick = async () => {
+      if (!active) return;
+      const done = await refreshPaymentStatus(team.id);
+      if (!done && active) setTimeout(tick, 5000);
+    };
+    const id = setTimeout(tick, 5000);
+    return () => { active = false; clearTimeout(id); };
+  }, [pixData, team, refreshPaymentStatus]);
 
   function toggleDoc(id) {
     setDocs(prev => {
@@ -938,32 +1049,6 @@ export default function TimesPortalPage() {
           const total   = PRICE_PER_CAT * numCats;
           const paid    = !!team.payment_confirmed;
 
-          const PIX_KEY  = 'pagamentos@bfwc2026.com.br'; // chave PIX oficial
-          const PIX_NAME = 'Brasil Flag World Championship';
-
-          function copyPix() {
-            navigator.clipboard.writeText(PIX_KEY).then(() => {
-              setPixCopied(true);
-              setTimeout(() => setPixCopied(false), 2500);
-            });
-          }
-
-          function fmtCard(v) {
-            return v.replace(/\D/g,'').slice(0,16).replace(/(.{4})/g,'$1 ').trim();
-          }
-          function fmtExpiry(v) {
-            return v.replace(/\D/g,'').slice(0,4).replace(/(.{2})/g,'$1/').replace(/\/$/,'');
-          }
-
-          async function submitCard(e) {
-            e.preventDefault();
-            setCardProcessing(true); setCardMsg('');
-            // Aqui integraria com gateway (Stripe / MercadoPago)
-            await new Promise(r => setTimeout(r, 1800));
-            setCardProcessing(false);
-            setCardMsg('⚠️ Pagamento por cartão em integração. Use o PIX por enquanto ou entre em contato.');
-          }
-
           return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'fadeIn .3s ease' }}>
 
@@ -999,123 +1084,93 @@ export default function TimesPortalPage() {
               )}
 
               {!paid && (
-                <>
-                  {/* Selector método */}
-                  <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ ...card(), padding: cpad }}>
+                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: 16 }}>Pagar taxa de inscrição</div>
+
+                  {payPolling && (
+                    <div style={{ padding: '12px 14px', borderRadius: 10, background: ACCENT+'10', border: `1px solid ${ACCENT}25`, fontSize: 12, color: 'rgba(255,255,255,.6)', lineHeight: 1.5, marginBottom: 14 }}>
+                      ⏳ Confirmando seu pagamento...
+                    </div>
+                  )}
+
+                  {/* Seletor de método */}
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
                     {[['pix','🏦','PIX'],['card','💳','Cartão de crédito']].map(([k,ic,lb]) => (
                       <button key={k} onClick={() => setPayMethod(k)} style={{
-                        flex: 1, padding: '16px 12px', borderRadius: 14, border: `2px solid ${payMethod===k ? YELLOW : 'rgba(255,255,255,.08)'}`,
-                        background: payMethod===k ? YELLOW+'10' : 'rgba(3,16,32,.55)', backdropFilter: 'blur(10px)',
-                        cursor: 'pointer', fontFamily: 'inherit', transition: 'all .18s',
-                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-                        boxShadow: payMethod===k ? `0 4px 18px ${YELLOW}20` : 'none',
+                        flex: 1, padding: '14px 12px', borderRadius: 14, cursor: 'pointer', fontFamily: 'inherit',
+                        border: `2px solid ${payMethod===k ? YELLOW : 'rgba(255,255,255,.08)'}`,
+                        background: payMethod===k ? YELLOW+'10' : 'rgba(3,16,32,.55)',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, transition: 'all .18s',
                       }}>
-                        <span style={{ fontSize: 26 }}>{ic}</span>
-                        <span style={{ fontSize: 12, fontWeight: 800, color: payMethod===k ? YELLOW : 'rgba(255,255,255,.45)' }}>{lb}</span>
+                        <span style={{ fontSize: 24 }}>{ic}</span>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: payMethod===k ? YELLOW : 'rgba(255,255,255,.55)' }}>{lb}</span>
                       </button>
                     ))}
                   </div>
 
-                  {/* ── PIX ── */}
+                  {/* ── PIX (Cora) ── */}
                   {payMethod === 'pix' && (
-                    <div style={{ ...card(), padding: cpad }}>
-                      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: 16 }}>Pagamento via PIX</div>
-
-                      {/* QR code placeholder */}
-                      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 20, alignItems: isMobile ? 'stretch' : 'flex-start' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                          <div style={{ width: 160, height: 160, borderRadius: 16, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 10 }}>
-                            {/* QR code real precisa ser gerado via API/biblioteca */}
-                            <div style={{ width: '100%', height: '100%', background: `repeating-conic-gradient(#000 0% 25%, #fff 0% 50%) 0 0/20px 20px`, borderRadius: 8, opacity: .85 }} />
+                    <div>
+                      {!pixData ? (
+                        <>
+                          {needDoc && (
+                            <div style={{ marginBottom: 12 }}>
+                              <label style={lbl}>CPF ou CNPJ do pagador</label>
+                              <input style={inputSt} placeholder="Somente números" value={docInput}
+                                onChange={e => setDocInput(e.target.value.replace(/\D/g,'').slice(0,14))} inputMode="numeric" />
+                            </div>
+                          )}
+                          {pixErr && (
+                            <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(255,68,68,.08)', border: '1px solid rgba(255,68,68,.25)', fontSize: 12, color: '#ff8080', lineHeight: 1.5, marginBottom: 12 }}>{pixErr}</div>
+                          )}
+                          <button onClick={generatePix} disabled={pixLoading} style={{ width: '100%', padding: '16px', borderRadius: 12, border: 'none', background: `linear-gradient(135deg,${GREEN},#0a9d4a)`, color: '#fff', fontSize: 15, fontWeight: 800, cursor: pixLoading ? 'wait' : 'pointer', fontFamily: 'inherit', opacity: pixLoading ? .7 : 1 }}>
+                            {pixLoading ? 'Gerando Pix...' : `Gerar Pix de R$ ${total.toLocaleString('pt-BR')}`}
+                          </button>
+                        </>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 20, alignItems: isMobile ? 'stretch' : 'flex-start' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                            <div style={{ width: 180, height: 180, borderRadius: 16, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 10 }}>
+                              {pixData.qrcode_url
+                                ? <img src={pixData.qrcode_url} alt="QR Code Pix" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                : <span style={{ color: '#000', fontSize: 11 }}>QR indisponível</span>}
+                            </div>
+                            <div style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', textAlign: 'center' }}>Escaneie no app do seu banco</div>
                           </div>
-                          <div style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', textAlign: 'center', lineHeight: 1.4 }}>QR Code gerado pela<br/>organização do evento</div>
-                        </div>
-
-                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                          <div>
-                            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', marginBottom: 6 }}>Chave PIX</div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                              <div style={{ flex: 1, padding: '12px 14px', borderRadius: 10, background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.1)', fontSize: 13, fontWeight: 700, wordBreak: 'break-all', letterSpacing: .3 }}>
-                                {PIX_KEY}
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            <div>
+                              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', marginBottom: 6 }}>Pix copia e cola</div>
+                              <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.1)', fontSize: 11, fontWeight: 600, wordBreak: 'break-all', lineHeight: 1.5, maxHeight: 90, overflow: 'auto' }}>
+                                {pixData.emv}
                               </div>
-                              <button onClick={copyPix} style={{ padding: '12px 16px', borderRadius: 10, border: `1px solid ${pixCopied ? GREEN+'50' : 'rgba(255,255,255,.12)'}`, background: pixCopied ? GREEN+'12' : 'rgba(255,255,255,.05)', color: pixCopied ? GREEN : 'rgba(255,255,255,.6)', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, transition: 'all .2s', whiteSpace: 'nowrap' }}>
-                                {pixCopied ? '✓ Copiado!' : '📋 Copiar'}
+                              <button onClick={copyEmv} style={{ marginTop: 8, padding: '12px 16px', borderRadius: 10, border: `1px solid ${emvCopied ? GREEN+'50' : 'rgba(255,255,255,.12)'}`, background: emvCopied ? GREEN+'12' : 'rgba(255,255,255,.05)', color: emvCopied ? GREEN : 'rgba(255,255,255,.6)', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}>
+                                {emvCopied ? '✓ Copiado!' : '📋 Copiar código Pix'}
                               </button>
                             </div>
-                          </div>
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                            {[['Favorecido', PIX_NAME], ['Valor', `R$ ${total.toLocaleString('pt-BR')}`], ['Banco', 'Banco do Brasil'], ['Tipo de chave', 'E-mail']].map(([l, v]) => (
-                              <div key={l} style={{ padding: '10px 12px', borderRadius: 10, background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.06)' }}>
-                                <div style={{ fontSize: 9, fontWeight: 800, color: 'rgba(255,255,255,.25)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 3 }}>{l}</div>
-                                <div style={{ fontSize: 12, fontWeight: 700 }}>{v}</div>
-                              </div>
-                            ))}
-                          </div>
-                          <div style={{ padding: '12px 14px', borderRadius: 10, background: YELLOW+'08', border: `1px solid ${YELLOW}18`, fontSize: 11, color: 'rgba(255,255,255,.5)', lineHeight: 1.65 }}>
-                            💡 Após realizar o pagamento, envie o comprovante para <strong style={{ color: YELLOW }}>pagamentos@bfwc2026.com.br</strong> com o nome do clube no assunto. A confirmação é feita em até 1 dia útil.
+                            <div style={{ padding: '12px 14px', borderRadius: 10, background: GREEN+'08', border: `1px solid ${GREEN}22`, fontSize: 11, color: 'rgba(255,255,255,.55)', lineHeight: 1.6 }}>
+                              ⏳ Aguardando o pagamento. Assim que o Pix cair, esta página confirma sozinha — não precisa enviar comprovante.
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   )}
 
-                  {/* ── CARTÃO ── */}
+                  {/* ── CARTÃO (Stripe) ── */}
                   {payMethod === 'card' && (
-                    <div style={{ ...card(), padding: cpad }}>
-                      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: 16 }}>Pagamento com cartão</div>
-
-                      {/* Card visual preview */}
-                      <div style={{ height: 140, borderRadius: 18, background: 'linear-gradient(135deg,#1a2f5a,#0d1a3a)', border: '1px solid rgba(255,255,255,.12)', padding: '20px 22px', marginBottom: 18, position: 'relative', overflow: 'hidden' }}>
-                        <div style={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, borderRadius: '50%', background: ACCENT+'12' }} />
-                        <div style={{ position: 'absolute', bottom: -20, left: 60, width: 90, height: 90, borderRadius: '50%', background: YELLOW+'08' }} />
-                        <div style={{ fontSize: 22, marginBottom: 10, letterSpacing: 3, fontWeight: 300, fontFamily: 'monospace', color: 'rgba(255,255,255,.6)' }}>
-                          {cardData.number || '•••• •••• •••• ••••'}
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                          <div>
-                            <div style={{ fontSize: 9, color: 'rgba(255,255,255,.3)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 2 }}>Titular</div>
-                            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 1 }}>{cardData.name || '—'}</div>
-                          </div>
-                          <div>
-                            <div style={{ fontSize: 9, color: 'rgba(255,255,255,.3)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 2 }}>Validade</div>
-                            <div style={{ fontSize: 13, fontWeight: 700 }}>{cardData.expiry || 'MM/AA'}</div>
-                          </div>
-                          <div style={{ fontSize: 28 }}>💳</div>
-                        </div>
+                    <div>
+                      {checkoutErr && (
+                        <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(255,68,68,.08)', border: '1px solid rgba(255,68,68,.25)', fontSize: 12, color: '#ff8080', lineHeight: 1.5, marginBottom: 12 }}>{checkoutErr}</div>
+                      )}
+                      <button onClick={startCheckout} disabled={checkoutLoading} style={{ width: '100%', padding: '16px', borderRadius: 12, border: 'none', background: `linear-gradient(135deg,${ACCENT},#1a5fff)`, color: '#fff', fontSize: 15, fontWeight: 800, cursor: checkoutLoading ? 'wait' : 'pointer', fontFamily: 'inherit', opacity: checkoutLoading ? .7 : 1 }}>
+                        {checkoutLoading ? 'Redirecionando...' : `Pagar R$ ${total.toLocaleString('pt-BR')} no cartão`}
+                      </button>
+                      <div style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,.25)', lineHeight: 1.5, marginTop: 10 }}>
+                        🔒 Você será levado ao ambiente seguro da Stripe. A confirmação é automática.
                       </div>
-
-                      <form onSubmit={submitCard} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                        <div>
-                          <label style={lbl}>Nome no cartão</label>
-                          <input style={inputSt} placeholder="NOME COMPLETO" value={cardData.name} onChange={e => setCardData(p=>({...p,name:e.target.value.toUpperCase()}))} />
-                        </div>
-                        <div>
-                          <label style={lbl}>Número do cartão</label>
-                          <input style={inputSt} placeholder="0000 0000 0000 0000" value={cardData.number} onChange={e => setCardData(p=>({...p,number:fmtCard(e.target.value)}))} maxLength={19} />
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                          <div>
-                            <label style={lbl}>Validade</label>
-                            <input style={inputSt} placeholder="MM/AA" value={cardData.expiry} onChange={e => setCardData(p=>({...p,expiry:fmtExpiry(e.target.value)}))} maxLength={5} />
-                          </div>
-                          <div>
-                            <label style={lbl}>CVV</label>
-                            <input style={inputSt} placeholder="•••" value={cardData.cvv} onChange={e => setCardData(p=>({...p,cvv:e.target.value.replace(/\D/g,'').slice(0,4)}))} maxLength={4} type="password" />
-                          </div>
-                        </div>
-                        {cardMsg && (
-                          <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(255,180,0,.08)', border: '1px solid rgba(255,180,0,.2)', fontSize: 12, color: '#ffb400', lineHeight: 1.5 }}>{cardMsg}</div>
-                        )}
-                        <button type="submit" disabled={cardProcessing} style={{ padding: '15px', borderRadius: 12, border: 'none', background: `linear-gradient(135deg,${ACCENT},#1a5fff)`, color: '#fff', fontSize: 15, fontWeight: 800, cursor: cardProcessing ? 'wait' : 'pointer', fontFamily: 'inherit', opacity: cardProcessing ? .7 : 1 }}>
-                          {cardProcessing ? 'Processando...' : `Pagar R$ ${total.toLocaleString('pt-BR')}`}
-                        </button>
-                        <div style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,.25)', lineHeight: 1.5 }}>
-                          🔒 Pagamento seguro · Os dados do cartão não são armazenados em nossos servidores
-                        </div>
-                      </form>
                     </div>
                   )}
-                </>
+                </div>
               )}
 
               {/* Resumo + parcelas */}
@@ -1170,7 +1225,7 @@ export default function TimesPortalPage() {
                     );
                   })}
                   <div style={{ padding: '10px 14px', borderRadius: 10, background: ACCENT+'08', border: `1px solid ${ACCENT}18`, fontSize: 11, color: 'rgba(255,255,255,.4)', lineHeight: 1.65, marginTop: 4 }}>
-                    💡 Cada parcela deve ser paga via PIX ou cartão até a data de vencimento. Envie o comprovante de cada pagamento para <strong style={{ color: YELLOW }}>pagamentos@bfwc2026.com.br</strong>.
+                    💡 Datas de referência das parcelas. O pagamento online acima é processado de forma segura via PIX ou cartão e confirmado automaticamente.
                   </div>
                 </div>
 

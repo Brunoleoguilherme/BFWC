@@ -16,7 +16,7 @@ export async function POST(req) {
     const supabase = getSupabaseAdmin();
     const { data: team } = await supabase
       .from('portal_teams')
-      .select('id, club_name, contact_name, email, country, city, category, athletes_count, status, email_verified, password_hash, whatsapp')
+      .select('id, club_name, contact_name, email, country, city, category, athletes_count, status, email_verified, password_hash, whatsapp, payment_confirmed, payment_date')
       .ilike('email', email.trim())
       .single();
 
