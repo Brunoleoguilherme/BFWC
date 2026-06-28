@@ -948,7 +948,16 @@ export default function TimesPortalPage() {
                   icon: '💳', label: 'Pagamento',
                   done: paymentConfirmed,
                   active: isApproved && !paymentConfirmed,
-                  desc: paymentConfirmed ? 'Pagamento confirmado.' : 'Instruções enviadas por e-mail após aprovação.',
+                  desc: (() => {
+                    const plan = payInfo?.payment_plan;
+                    const paidN = payInfo?.paid_count || 0;
+                    if (plan && plan > 1) {
+                      return paidN >= plan
+                        ? `Todas as ${plan} parcelas pagas.`
+                        : `${paidN} de ${plan} parcelas pagas.`;
+                    }
+                    return paymentConfirmed ? 'Pagamento confirmado.' : 'Instruções enviadas por e-mail após aprovação.';
+                  })(),
                 },
                 {
                   icon: '👥', label: 'Inscrição de atletas',
@@ -1234,7 +1243,7 @@ export default function TimesPortalPage() {
                                   <div style={{ fontSize: 15, fontWeight: 900, color: isPaid?GREEN:YELLOW }}>R$ {p.value.toLocaleString('pt-BR')}</div>
                                 </div>
                                 {!isPaid && (
-                                  <button onClick={() => generateParcela(p.number)} disabled={pixLoadingNum === p.number} style={{ padding: '10px 16px', borderRadius: 10, border: 'none', background: `linear-gradient(135deg,${GREEN},#0a9d4a)`, color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, opacity: pixLoadingNum===p.number?.7:1 }}>
+                                  <button onClick={() => generateParcela(p.number)} disabled={pixLoadingNum === p.number} style={{ padding: '10px 16px', borderRadius: 10, border: 'none', background: `linear-gradient(135deg,${GREEN},#0a9d4a)`, color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, opacity: pixLoadingNum === p.number ? 0.7 : 1 }}>
                                     {pixLoadingNum===p.number ? '...' : (isActive ? 'Novo QR' : 'Pagar')}
                                   </button>
                                 )}
