@@ -46,7 +46,16 @@ export async function POST(req) {
     }
 
     const numCats = CATS.filter((c) => team.category?.includes(c)).length || 1;
-    const totalCents = PRICE_PER_CAT_CENTS * numCats;
+    let totalCents = PRICE_PER_CAT_CENTS * numCats;
+
+    // Override de TESTE: cobra apenas R$ 1,00 do time definido em PIX_TEST_EMAIL.
+    // Não afeta nenhum outro clube. Remover/limpar essa env var após validar.
+    if (
+      process.env.PIX_TEST_EMAIL &&
+      team.email?.toLowerCase() === process.env.PIX_TEST_EMAIL.toLowerCase()
+    ) {
+      totalCents = 100;
+    }
 
     // Vencimento: 3 dias a partir de hoje (o Pix pode ser pago a qualquer momento antes)
     const due = new Date();
