@@ -1,13 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { createPixCharge } from '@/lib/cora';
+import { countCategories, computeInstallments } from '@/lib/installments';
 
 export const runtime = 'nodejs';
 
-const CATS = ['Masculino', 'Feminino', 'Sub-15', 'Sub-12'];
-const PRICE_PER_CAT_CENTS = 2000 * 100; // R$ 2.000 por categoria, em centavos
-
-// valida CPF/CNPJ só pelo tamanho (11 = CPF, 14 = CNPJ)
 function classifyDocument(raw) {
   const digits = String(raw || '').replace(/\D/g, '');
   if (digits.length === 11) return { identity: digits, type: 'CPF' };
@@ -17,79 +14,95 @@ function classifyDocument(raw) {
 
 export async function POST(req) {
   try {
-    const { team_id, document } = await req.json();
-    if (!team_id) {
-      return NextResponse.json({ ok: false, message: 'team_id obrigatório.' }, { status: 400 });
-    }
+    const { team_id, plan_size, number, document } = await req.json();
+    if (!team_id) return NextResponse.json({ ok: false, message: 'team_id obrigatório.' }, { status: 400 });
+
+    const planSize = Math.min(Math.max(parseInt(plan_size, 10) || 1, 1), 3);
+    const num = Math.min(Math.max(parseInt(number, 10) || 1, 1), planSize);
 
     const supabase = getSupabaseAdmin();
     const { data: team, error } = await supabase
       .from('portal_teams')
-      .select('id, club_name, email, category, status, payment_confirmed, payer_document, cora_invoice_id')
+      .select('id, club_name, email, category, status, payer_document, payment_plan')
       .eq('id', team_id)
       .single();
 
-    if (error || !team) {
-      return NextResponse.json({ ok: false, message: 'Time não encontrado.' }, { status: 404 });
-    }
+    if (error || !team) return NextResponse.json({ ok: false, message: 'Time não encontrado.' }, { status: 404 });
     if (team.status !== 'approved') {
       return NextResponse.json({ ok: false, message: 'O cadastro precisa estar aprovado antes do pagamento.' }, { status: 403 });
     }
-    if (team.payment_confirmed) {
-      return NextResponse.json({ ok: false, message: 'Pagamento já confirmado.' }, { status: 409 });
+
+    // Trava do plano: se já há um plano definido, tem que ser o mesmo
+    if (team.payment_plan && team.payment_plan !== planSize) {
+      return NextResponse.json({
+        ok: false, code: 'PLAN_LOCKED',
+        message: `O parcelamento já foi definido em ${team.payment_plan}x. Continue pagando as parcelas desse plano.`,
+      }, { status: 409 });
     }
 
-    // Documento do pagador: usa o enviado agora ou o já salvo
     const doc = classifyDocument(document || team.payer_document);
     if (!doc) {
       return NextResponse.json({ ok: false, code: 'NEED_DOCUMENT', message: 'Informe um CPF ou CNPJ válido para gerar o Pix.' }, { status: 422 });
     }
 
-    const numCats = CATS.filter((c) => team.category?.includes(c)).length || 1;
-    let totalCents = PRICE_PER_CAT_CENTS * numCats;
+    const numCats = countCategories(team.category);
+    const plan = computeInstallments(numCats, planSize);
+    const parcela = plan.find((p) => p.number === num);
+    if (!parcela) return NextResponse.json({ ok: false, message: 'Parcela inválida.' }, { status: 400 });
 
-    // Override de TESTE: cobra apenas R$ 1,00 do time definido em PIX_TEST_EMAIL.
-    // Não afeta nenhum outro clube. Remover/limpar essa env var após validar.
-    if (
-      process.env.PIX_TEST_EMAIL &&
-      team.email?.toLowerCase() === process.env.PIX_TEST_EMAIL.toLowerCase()
-    ) {
-      totalCents = 500; // R$ 5,00 — mínimo aceito pela Cora
+    // Já existe essa parcela?
+    const { data: existing } = await supabase
+      .from('payment_installments')
+      .select('id, status')
+      .eq('team_id', team.id)
+      .eq('number', num)
+      .maybeSingle();
+
+    if (existing?.status === 'paid') {
+      return NextResponse.json({ ok: false, code: 'ALREADY_PAID', message: 'Essa parcela já foi paga.' }, { status: 409 });
     }
 
-    // Vencimento: 3 dias a partir de hoje (o Pix pode ser pago a qualquer momento antes)
-    const due = new Date();
-    due.setDate(due.getDate() + 3);
-    const dueDate = due.toISOString().slice(0, 10);
+    // Valor: override de teste (R$5 por parcela) para o e-mail de teste
+    let amountCents = parcela.amount_cents;
+    if (process.env.PIX_TEST_EMAIL && team.email?.toLowerCase() === process.env.PIX_TEST_EMAIL.toLowerCase()) {
+      amountCents = 500;
+    }
 
     const charge = await createPixCharge({
-      code: team.id,
-      customer: {
-        name: team.club_name,
-        email: team.email,
-        document: doc,
-      },
-      amountCents: totalCents,
-      serviceName: `Taxa de inscrição BFWC 2026 — ${numCats} categoria(s)`,
-      dueDate,
+      code: `${team.id}-p${num}`,
+      customer: { name: team.club_name, email: team.email, document: doc },
+      amountCents,
+      serviceName: `Inscrição BFWC 2026 — parcela ${num}/${planSize}`,
+      dueDate: parcela.due_date,
     });
 
-    // Salva referência + documento para reconciliação e reuso
+    // Trava o plano no time + salva documento
     await supabase
       .from('portal_teams')
-      .update({
-        cora_invoice_id: charge.id,
-        payer_document: doc.identity,
-        payment_amount: totalCents,
-      })
+      .update({ payment_plan: planSize, payer_document: doc.identity })
       .eq('id', team.id);
+
+    // Upsert da parcela
+    await supabase
+      .from('payment_installments')
+      .upsert({
+        team_id: team.id,
+        plan_size: planSize,
+        number: num,
+        amount_cents: amountCents,
+        due_date: parcela.due_date,
+        status: 'pending',
+        cora_invoice_id: charge.id,
+      }, { onConflict: 'team_id,number' });
 
     return NextResponse.json({
       ok: true,
+      number: num,
+      plan_size: planSize,
+      amount: amountCents,
       invoice_id: charge.id,
-      emv: charge.emv,         // Pix copia-e-cola
-      qrcode_url: charge.qrcodeUrl, // imagem do QR
-      amount: totalCents,
+      emv: charge.emv,
+      qrcode_url: charge.qrcodeUrl,
     });
   } catch (err) {
     console.error('pix/create error', err);

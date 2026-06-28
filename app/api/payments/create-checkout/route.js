@@ -48,6 +48,9 @@ export async function POST(req) {
       payment_intent_data: {
         metadata: { team_id: team.id },
       },
+      // Parcelamento no cartão: o cliente escolhe 1x/2x/3x na tela da Stripe
+      // (a Stripe mostra as opções válidas para o cartão dele).
+      payment_method_options: { card: { installments: { enabled: true } } },
       line_items: [
         {
           quantity: numCats,

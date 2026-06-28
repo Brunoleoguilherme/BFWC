@@ -518,8 +518,10 @@ export default function TimesPortalPage() {
   const [checkoutErr, setCheckoutErr]         = useState('');
   const [payPolling, setPayPolling]           = useState(false);
   const [payMethod, setPayMethod]             = useState('pix');
-  const [pixData, setPixData]                 = useState(null);   // { emv, qrcode_url }
-  const [pixLoading, setPixLoading]           = useState(false);
+  const [planSize, setPlanSize]               = useState(null);   // 1, 2 ou 3 escolhido
+  const [payInfo, setPayInfo]                 = useState(null);   // resposta de /payment-status
+  const [activePix, setActivePix]             = useState(null);   // { number, emv, qrcode_url }
+  const [pixLoadingNum, setPixLoadingNum]     = useState(0);      // nº da parcela gerando (0 = nenhuma)
   const [pixErr, setPixErr]                   = useState('');
   const [needDoc, setNeedDoc]                 = useState(false);
   const [docInput, setDocInput]               = useState('');
@@ -567,29 +569,34 @@ export default function TimesPortalPage() {
     if (tab === 'campeonato') loadGames(team.id);
   }, [tab, team]);
 
-  // Atualiza o status de pagamento a partir do servidor (fonte da verdade = webhook Stripe)
+  // Atualiza o status de pagamento + parcelas a partir do servidor
   const refreshPaymentStatus = useCallback(async (tid) => {
     try {
       const r = await fetch(`/api/portal/times/payment-status?team_id=${tid}`);
       const d = await r.json();
-      if (d.ok && d.payment_confirmed) {
-        setTeam(prev => {
-          if (!prev || prev.payment_confirmed) return prev;
-          const updated = { ...prev, payment_confirmed: true, payment_date: d.payment_date };
-          sessionStorage.setItem('bfwc_team_session', JSON.stringify(updated));
-          return updated;
-        });
-        return true;
+      if (d.ok) {
+        setPayInfo(d);
+        if (d.payment_plan) setPlanSize(d.payment_plan);
+        if (d.payment_confirmed) {
+          setTeam(prev => {
+            if (!prev || prev.payment_confirmed) return prev;
+            const updated = { ...prev, payment_confirmed: true, payment_date: d.payment_date };
+            sessionStorage.setItem('bfwc_team_session', JSON.stringify(updated));
+            return updated;
+          });
+        }
+        // "pronto" para o polling = todas as parcelas pagas (ou confirmado no cartão)
+        const allPaid = d.total_count > 0 && d.paid_count >= d.total_count;
+        return allPaid || (d.payment_confirmed && d.total_count === 0);
       }
     } catch {}
     return false;
   }, []);
 
-  // Ao abrir a aba de pagamento (ou voltar do Stripe com ?paid=1), confere o status.
-  // Se acabou de voltar do checkout, faz polling pois o webhook pode levar alguns segundos
-  // (PIX é assíncrono e pode demorar mais).
+  // Ao abrir a aba de pagamento, carrega status/parcelas. Se voltou do Stripe (?paid=1),
+  // faz polling alguns segundos pois a confirmação do cartão pode levar um instante.
   useEffect(() => {
-    if (!team || tab !== 'pagamento' || team.payment_confirmed) return;
+    if (!team || tab !== 'pagamento') return;
     const justPaid = new URLSearchParams(window.location.search).get('paid') === '1';
     let active = true;
     let tries = 0;
@@ -606,6 +613,19 @@ export default function TimesPortalPage() {
     return () => { active = false; };
   }, [tab, team, refreshPaymentStatus]);
 
+  // Enquanto há um Pix gerado e exibido, consulta o status até cair o pagamento.
+  useEffect(() => {
+    if (!team || !activePix) return;
+    let active = true;
+    const tick = async () => {
+      if (!active) return;
+      await refreshPaymentStatus(team.id);
+      if (active) setTimeout(tick, 5000);
+    };
+    const id = setTimeout(tick, 5000);
+    return () => { active = false; clearTimeout(id); };
+  }, [activePix, team, refreshPaymentStatus]);
+
   // Ao abrir o portal (qualquer aba), sincroniza o status de pagamento com o servidor,
   // pra "Inscrição" não ficar mostrando dado velho do login.
   useEffect(() => {
@@ -614,7 +634,7 @@ export default function TimesPortalPage() {
 
   // Gera a imagem do QR Code a partir do "copia e cola" (independente da Cora)
   useEffect(() => {
-    const emv = pixData?.emv;
+    const emv = activePix?.emv;
     if (!emv) return;
     let cancelled = false;
     const render = () => {
@@ -635,7 +655,7 @@ export default function TimesPortalPage() {
     }
     s.addEventListener('load', render);
     return () => { cancelled = true; s && s.removeEventListener('load', render); };
-  }, [pixData]);
+  }, [activePix]);
 
   async function startCheckout() {
     if (!team) return;
@@ -655,12 +675,12 @@ export default function TimesPortalPage() {
     }
   }
 
-  // Gera (ou regenera) a cobrança Pix via Cora
-  async function generatePix() {
-    if (!team) return;
-    setPixErr(''); setPixLoading(true);
+  // Gera o Pix de uma parcela específica
+  async function generateParcela(number) {
+    if (!team || !planSize) return;
+    setPixErr(''); setPixLoadingNum(number);
     try {
-      const body = { team_id: team.id };
+      const body = { team_id: team.id, plan_size: planSize, number };
       if (docInput) body.document = docInput;
       const r = await fetch('/api/payments/pix/create', {
         method: 'POST',
@@ -670,39 +690,27 @@ export default function TimesPortalPage() {
       const d = await r.json();
       if (r.status === 422 || d.code === 'NEED_DOCUMENT') {
         setNeedDoc(true);
-        setPixErr(d.message || 'Informe um CPF ou CNPJ para gerar o Pix.');
+        setPixErr('Informe um CPF ou CNPJ para gerar o Pix.');
         return;
       }
       if (!d.ok) throw new Error(d.message || 'Não foi possível gerar o Pix.');
       setNeedDoc(false);
-      setPixData({ emv: d.emv, qrcode_url: d.qrcode_url });
+      setActivePix({ number, emv: d.emv, qrcode_url: d.qrcode_url });
+      refreshPaymentStatus(team.id);
     } catch (e) {
       setPixErr(e.message);
     } finally {
-      setPixLoading(false);
+      setPixLoadingNum(0);
     }
   }
 
   function copyEmv() {
-    if (!pixData?.emv) return;
-    navigator.clipboard.writeText(pixData.emv).then(() => {
+    if (!activePix?.emv) return;
+    navigator.clipboard.writeText(activePix.emv).then(() => {
       setEmvCopied(true);
       setTimeout(() => setEmvCopied(false), 2500);
     });
   }
-
-  // Enquanto há um Pix gerado e ainda não pago, consulta o status periodicamente
-  useEffect(() => {
-    if (!team || !pixData || team.payment_confirmed) return;
-    let active = true;
-    const tick = async () => {
-      if (!active) return;
-      const done = await refreshPaymentStatus(team.id);
-      if (!done && active) setTimeout(tick, 5000);
-    };
-    const id = setTimeout(tick, 5000);
-    return () => { active = false; clearTimeout(id); };
-  }, [pixData, team, refreshPaymentStatus]);
 
   function toggleDoc(id) {
     setDocs(prev => {
@@ -1075,11 +1083,44 @@ export default function TimesPortalPage() {
 
         {/* ══════ TAB PAGAMENTO ══════ */}
         {tab === 'pagamento' && (() => {
-          // Valor por categoria registrada (configurável)
           const PRICE_PER_CAT = 2000; // R$ por categoria
           const numCats = registeredCats.length || 1;
           const total   = PRICE_PER_CAT * numCats;
           const paid    = !!team.payment_confirmed;
+
+          const lockedPlan = payInfo?.payment_plan || null;
+          const chosenPlan = lockedPlan || planSize;
+          const DUE = ['15 de julho de 2026', '15 de agosto de 2026', '15 de setembro de 2026'];
+
+          const buildParcelas = (n) => {
+            const parcela = Math.ceil(total / n);
+            return Array.from({ length: n }, (_, i) => ({
+              number: i + 1,
+              value: i < n - 1 ? parcela : total - parcela * (n - 1),
+              date: DUE[i],
+            }));
+          };
+          const instByNum = {};
+          (payInfo?.installments || []).forEach((it) => { instByNum[it.number] = it; });
+          const paidCount = payInfo?.paid_count || 0;
+          const allPaid = chosenPlan && paidCount >= chosenPlan;
+
+          const QRBlock = () => (
+            <div style={{ marginTop: 12, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 18, alignItems: isMobile ? 'stretch' : 'flex-start', padding: '14px', borderRadius: 12, background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.07)' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                <div ref={qrRef} style={{ width: 170, height: 170, borderRadius: 14, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 10 }} />
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', textAlign: 'center' }}>Escaneie no app do seu banco</div>
+              </div>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase' }}>Pix copia e cola</div>
+                <div style={{ padding: '10px 12px', borderRadius: 10, background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.1)', fontSize: 11, fontWeight: 600, wordBreak: 'break-all', lineHeight: 1.5, maxHeight: 80, overflow: 'auto' }}>{activePix?.emv}</div>
+                <button onClick={copyEmv} style={{ padding: '11px 16px', borderRadius: 10, border: `1px solid ${emvCopied ? GREEN+'50' : 'rgba(255,255,255,.12)'}`, background: emvCopied ? GREEN+'12' : 'rgba(255,255,255,.05)', color: emvCopied ? GREEN : 'rgba(255,255,255,.6)', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}>
+                  {emvCopied ? '✓ Copiado!' : '📋 Copiar código Pix'}
+                </button>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,.45)', lineHeight: 1.55 }}>⏳ Assim que o Pix cair, esta página confirma sozinha.</div>
+              </div>
+            </div>
+          );
 
           return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'fadeIn .3s ease' }}>
@@ -1089,13 +1130,17 @@ export default function TimesPortalPage() {
                 <div style={{ ...card(), padding: cpad, display: 'flex', alignItems: 'center', gap: 16, borderColor: GREEN + '40', background: GREEN + '06' }}>
                   <div style={{ width: 52, height: 52, borderRadius: '50%', background: GREEN + '18', border: `2px solid ${GREEN}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>✅</div>
                   <div>
-                    <div style={{ fontSize: 16, fontWeight: 900, color: GREEN, marginBottom: 4 }}>Pagamento confirmado</div>
-                    <div style={{ fontSize: 13, color: 'rgba(255,255,255,.5)' }}>Taxa de inscrição recebida pela organização. Você está confirmado no BFWC 2026.</div>
+                    <div style={{ fontSize: 16, fontWeight: 900, color: GREEN, marginBottom: 4 }}>Inscrição confirmada</div>
+                    <div style={{ fontSize: 13, color: 'rgba(255,255,255,.5)' }}>
+                      {chosenPlan && chosenPlan > 1 && !allPaid
+                        ? `Você está confirmado no BFWC 2026. Parcelas pagas: ${paidCount} de ${chosenPlan}.`
+                        : 'Taxa de inscrição recebida. Você está confirmado no BFWC 2026.'}
+                    </div>
                   </div>
                 </div>
               ) : (
                 <div style={{ ...card(), padding: cpad, borderColor: YELLOW + '30', background: YELLOW + '04' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                     <div>
                       <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: 6 }}>Taxa de inscrição</div>
                       <div style={{ fontSize: 13, color: 'rgba(255,255,255,.5)', marginBottom: 4 }}>
@@ -1108,21 +1153,18 @@ export default function TimesPortalPage() {
                       <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.3)', letterSpacing: 1 }}>TOTAL</div>
                     </div>
                   </div>
-                  <div style={{ height: 1, background: 'rgba(255,255,255,.06)', marginBottom: 14 }} />
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', lineHeight: 1.6 }}>
-                    ⚠️ O pagamento deve ser realizado até a data limite de inscrição. Após a confirmação, você receberá um comprovante por e-mail.
-                  </div>
                 </div>
               )}
 
-              {!paid && (
+              {/* Bloco de pagamento (some quando todas as parcelas estão pagas) */}
+              {!allPaid && (
                 <div style={{ ...card(), padding: cpad }}>
-                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: 16 }}>Pagar taxa de inscrição</div>
+                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: 16 }}>
+                    {paid ? 'Pagar parcelas restantes' : 'Pagar taxa de inscrição'}
+                  </div>
 
                   {payPolling && (
-                    <div style={{ padding: '12px 14px', borderRadius: 10, background: ACCENT+'10', border: `1px solid ${ACCENT}25`, fontSize: 12, color: 'rgba(255,255,255,.6)', lineHeight: 1.5, marginBottom: 14 }}>
-                      ⏳ Confirmando seu pagamento...
-                    </div>
+                    <div style={{ padding: '12px 14px', borderRadius: 10, background: ACCENT+'10', border: `1px solid ${ACCENT}25`, fontSize: 12, color: 'rgba(255,255,255,.6)', lineHeight: 1.5, marginBottom: 14 }}>⏳ Confirmando seu pagamento...</div>
                   )}
 
                   {/* Seletor de método */}
@@ -1140,51 +1182,73 @@ export default function TimesPortalPage() {
                     ))}
                   </div>
 
-                  {/* ── PIX (Cora) ── */}
+                  {/* ── PIX parcelado ── */}
                   {payMethod === 'pix' && (
                     <div>
-                      {!pixData ? (
-                        <>
-                          {needDoc && (
-                            <div style={{ marginBottom: 12 }}>
-                              <label style={lbl}>CPF ou CNPJ do pagador</label>
-                              <input style={inputSt} placeholder="Somente números" value={docInput}
-                                onChange={e => setDocInput(e.target.value.replace(/\D/g,'').slice(0,14))} inputMode="numeric" />
-                            </div>
-                          )}
-                          {pixErr && (
-                            <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(255,68,68,.08)', border: '1px solid rgba(255,68,68,.25)', fontSize: 12, color: '#ff8080', lineHeight: 1.5, marginBottom: 12 }}>{pixErr}</div>
-                          )}
-                          <button onClick={generatePix} disabled={pixLoading} style={{ width: '100%', padding: '16px', borderRadius: 12, border: 'none', background: `linear-gradient(135deg,${GREEN},#0a9d4a)`, color: '#fff', fontSize: 15, fontWeight: 800, cursor: pixLoading ? 'wait' : 'pointer', fontFamily: 'inherit', opacity: pixLoading ? .7 : 1 }}>
-                            {pixLoading ? 'Gerando Pix...' : `Gerar Pix de R$ ${total.toLocaleString('pt-BR')}`}
-                          </button>
-                        </>
-                      ) : (
-                        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 20, alignItems: isMobile ? 'stretch' : 'flex-start' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                            <div ref={qrRef} style={{ width: 180, height: 180, borderRadius: 16, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 10 }} />
-                            <div style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', textAlign: 'center' }}>Escaneie no app do seu banco</div>
-                          </div>
-                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                            <div>
-                              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', marginBottom: 6 }}>Pix copia e cola</div>
-                              <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.1)', fontSize: 11, fontWeight: 600, wordBreak: 'break-all', lineHeight: 1.5, maxHeight: 90, overflow: 'auto' }}>
-                                {pixData.emv}
-                              </div>
-                              <button onClick={copyEmv} style={{ marginTop: 8, padding: '12px 16px', borderRadius: 10, border: `1px solid ${emvCopied ? GREEN+'50' : 'rgba(255,255,255,.12)'}`, background: emvCopied ? GREEN+'12' : 'rgba(255,255,255,.05)', color: emvCopied ? GREEN : 'rgba(255,255,255,.6)', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}>
-                                {emvCopied ? '✓ Copiado!' : '📋 Copiar código Pix'}
-                              </button>
-                            </div>
-                            <div style={{ padding: '12px 14px', borderRadius: 10, background: GREEN+'08', border: `1px solid ${GREEN}22`, fontSize: 11, color: 'rgba(255,255,255,.55)', lineHeight: 1.6 }}>
-                              ⏳ Aguardando o pagamento. Assim que o Pix cair, esta página confirma sozinha — não precisa enviar comprovante.
-                            </div>
-                          </div>
+                      {/* Seletor de plano */}
+                      <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.5)', marginBottom: 8 }}>
+                        {lockedPlan ? `Parcelamento escolhido: ${lockedPlan}x` : 'Em quantas vezes quer pagar?'}
+                      </div>
+                      {!lockedPlan && (
+                        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                          {[1,2,3].map(n => (
+                            <button key={n} onClick={() => setPlanSize(n)} style={{
+                              flex: 1, padding: '12px', borderRadius: 12, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 800,
+                              border: `2px solid ${planSize===n ? GREEN : 'rgba(255,255,255,.08)'}`,
+                              background: planSize===n ? GREEN+'12' : 'rgba(255,255,255,.03)',
+                              color: planSize===n ? GREEN : 'rgba(255,255,255,.6)',
+                            }}>
+                              {n}x<div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,.4)', marginTop: 2 }}>R$ {(Math.ceil(total/n)).toLocaleString('pt-BR')}{n>1?'/mês':''}</div>
+                            </button>
+                          ))}
                         </div>
+                      )}
+
+                      {needDoc && (
+                        <div style={{ marginBottom: 12 }}>
+                          <label style={lbl}>CPF ou CNPJ do pagador</label>
+                          <input style={inputSt} placeholder="Somente números" value={docInput}
+                            onChange={e => setDocInput(e.target.value.replace(/\D/g,'').slice(0,14))} inputMode="numeric" />
+                        </div>
+                      )}
+                      {pixErr && (
+                        <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(255,68,68,.08)', border: '1px solid rgba(255,68,68,.25)', fontSize: 12, color: '#ff8080', lineHeight: 1.5, marginBottom: 12 }}>{pixErr}</div>
+                      )}
+
+                      {!chosenPlan ? (
+                        <div style={{ fontSize: 12, color: 'rgba(255,255,255,.4)' }}>Escolha o parcelamento acima para ver as parcelas.</div>
+                      ) : (
+                        buildParcelas(chosenPlan).map((p) => {
+                          const st = instByNum[p.number];
+                          const isPaid = st?.status === 'paid';
+                          const isActive = activePix?.number === p.number;
+                          return (
+                            <div key={p.number} style={{ borderRadius: 12, marginBottom: 8, background: isPaid ? GREEN+'08' : 'rgba(255,255,255,.025)', border: `1px solid ${isPaid ? GREEN+'25' : 'rgba(255,255,255,.07)'}`, padding: '13px 14px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <div style={{ width: 34, height: 34, borderRadius: 10, background: (isPaid?GREEN:YELLOW)+'15', border: `1.5px solid ${(isPaid?GREEN:YELLOW)}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0, fontWeight: 900, color: isPaid?GREEN:YELLOW }}>{isPaid ? '✓' : p.number}</div>
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ fontSize: 13, fontWeight: 800 }}>{chosenPlan>1 ? `${p.number}ª parcela` : 'Pagamento'}</div>
+                                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,.38)' }}>📅 {p.date}</div>
+                                </div>
+                                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                  <div style={{ fontSize: 15, fontWeight: 900, color: isPaid?GREEN:YELLOW }}>R$ {p.value.toLocaleString('pt-BR')}</div>
+                                </div>
+                                {!isPaid && (
+                                  <button onClick={() => generateParcela(p.number)} disabled={pixLoadingNum === p.number} style={{ padding: '10px 16px', borderRadius: 10, border: 'none', background: `linear-gradient(135deg,${GREEN},#0a9d4a)`, color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, opacity: pixLoadingNum===p.number?.7:1 }}>
+                                    {pixLoadingNum===p.number ? '...' : (isActive ? 'Novo QR' : 'Pagar')}
+                                  </button>
+                                )}
+                                {isPaid && <span style={{ fontSize: 10, fontWeight: 900, color: GREEN, letterSpacing: 1 }}>PAGO</span>}
+                              </div>
+                              {isActive && !isPaid && <QRBlock />}
+                            </div>
+                          );
+                        })
                       )}
                     </div>
                   )}
 
-                  {/* ── CARTÃO (Stripe) ── */}
+                  {/* ── CARTÃO (Stripe, parcelado na própria Stripe) ── */}
                   {payMethod === 'card' && (
                     <div>
                       {checkoutErr && (
@@ -1193,20 +1257,18 @@ export default function TimesPortalPage() {
                       <button onClick={startCheckout} disabled={checkoutLoading} style={{ width: '100%', padding: '16px', borderRadius: 12, border: 'none', background: `linear-gradient(135deg,${ACCENT},#1a5fff)`, color: '#fff', fontSize: 15, fontWeight: 800, cursor: checkoutLoading ? 'wait' : 'pointer', fontFamily: 'inherit', opacity: checkoutLoading ? .7 : 1 }}>
                         {checkoutLoading ? 'Redirecionando...' : `Pagar R$ ${total.toLocaleString('pt-BR')} no cartão`}
                       </button>
-                      <div style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,.25)', lineHeight: 1.5, marginTop: 10 }}>
-                        🔒 Você será levado ao ambiente seguro da Stripe. A confirmação é automática.
+                      <div style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,.3)', lineHeight: 1.5, marginTop: 10 }}>
+                        💳 Você pode parcelar em até 3x no cartão na própria tela da Stripe · 🔒 ambiente seguro
                       </div>
                     </div>
                   )}
                 </div>
               )}
 
-              {/* Resumo + parcelas */}
+              {/* Resumo */}
               <div style={{ ...card(), padding: cpad }}>
                 <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: 14 }}>Resumo da cobrança</div>
-
-                {/* Por categoria */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                   {registeredCats.map((c, i) => (
                     <div key={c} style={{ display: 'flex', justifyContent: 'space-between', padding: '11px 0', borderBottom: i < registeredCats.length - 1 ? '1px solid rgba(255,255,255,.05)' : 'none' }}>
                       <span style={{ fontSize: 13, color: 'rgba(255,255,255,.6)' }}>Categoria {c}</span>
@@ -1218,48 +1280,9 @@ export default function TimesPortalPage() {
                     <span style={{ fontSize: 15, fontWeight: 900, color: YELLOW }}>R$ {total.toLocaleString('pt-BR')}</span>
                   </div>
                 </div>
-
-                {/* Parcelas */}
-                <div style={{ borderTop: '1px solid rgba(255,255,255,.07)', paddingTop: 16, marginTop: 4 }}>
-                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: 12 }}>
-                    Plano de pagamento — 3× parcelas
-                  </div>
-                  {[
-                    { n: '1ª parcela', date: '15 de julho de 2026',    due: '2026-07-15' },
-                    { n: '2ª parcela', date: '15 de agosto de 2026',   due: '2026-08-15' },
-                    { n: '3ª parcela', date: '15 de setembro de 2026', due: '2026-09-15' },
-                  ].map((p, i) => {
-                    const installment = Math.ceil(total / 3);
-                    const isLast      = i === 2;
-                    // last installment absorbs rounding difference
-                    const value       = isLast ? total - installment * 2 : installment;
-                    const isPast      = new Date() > new Date(p.due);
-                    const statusColor = isPast ? '#ff6666' : GREEN;
-                    const statusLabel = isPast ? 'Vencida' : 'A vencer';
-                    return (
-                      <div key={p.n} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 14px', borderRadius: 12, marginBottom: 8, background: isPast ? 'rgba(255,68,68,.04)' : 'rgba(255,255,255,.025)', border: `1px solid ${isPast ? 'rgba(255,68,68,.15)' : 'rgba(255,255,255,.07)'}` }}>
-                        <div style={{ width: 34, height: 34, borderRadius: 10, background: statusColor+'15', border: `1.5px solid ${statusColor}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0, fontWeight: 900, color: statusColor }}>
-                          {i + 1}
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 2 }}>{p.n}</div>
-                          <div style={{ fontSize: 11, color: 'rgba(255,255,255,.38)' }}>📅 {p.date}</div>
-                        </div>
-                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                          <div style={{ fontSize: 16, fontWeight: 900, color: YELLOW }}>R$ {value.toLocaleString('pt-BR')}</div>
-                          <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: .8, color: statusColor }}>{statusLabel}</div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div style={{ padding: '10px 14px', borderRadius: 10, background: ACCENT+'08', border: `1px solid ${ACCENT}18`, fontSize: 11, color: 'rgba(255,255,255,.4)', lineHeight: 1.65, marginTop: 4 }}>
-                    💡 Datas de referência das parcelas. O pagamento online acima é processado de forma segura via PIX ou cartão e confirmado automaticamente.
-                  </div>
-                </div>
-
-                <div style={{ marginTop: 14, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,.025)', border: '1px solid rgba(255,255,255,.05)', fontSize: 11, color: 'rgba(255,255,255,.35)', lineHeight: 1.6 }}>
-                  Status geral: <span style={{ fontWeight: 800, color: paid ? GREEN : YELLOW }}>{paid ? '✅ Pago' : '⏳ Aguardando pagamento'}</span>
-                  {paid && team.payment_date && <span style={{ marginLeft: 8 }}>· {new Date(team.payment_date).toLocaleDateString('pt-BR')}</span>}
+                <div style={{ marginTop: 14, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,.025)', border: '1px solid rgba(255,255,255,.05)', fontSize: 11, color: 'rgba(255,255,255,.4)', lineHeight: 1.6 }}>
+                  Status: <span style={{ fontWeight: 800, color: paid ? GREEN : YELLOW }}>{paid ? '✅ Confirmado' : '⏳ Aguardando pagamento'}</span>
+                  {chosenPlan ? <span style={{ marginLeft: 8 }}>· Parcelas pagas: {paidCount}/{chosenPlan}</span> : null}
                 </div>
               </div>
 
