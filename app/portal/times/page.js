@@ -1105,7 +1105,7 @@ export default function TimesPortalPage() {
           const paidCount = payInfo?.paid_count || 0;
           const allPaid = chosenPlan && paidCount >= chosenPlan;
 
-          const QRBlock = () => (
+          const qrBlock = (
             <div style={{ marginTop: 12, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 18, alignItems: isMobile ? 'stretch' : 'flex-start', padding: '14px', borderRadius: 12, background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.07)' }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                 <div ref={qrRef} style={{ width: 170, height: 170, borderRadius: 14, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 10 }} />
@@ -1240,7 +1240,7 @@ export default function TimesPortalPage() {
                                 )}
                                 {isPaid && <span style={{ fontSize: 10, fontWeight: 900, color: GREEN, letterSpacing: 1 }}>PAGO</span>}
                               </div>
-                              {isActive && !isPaid && <QRBlock />}
+                              {isActive && !isPaid && qrBlock}
                             </div>
                           );
                         })
