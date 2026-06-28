@@ -9,9 +9,9 @@ const GREEN  = '#20e33f';
 const INK    = '#fff';   // texto principal (cards escuros sólidos, igual /portal)
 
 const card = (extra = {}) => ({
-  background: 'linear-gradient(145deg, rgba(5,18,55,.96), rgba(2,8,22,.95))',
+  background: 'linear-gradient(145deg, #07173f, #02091c)',
   border: '1px solid rgba(255,255,255,.16)',
-  boxShadow: '0 18px 60px rgba(0,0,0,.45)',
+  boxShadow: '0 18px 60px rgba(0,0,0,.5)',
   borderRadius: 16, padding: '20px 20px', ...extra,
 });
 
@@ -861,7 +861,7 @@ export default function TimesPortalPage() {
   return (
     <div style={{ minHeight: '100vh', fontFamily: "'Inter', sans-serif", color: INK, position: 'relative' }}>
       <div style={{ position: 'fixed', inset: 0, zIndex: 0, backgroundImage: "url('/assets/hero-rio-athletes.png')", backgroundSize: 'cover', backgroundPosition: 'center top', backgroundAttachment: 'fixed' }} />
-      <div style={{ position: 'fixed', inset: 0, zIndex: 1, background: 'linear-gradient(180deg,rgba(3,16,32,.78) 0%,rgba(6,27,58,.72) 50%,rgba(3,16,32,.82) 100%)' }} />
+      <div style={{ position: 'fixed', inset: 0, zIndex: 1, background: 'linear-gradient(180deg,rgba(3,16,32,.90) 0%,rgba(6,27,58,.86) 50%,rgba(3,16,32,.93) 100%)' }} />
       <div style={{ position: 'relative', zIndex: 2 }}>
 
       {/* Edit modal */}
