@@ -629,7 +629,7 @@ export default function TimesPortalPage() {
   // Ao abrir o portal (qualquer aba), sincroniza o status de pagamento com o servidor,
   // pra "Inscrição" não ficar mostrando dado velho do login.
   useEffect(() => {
-    if (team && !team.payment_confirmed) refreshPaymentStatus(team.id);
+    if (team) refreshPaymentStatus(team.id);
   }, [team?.id, refreshPaymentStatus]);
 
   // Gera a imagem do QR Code a partir do "copia e cola" (independente da Cora)
