@@ -13,24 +13,33 @@ async function markPaid(session) {
 
   const supabase = getSupabaseAdmin();
 
-  // Evita reprocessar (idempotência)
   const { data: current } = await supabase
     .from('portal_teams')
-    .select('id, club_name, email, payment_confirmed')
+    .select('id, club_name, email, payment_confirmed, amount_paid_cents, stripe_payment_intent')
     .eq('id', teamId)
     .single();
 
-  if (!current || current.payment_confirmed) return;
+  if (!current) return;
+  // Idempotência: se esse mesmo PaymentIntent já foi processado, ignora
+  if (current.stripe_payment_intent && current.stripe_payment_intent === session.payment_intent) return;
 
+  const charged = session.amount_total ?? 0; // o cartão cobrou o saldo restante
   await supabase
     .from('portal_teams')
     .update({
       payment_confirmed: true,
       payment_date: new Date().toISOString(),
-      payment_amount: session.amount_total ?? null,
+      amount_paid_cents: (current.amount_paid_cents || 0) + charged,
       stripe_payment_intent: session.payment_intent ?? null,
     })
     .eq('id', teamId);
+
+  // Cartão quita o restante: marca todas as parcelas pendentes como pagas
+  await supabase
+    .from('payment_installments')
+    .update({ status: 'paid', paid_at: new Date().toISOString() })
+    .eq('team_id', teamId)
+    .neq('status', 'paid');
 
   // E-mail de confirmação (best-effort, não bloqueia o webhook)
   try {

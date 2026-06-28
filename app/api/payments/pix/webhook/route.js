@@ -25,7 +25,7 @@ export async function POST(req) {
     const supabase = getSupabaseAdmin();
     const { data: inst } = await supabase
       .from('payment_installments')
-      .select('id, team_id, number, status')
+      .select('id, team_id, number, status, amount_cents')
       .eq('cora_invoice_id', resourceId)
       .maybeSingle();
 
@@ -37,15 +37,21 @@ export async function POST(req) {
 
       const { data: team } = await supabase
         .from('portal_teams')
-        .select('id, club_name, email, payment_confirmed')
+        .select('id, club_name, email, payment_confirmed, amount_paid_cents')
         .eq('id', inst.team_id)
         .single();
 
-      if (team && !team.payment_confirmed) {
+      if (team) {
         await supabase
           .from('portal_teams')
-          .update({ payment_confirmed: true, payment_date: new Date().toISOString() })
+          .update({
+            payment_confirmed: true,
+            payment_date: new Date().toISOString(),
+            amount_paid_cents: (team.amount_paid_cents || 0) + (inst.amount_cents || 0),
+          })
           .eq('id', team.id);
+      }
+      if (team && !team.payment_confirmed) {
         try {
           await getResend().emails.send({
             from: fromEmail,

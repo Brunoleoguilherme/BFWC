@@ -951,11 +951,8 @@ export default function TimesPortalPage() {
                   desc: (() => {
                     const plan = payInfo?.payment_plan;
                     const paidN = payInfo?.paid_count || 0;
-                    if (plan && plan > 1) {
-                      return paidN >= plan
-                        ? `Todas as ${plan} parcelas pagas.`
-                        : `${paidN} de ${plan} parcelas pagas.`;
-                    }
+                    if (payInfo?.fully_paid) return 'Pagamento confirmado.';
+                    if (plan && plan > 1) return `${paidN} de ${plan} parcelas pagas.`;
                     return paymentConfirmed ? 'Pagamento confirmado.' : 'Instruções enviadas por e-mail após aprovação.';
                   })(),
                 },
@@ -1112,7 +1109,8 @@ export default function TimesPortalPage() {
           const instByNum = {};
           (payInfo?.installments || []).forEach((it) => { instByNum[it.number] = it; });
           const paidCount = payInfo?.paid_count || 0;
-          const allPaid = chosenPlan && paidCount >= chosenPlan;
+          const remainingReais = payInfo?.remaining_cents != null ? Math.round(payInfo.remaining_cents / 100) : total;
+          const allPaid = payInfo?.fully_paid || (chosenPlan && paidCount >= chosenPlan);
 
           const qrBlock = (
             <div style={{ marginTop: 12, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 18, alignItems: isMobile ? 'stretch' : 'flex-start', padding: '14px', borderRadius: 12, background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.07)' }}>
@@ -1264,10 +1262,10 @@ export default function TimesPortalPage() {
                         <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(255,68,68,.08)', border: '1px solid rgba(255,68,68,.25)', fontSize: 12, color: '#ff8080', lineHeight: 1.5, marginBottom: 12 }}>{checkoutErr}</div>
                       )}
                       <button onClick={startCheckout} disabled={checkoutLoading} style={{ width: '100%', padding: '16px', borderRadius: 12, border: 'none', background: `linear-gradient(135deg,${ACCENT},#1a5fff)`, color: '#fff', fontSize: 15, fontWeight: 800, cursor: checkoutLoading ? 'wait' : 'pointer', fontFamily: 'inherit', opacity: checkoutLoading ? .7 : 1 }}>
-                        {checkoutLoading ? 'Redirecionando...' : `Pagar R$ ${total.toLocaleString('pt-BR')} no cartão`}
+                        {checkoutLoading ? 'Redirecionando...' : `Pagar R$ ${remainingReais.toLocaleString('pt-BR')} no cartão`}
                       </button>
                       <div style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,.3)', lineHeight: 1.5, marginTop: 10 }}>
-                        💳 Você pode parcelar em até 3x no cartão na própria tela da Stripe · 🔒 ambiente seguro
+                        {remainingReais < total ? `Saldo restante (já pago: R$ ${(total - remainingReais).toLocaleString('pt-BR')}). ` : ''}💳 Parcele em até 3x no cartão na tela da Stripe · 🔒 seguro
                       </div>
                     </div>
                   )}

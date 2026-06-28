@@ -5,7 +5,8 @@
 
 -- Plano escolhido pelo time (1, 2 ou 3) — trava após a 1ª parcela gerada
 ALTER TABLE portal_teams
-  ADD COLUMN IF NOT EXISTS payment_plan int;
+  ADD COLUMN IF NOT EXISTS payment_plan int,
+  ADD COLUMN IF NOT EXISTS amount_paid_cents int DEFAULT 0;  -- total já pago (Pix + cartão)
 
 -- Uma linha por parcela do Pix
 CREATE TABLE IF NOT EXISTS payment_installments (
