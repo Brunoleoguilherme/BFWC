@@ -54,7 +54,7 @@ export async function POST(req) {
       process.env.PIX_TEST_EMAIL &&
       team.email?.toLowerCase() === process.env.PIX_TEST_EMAIL.toLowerCase()
     ) {
-      totalCents = 100;
+      totalCents = 500; // R$ 5,00 — mínimo aceito pela Cora
     }
 
     // Vencimento: 3 dias a partir de hoje (o Pix pode ser pago a qualquer momento antes)
