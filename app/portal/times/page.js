@@ -524,6 +524,7 @@ export default function TimesPortalPage() {
   const [needDoc, setNeedDoc]                 = useState(false);
   const [docInput, setDocInput]               = useState('');
   const [emvCopied, setEmvCopied]             = useState(false);
+  const qrRef = useRef(null);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 640);
@@ -604,6 +605,37 @@ export default function TimesPortalPage() {
     tick();
     return () => { active = false; };
   }, [tab, team, refreshPaymentStatus]);
+
+  // Ao abrir o portal (qualquer aba), sincroniza o status de pagamento com o servidor,
+  // pra "Inscrição" não ficar mostrando dado velho do login.
+  useEffect(() => {
+    if (team && !team.payment_confirmed) refreshPaymentStatus(team.id);
+  }, [team?.id, refreshPaymentStatus]);
+
+  // Gera a imagem do QR Code a partir do "copia e cola" (independente da Cora)
+  useEffect(() => {
+    const emv = pixData?.emv;
+    if (!emv) return;
+    let cancelled = false;
+    const render = () => {
+      if (cancelled || !qrRef.current || !window.QRCode) return;
+      qrRef.current.innerHTML = '';
+      new window.QRCode(qrRef.current, {
+        text: emv, width: 180, height: 180,
+        correctLevel: window.QRCode.CorrectLevel.M,
+      });
+    };
+    if (window.QRCode) { render(); return () => { cancelled = true; }; }
+    let s = document.getElementById('qrcodejs-cdn');
+    if (!s) {
+      s = document.createElement('script');
+      s.id = 'qrcodejs-cdn';
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+      document.body.appendChild(s);
+    }
+    s.addEventListener('load', render);
+    return () => { cancelled = true; s && s.removeEventListener('load', render); };
+  }, [pixData]);
 
   async function startCheckout() {
     if (!team) return;
@@ -1130,11 +1162,7 @@ export default function TimesPortalPage() {
                       ) : (
                         <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 20, alignItems: isMobile ? 'stretch' : 'flex-start' }}>
                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                            <div style={{ width: 180, height: 180, borderRadius: 16, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 10 }}>
-                              {pixData.qrcode_url
-                                ? <img src={pixData.qrcode_url} alt="QR Code Pix" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                                : <span style={{ color: '#000', fontSize: 11 }}>QR indisponível</span>}
-                            </div>
+                            <div ref={qrRef} style={{ width: 180, height: 180, borderRadius: 16, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 10 }} />
                             <div style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', textAlign: 'center' }}>Escaneie no app do seu banco</div>
                           </div>
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
