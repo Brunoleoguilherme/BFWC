@@ -1131,7 +1131,7 @@ export default function TimesPortalPage() {
 
               {/* Status geral */}
               {paid ? (
-                <div style={{ ...card(), padding: cpad, display: 'flex', alignItems: 'center', gap: 16, borderColor: GREEN + '40', background: GREEN + '06' }}>
+                <div style={{ ...card(), padding: cpad, display: 'flex', alignItems: 'center', gap: 16, border: `1px solid ${GREEN}55` }}>
                   <div style={{ width: 52, height: 52, borderRadius: '50%', background: GREEN + '18', border: `2px solid ${GREEN}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>✅</div>
                   <div>
                     <div style={{ fontSize: 16, fontWeight: 900, color: GREEN, marginBottom: 4 }}>Inscrição confirmada</div>
@@ -1143,7 +1143,7 @@ export default function TimesPortalPage() {
                   </div>
                 </div>
               ) : (
-                <div style={{ ...card(), padding: cpad, borderColor: YELLOW + '30', background: YELLOW + '04' }}>
+                <div style={{ ...card(), padding: cpad, border: `1px solid ${YELLOW}45` }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                     <div>
                       <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: 6 }}>Taxa de inscrição</div>

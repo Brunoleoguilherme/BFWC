@@ -11,9 +11,9 @@ const PURPLE = '#a855f7';
 
 /* ── design tokens ───────────────────────────────────────────── */
 const glass = (extra = {}) => ({
-  background: 'rgba(3,16,32,.72)',
-  backdropFilter: 'blur(18px)',
-  border: '1px solid rgba(255,255,255,.1)',
+  background: 'linear-gradient(145deg, #07173f, #02091c)',
+  border: '1px solid rgba(255,255,255,.16)',
+  boxShadow: '0 18px 60px rgba(0,0,0,.5)',
   borderRadius: 16,
   ...extra,
 });
@@ -596,7 +596,7 @@ export default function AtletasPortalPage() {
   const W   = { maxWidth: 680, margin: '0 auto' };
 
   return (
-    <div style={{ minHeight: '100vh', fontFamily: "'Inter',sans-serif", color: '#fff', position: 'relative' }}>
+    <div style={{ minHeight: '100vh', fontFamily: "'Inter',sans-serif", color: '#fff', position: 'relative', background: '#f1f5f9' }}>
       <style>{`
         @keyframes spin { to { transform: rotate(360deg) } }
         @keyframes fadeIn { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
@@ -604,13 +604,13 @@ export default function AtletasPortalPage() {
         input::placeholder, textarea::placeholder { color: rgba(255,255,255,.2) }
       `}</style>
 
-      {/* Background — mesma imagem do site */}
+      {/* Fundo claro com a foto bem fraca (padrão da tela de login) */}
       <div style={{ position: 'fixed', inset: 0, zIndex: 0,
         backgroundImage: "url('/assets/hero-rio-athletes.png')",
-        backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }} />
-      {/* Overlay escuro igual ao site */}
-      <div style={{ position: 'fixed', inset: 0, zIndex: 1,
-        background: 'linear-gradient(180deg,rgba(3,16,32,.96) 0%,rgba(6,27,58,.92) 50%,rgba(3,16,32,.97) 100%)' }} />
+        backgroundSize: 'cover', backgroundPosition: 'center top', opacity: 0.28 }} />
+      {/* Barra superior verde/azul */}
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 4, zIndex: 2,
+        background: 'linear-gradient(90deg,#031020 0%,#009c3b 50%,#031020 100%)' }} />
       {/* Conteúdo acima do overlay */}
       <div style={{ position: 'relative', zIndex: 2 }}>
 
@@ -618,38 +618,38 @@ export default function AtletasPortalPage() {
       <LangBar lang={lang} onChange={changeLang} />
 
       {/* ── Hero ── */}
-      <div style={{ padding: isMobile ? '32px 20px 28px' : '48px 24px 36px', textAlign: 'center', borderBottom: '1px solid rgba(255,255,255,.07)', background: 'linear-gradient(180deg,rgba(32,227,63,.06) 0%,transparent 100%)' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 10, fontWeight: 900, letterSpacing: 3.5, textTransform: 'uppercase', color: GREEN, marginBottom: 16, padding: '5px 16px', borderRadius: 20, border: `1px solid ${GREEN}30`, background: `${GREEN}0d` }}>
+      <div style={{ padding: isMobile ? '32px 20px 28px' : '48px 24px 36px', textAlign: 'center', borderBottom: '1px solid rgba(15,23,42,.08)' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 10, fontWeight: 900, letterSpacing: 3.5, textTransform: 'uppercase', color: '#fff', marginBottom: 16, padding: '6px 16px', borderRadius: 20, background: '#0f172a' }}>
           <span>🏈</span> {t('portalTitle', lang)}
         </div>
-        <h1 style={{ fontSize: isMobile ? 30 : 44, fontWeight: 900, letterSpacing: -1.5, margin: '0 0 14px', lineHeight: 1.1 }}>{athlete.name}</h1>
+        <h1 style={{ fontSize: isMobile ? 30 : 44, fontWeight: 900, letterSpacing: -1.5, margin: '0 0 14px', lineHeight: 1.1, color: '#0f172a' }}>{athlete.name}</h1>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
           {complete
-            ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 800, letterSpacing: .8, textTransform: 'uppercase', padding: '7px 18px', borderRadius: 24, background: `${GREEN}18`, color: GREEN, border: `1px solid ${GREEN}40` }}>✓ {t('profileComplete', lang)}</span>
+            ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 800, letterSpacing: .8, textTransform: 'uppercase', padding: '7px 18px', borderRadius: 24, background: GREEN, color: '#031020' }}>✓ {t('profileComplete', lang)}</span>
             : (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 800, letterSpacing: .5, padding: '7px 18px', borderRadius: 24, background: `${YELLOW}12`, color: YELLOW, border: `1px solid ${YELLOW}35` }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 800, letterSpacing: .5, padding: '7px 18px', borderRadius: 24, background: YELLOW, color: '#031020' }}>
                 ⚠ {t('profileIncomplete', lang)}
                 <span style={{ fontSize: 18, fontWeight: 900, letterSpacing: -1 }}>{pct}%</span>
               </span>
             )
           }
-          {athlete.category && <span style={{ fontSize: 13, color: 'rgba(255,255,255,.4)', fontWeight: 600 }}>• {athlete.category}</span>}
+          {athlete.category && <span style={{ fontSize: 13, color: 'rgba(15,23,42,.55)', fontWeight: 600 }}>• {athlete.category}</span>}
         </div>
       </div>
 
       {/* Alert */}
       {!complete && (
-        <div onClick={() => setTab('perfil')} style={{ cursor: 'pointer', background: `linear-gradient(90deg,${YELLOW}0f,${YELLOW}18,${YELLOW}0f)`, borderBottom: `2px solid ${YELLOW}28`, padding: isMobile ? '14px 20px' : '16px 32px' }}>
+        <div onClick={() => setTab('perfil')} style={{ cursor: 'pointer', background: '#fef3c7', borderBottom: `2px solid ${YELLOW}`, padding: isMobile ? '14px 20px' : '16px 32px' }}>
           <div style={{ maxWidth: 680, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <span style={{ fontSize: 20 }}>⚠️</span>
-            <span style={{ fontSize: isMobile ? 13 : 15, fontWeight: 800, color: YELLOW, lineHeight: 1.4 }}>{t('alertBanner', lang)}</span>
+            <span style={{ fontSize: isMobile ? 13 : 15, fontWeight: 800, color: '#854d0e', lineHeight: 1.4 }}>{t('alertBanner', lang)}</span>
             <span style={{ fontSize: 13, fontWeight: 900, color: '#031020', background: YELLOW, padding: '5px 14px', borderRadius: 8, whiteSpace: 'nowrap' }}>{t('alertCta', lang)}</span>
           </div>
         </div>
       )}
 
       {/* ── Tabs ── */}
-      <div style={{ background: 'rgba(3,16,32,.6)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,.08)', overflowX: 'auto' }}>
+      <div style={{ background: 'rgba(255,255,255,.72)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(15,23,42,.1)', overflowX: 'auto' }}>
         <div style={{ display: 'flex', maxWidth: 680, margin: '0 auto', alignItems: 'stretch' }}>
           {TABS.map(tb => (
             <button key={tb.key} onClick={() => setTab(tb.key)} style={{
@@ -657,7 +657,7 @@ export default function AtletasPortalPage() {
               padding: isMobile ? '16px 8px' : '20px 32px',
               background: 'none', border: 'none',
               borderBottom: tab === tb.key ? `3px solid ${GREEN}` : '3px solid transparent',
-              color: tab === tb.key ? '#fff' : 'rgba(255,255,255,.38)',
+              color: tab === tb.key ? '#0f172a' : 'rgba(15,23,42,.45)',
               fontFamily: 'inherit', fontSize: isMobile ? 12 : 15, fontWeight: 800, cursor: 'pointer',
               letterSpacing: .3, textTransform: isMobile ? 'none' : 'none',
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, transition: 'all .2s',
