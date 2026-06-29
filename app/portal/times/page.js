@@ -1296,7 +1296,7 @@ export default function TimesPortalPage() {
 
         {/* ══════ TAB ATLETAS ══════ */}
         {tab === 'atletas' && (
-          <div>
+          <div style={{ ...card(), padding: cpad }}>
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 10 }}>
               <div>
@@ -1546,7 +1546,7 @@ export default function TimesPortalPage() {
 
         {/* ══════ TAB CAMPEONATO ══════ */}
         {tab === 'campeonato' && (
-          <div>
+          <div style={{ ...card(), padding: cpad }}>
             <div style={{ display: 'flex', gap: 6, marginBottom: 16, overflowX: 'auto', paddingBottom: 2 }}>
               {[{ key: 'schedule', label: '🗓 Próximos' }, { key: 'results', label: '📊 Resultados' }, { key: 'venue', label: '🗺️ Venue' }].map(t => (
                 <button key={t.key} onClick={() => setGamesTab(t.key)} style={{ padding: '9px 14px', borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: isMobile ? 12 : 13, fontWeight: 700, whiteSpace: 'nowrap', background: gamesTab === t.key ? ACCENT : 'rgba(255,255,255,.05)', color: gamesTab === t.key ? '#fff' : 'rgba(255,255,255,.4)', transition: 'all .15s' }}>{t.label}</button>
