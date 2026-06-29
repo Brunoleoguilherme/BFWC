@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { LANGS, detectLang, saveLang, t } from '@/lib/i18n';
 
 const GREEN  = '#20e33f';
-const YELLOW = '#f4ff00';
+const YELLOW = '#d4a017';
 const ACCENT = '#0D4BFF';
 const PURPLE = '#a855f7';
 

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 const ACCENT = '#0D4BFF';
-const YELLOW = '#f4ff00';
+const YELLOW = '#d4a017';
 const GREEN  = '#20e33f';
 const INK    = '#fff';   // texto principal (cards escuros sólidos, igual /portal)
 
