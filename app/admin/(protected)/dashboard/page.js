@@ -170,11 +170,11 @@ function groupByCountry(teams) {
     const display = normalizeCountryDisplay(raw);
     const key = display.toLowerCase();
     if (!map[key]) map[key] = { country: display, total: 0, masc: 0, fem: 0, sub12: 0, sub15: 0 };
-    const cat = (t.category || '').toLowerCase();
-    const hasMasc  = cat.includes('masculino') ? 1 : 0;
-    const hasFem   = cat.includes('feminino')  ? 1 : 0;
-    const hasSub12 = cat.includes('sub 12')    ? 1 : 0;
-    const hasSub15 = cat.includes('sub 15')    ? 1 : 0;
+    const d = detectCats(t.category);
+    const hasMasc  = d.masc  ? 1 : 0;
+    const hasFem   = d.fem   ? 1 : 0;
+    const hasSub12 = d.sub12 ? 1 : 0;
+    const hasSub15 = d.sub15 ? 1 : 0;
     map[key].masc  += hasMasc;
     map[key].fem   += hasFem;
     map[key].sub12 += hasSub12;
@@ -217,15 +217,26 @@ const CATS = [
   { key: 'sub15', label: 'Sub 15',    match: 'sub 15'    },
 ];
 
-function hasCat(team, match) {
-  return (team.category || '').toLowerCase().includes(match);
+// Detecta categorias em PT / EN / ES (e Sub com hífen ou espaço)
+function detectCats(category = '') {
+  const c = (category || '').toLowerCase();
+  return {
+    masc:  /masculin|\bmen\b|\bmale\b|hombre/.test(c),
+    fem:   /feminin|femenin|\bwomen\b|\bfemale\b|mujer/.test(c),
+    sub12: /sub[\s-]?12|u-?12/.test(c),
+    sub15: /sub[\s-]?15|u-?15/.test(c),
+  };
+}
+
+function hasCat(team, key) {
+  return !!detectCats(team.category)[key];
 }
 
 function catBreakdown(teams) {
   return CATS.map(c => ({
     label: c.label,
-    teams: teams.filter(t => hasCat(t, c.match)).length,
-    athletes: teams.filter(t => hasCat(t, c.match))
+    teams: teams.filter(t => hasCat(t, c.key)).length,
+    athletes: teams.filter(t => hasCat(t, c.key))
                    .reduce((s, t) => s + (parseInt(t.athletes_count) || 0), 0),
   }));
 }
