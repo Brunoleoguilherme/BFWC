@@ -859,36 +859,36 @@ export default function TimesPortalPage() {
   const cpad = isMobile ? '16px' : '24px 28px';
 
   return (
-    <div style={{ minHeight: '100vh', fontFamily: "'Inter', sans-serif", color: INK, position: 'relative' }}>
-      <div style={{ position: 'fixed', inset: 0, zIndex: 0, backgroundImage: "url('/assets/hero-rio-athletes.png')", backgroundSize: 'cover', backgroundPosition: 'center top', backgroundAttachment: 'fixed' }} />
-      <div style={{ position: 'fixed', inset: 0, zIndex: 1, background: 'linear-gradient(180deg,rgba(3,16,32,.90) 0%,rgba(6,27,58,.86) 50%,rgba(3,16,32,.93) 100%)' }} />
+    <div style={{ minHeight: '100vh', fontFamily: "'Inter', sans-serif", color: INK, position: 'relative', background: '#f1f5f9' }}>
+      <div style={{ position: 'fixed', inset: 0, zIndex: 0, backgroundImage: "url('/assets/hero-rio-athletes.png')", backgroundSize: 'cover', backgroundPosition: 'center top', opacity: 0.28 }} />
+      <div style={{ position: 'fixed', inset: 0, zIndex: 1, background: 'linear-gradient(90deg,#031020 0%,#009c3b 50%,#031020 100%)', height: 4, bottom: 'auto' }} />
       <div style={{ position: 'relative', zIndex: 2 }}>
 
       {/* Edit modal */}
       {editingAth && <EditModal athlete={editingAth} onSave={saveEdit} onCancel={() => setEditingAth(null)} cats={registeredCats} />}
 
       {/* ── Hero ── */}
-      <div style={{ padding: isMobile ? '32px 20px 28px' : '48px 24px 36px', textAlign: 'center', borderBottom: '1px solid rgba(255,255,255,.07)', background: `linear-gradient(180deg,${YELLOW}07 0%,transparent 100%)` }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 10, fontWeight: 900, letterSpacing: 3.5, textTransform: 'uppercase', color: YELLOW, marginBottom: 16, padding: '5px 16px', borderRadius: 20, border: `1px solid ${YELLOW}30`, background: `${YELLOW}0d` }}>
+      <div style={{ padding: isMobile ? '32px 20px 28px' : '48px 24px 36px', textAlign: 'center', borderBottom: '1px solid rgba(15,23,42,.08)' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 10, fontWeight: 900, letterSpacing: 3.5, textTransform: 'uppercase', color: '#fff', marginBottom: 16, padding: '6px 16px', borderRadius: 20, background: '#0f172a' }}>
           🏈 Portal dos Times
         </div>
-        <h1 style={{ fontSize: isMobile ? 30 : 44, fontWeight: 900, letterSpacing: -1.5, margin: '0 0 14px', lineHeight: 1.1 }}>{team.club_name}</h1>
+        <h1 style={{ fontSize: isMobile ? 30 : 44, fontWeight: 900, letterSpacing: -1.5, margin: '0 0 14px', lineHeight: 1.1, color: '#0f172a' }}>{team.club_name}</h1>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 800, letterSpacing: .8, textTransform: 'uppercase', padding: '7px 18px', borderRadius: 24, background: ps.color + '18', color: ps.color, border: `1px solid ${ps.color}40` }}>{ps.label}</span>
-          {team.country && <span style={{ fontSize: 13, color: 'rgba(255,255,255,.4)', fontWeight: 600 }}>🌍 {team.country}{team.city ? `, ${team.city}` : ''}</span>}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 800, letterSpacing: .8, textTransform: 'uppercase', padding: '7px 18px', borderRadius: 24, background: ps.color + '20', color: ps.color, border: `1px solid ${ps.color}55` }}>{ps.label}</span>
+          {team.country && <span style={{ fontSize: 13, color: 'rgba(15,23,42,.55)', fontWeight: 600 }}>🌍 {team.country}{team.city ? `, ${team.city}` : ''}</span>}
         </div>
       </div>
 
       {/* ── Tabs ── */}
-      <div style={{ background: 'rgba(255,255,255,.10)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,.15)', overflowX: 'auto' }}>
+      <div style={{ background: 'rgba(255,255,255,.72)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(15,23,42,.1)', overflowX: 'auto' }}>
         <div style={{ display: 'flex', maxWidth: 960, margin: '0 auto', alignItems: 'stretch' }}>
           {TABS.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)} style={{
               flex: isMobile ? 1 : undefined,
               padding: isMobile ? '16px 8px' : '20px 28px',
               background: 'none', border: 'none',
-              borderBottom: tab === t.key ? `3px solid ${YELLOW}` : '3px solid transparent',
-              color: tab === t.key ? INK : 'rgba(255,255,255,.42)',
+              borderBottom: tab === t.key ? `3px solid ${ACCENT}` : '3px solid transparent',
+              color: tab === t.key ? '#0f172a' : 'rgba(15,23,42,.45)',
               fontFamily: 'inherit', fontSize: isMobile ? 12 : 15, fontWeight: 800, cursor: 'pointer',
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, transition: 'all .2s',
             }}>
@@ -897,7 +897,7 @@ export default function TimesPortalPage() {
             </button>
           ))}
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', paddingRight: 16 }}>
-            <button onClick={() => { sessionStorage.removeItem('bfwc_team_session'); router.push('/portal'); }} style={{ padding: '9px 18px', fontSize: 12, fontWeight: 800, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 10, color: 'rgba(255,255,255,.45)', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+            <button onClick={() => { sessionStorage.removeItem('bfwc_team_session'); router.push('/portal'); }} style={{ padding: '9px 18px', fontSize: 12, fontWeight: 800, background: 'rgba(15,23,42,.05)', border: '1px solid rgba(15,23,42,.15)', borderRadius: 10, color: 'rgba(15,23,42,.6)', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
               Sair
             </button>
           </div>
