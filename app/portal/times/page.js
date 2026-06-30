@@ -868,7 +868,7 @@ export default function TimesPortalPage() {
       {editingAth && <EditModal athlete={editingAth} onSave={saveEdit} onCancel={() => setEditingAth(null)} cats={registeredCats} />}
 
       {/* ── Hero ── */}
-      <div style={{ padding: isMobile ? '32px 20px 28px' : '48px 24px 36px', textAlign: 'center', borderBottom: '1px solid rgba(15,23,42,.08)', background: 'rgba(248,250,252,.86)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)' }}>
+      <div style={{ padding: isMobile ? '32px 20px 28px' : '48px 24px 36px', textAlign: 'center', background: 'radial-gradient(ellipse 70% 100% at 50% 40%, rgba(247,250,252,.94) 0%, rgba(247,250,252,.80) 50%, rgba(241,245,249,0) 100%)' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 10, fontWeight: 900, letterSpacing: 3.5, textTransform: 'uppercase', color: '#fff', marginBottom: 16, padding: '6px 16px', borderRadius: 20, background: '#0f172a' }}>
           🏈 Portal dos Times
         </div>
