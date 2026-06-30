@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getInvoice } from '@/lib/cora';
 import { getResend, fromEmail } from '@/lib/email';
-import { totalCentsFor } from '@/lib/installments';
+import { totalCentsForTeam } from '@/lib/installments';
 
 export const runtime = 'nodejs';
 
@@ -28,7 +28,7 @@ export async function GET(request) {
   const supabase = getSupabaseAdmin();
   const { data: team, error } = await supabase
     .from('portal_teams')
-    .select('id, club_name, email, category, payment_confirmed, payment_date, payment_plan, amount_paid_cents')
+    .select('id, club_name, email, category, payment_confirmed, payment_date, payment_plan, amount_paid_cents, payment_option, athletes_paid_qty')
     .eq('id', teamId)
     .single();
 
@@ -78,7 +78,7 @@ export async function GET(request) {
     }
   }
 
-  const totalCents = totalCentsFor(team.category);
+  const totalCents = totalCentsForTeam(team);
   const remaining = Math.max(0, totalCents - amountPaid);
   const fullyPaid = remaining <= 0 && (teamConfirmed || amountPaid > 0);
   const paidCount = list.filter((i) => i.status === 'paid').length;
@@ -88,6 +88,8 @@ export async function GET(request) {
     payment_confirmed: teamConfirmed,
     payment_date: teamPaymentDate,
     payment_plan: team.payment_plan,
+    payment_option: team.payment_option || null,
+    athletes_paid_qty: team.athletes_paid_qty || 0,
     amount_paid_cents: amountPaid,
     total_cents: totalCents,
     remaining_cents: remaining,

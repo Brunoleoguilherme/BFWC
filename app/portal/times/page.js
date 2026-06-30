@@ -517,6 +517,8 @@ export default function TimesPortalPage() {
   const [payPolling, setPayPolling]           = useState(false);
   const [payMethod, setPayMethod]             = useState('pix');
   const [planSize, setPlanSize]               = useState(null);   // 1, 2 ou 3 escolhido
+  const [payOption, setPayOption]             = useState(null);   // '1' ou '2' (escolha do time)
+  const [athleteQty, setAthleteQty]           = useState(12);     // atletas pagos na opção 2
   const [payInfo, setPayInfo]                 = useState(null);   // resposta de /payment-status
   const [activePix, setActivePix]             = useState(null);   // { number, emv, qrcode_url }
   const [pixLoadingNum, setPixLoadingNum]     = useState(0);      // nº da parcela gerando (0 = nenhuma)
@@ -657,12 +659,15 @@ export default function TimesPortalPage() {
 
   async function startCheckout() {
     if (!team) return;
+    const effOption = payInfo?.payment_option || payOption;
+    if (!effOption) { setCheckoutErr('Escolha uma opção de pagamento.'); return; }
+    const effAth = payInfo?.payment_option ? (payInfo.athletes_paid_qty || 0) : athleteQty;
     setCheckoutErr(''); setCheckoutLoading(true);
     try {
       const r = await fetch('/api/payments/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ team_id: team.id }),
+        body: JSON.stringify({ team_id: team.id, option: effOption, athletes_qty: effAth }),
       });
       const d = await r.json();
       if (!d.ok || !d.url) throw new Error(d.message || 'Não foi possível iniciar o pagamento.');
@@ -675,10 +680,12 @@ export default function TimesPortalPage() {
 
   // Gera o Pix de uma parcela específica
   async function generateParcela(number) {
-    if (!team || !planSize) return;
+    const effOption = payInfo?.payment_option || payOption;
+    if (!team || !effOption) return;
+    const effAth = payInfo?.payment_option ? (payInfo.athletes_paid_qty || 0) : athleteQty;
     setPixErr(''); setPixLoadingNum(number);
     try {
-      const body = { team_id: team.id, plan_size: planSize, number };
+      const body = { team_id: team.id, number, option: effOption, athletes_qty: effAth };
       if (docInput) body.document = docInput;
       const r = await fetch('/api/payments/pix/create', {
         method: 'POST',
@@ -1086,28 +1093,39 @@ export default function TimesPortalPage() {
 
         {/* ══════ TAB PAGAMENTO ══════ */}
         {tab === 'pagamento' && (() => {
-          const PRICE_PER_CAT = 2000; // R$ por categoria
           const numCats = registeredCats.length || 1;
-          const total   = PRICE_PER_CAT * numCats;
           const paid    = !!team.payment_confirmed;
 
+          // Opção: travada após o 1º pagamento (payInfo) ou escolhida agora (payOption)
+          const lockedOption = payInfo?.payment_option || null;
+          const effOption    = lockedOption || payOption;            // '1' | '2' | null
+          const effAthletes  = lockedOption ? (payInfo?.athletes_paid_qty || 0) : athleteQty;
+
+          // Total conforme a opção escolhida
+          const totalFor = (opt, ath) => opt === '2' ? (800 * numCats + 100 * (parseInt(ath, 10) || 0)) : (2000 * numCats);
+          const total    = effOption ? totalFor(effOption, effAthletes) : 0;
+
+          // Parcelamento automático por data: 3x até 20/07, 2x até 20/08, depois 1x
+          const todayStr  = new Date().toISOString().slice(0, 10);
+          const autoPlan  = todayStr <= '2026-07-20' ? 3 : todayStr <= '2026-08-20' ? 2 : 1;
           const lockedPlan = payInfo?.payment_plan || null;
-          const chosenPlan = lockedPlan || planSize;
-          const DUE = ['15 de julho de 2026', '15 de agosto de 2026', '15 de setembro de 2026'];
+          const chosenPlan = lockedPlan || autoPlan;
+          const ALL_DUES  = ['20 de julho de 2026', '20 de agosto de 2026', '20 de setembro de 2026'];
+          const planDues  = ALL_DUES.slice(ALL_DUES.length - chosenPlan);
 
           const buildParcelas = (n) => {
             const parcela = Math.ceil(total / n);
             return Array.from({ length: n }, (_, i) => ({
               number: i + 1,
               value: i < n - 1 ? parcela : total - parcela * (n - 1),
-              date: DUE[i],
+              date: planDues[i],
             }));
           };
           const instByNum = {};
           (payInfo?.installments || []).forEach((it) => { instByNum[it.number] = it; });
           const paidCount = payInfo?.paid_count || 0;
           const remainingReais = payInfo?.remaining_cents != null ? Math.round(payInfo.remaining_cents / 100) : total;
-          const allPaid = payInfo?.fully_paid || (chosenPlan && paidCount >= chosenPlan);
+          const allPaid = payInfo?.fully_paid || (lockedPlan && paidCount >= lockedPlan);
 
           const qrBlock = (
             <div style={{ marginTop: 12, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 18, alignItems: isMobile ? 'stretch' : 'flex-start', padding: '14px', borderRadius: 12, background: 'rgba(15,23,42,.03)', border: '1px solid rgba(15,23,42,.07)' }}>
@@ -1142,13 +1160,34 @@ export default function TimesPortalPage() {
                     </div>
                   </div>
                 </div>
+              ) : !effOption ? (
+                <div style={{ ...card(), padding: cpad }}>
+                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Escolha a forma de inscrição</div>
+                  <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 12 }}>
+                    <button onClick={() => setPayOption('1')} style={{ flex: 1, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', padding: '18px', borderRadius: 16, border: `2px solid ${YELLOW}55`, background: YELLOW + '0c' }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: YELLOW, marginBottom: 8 }}>Opção 1 · Pacote</div>
+                      <div style={{ fontSize: 26, fontWeight: 900, color: '#0f172a', letterSpacing: -1 }}>R$ {(2000 * numCats).toLocaleString('pt-BR')}</div>
+                      <div style={{ fontSize: 12, color: 'rgba(15,23,42,.55)', marginTop: 6, lineHeight: 1.5 }}>R$ 2.000 por categoria{numCats > 1 ? ` × ${numCats}` : ''}. Atletas inclusos. Parcele em até 3x.</div>
+                      <div style={{ marginTop: 12, fontSize: 12, fontWeight: 800, color: YELLOW }}>Escolher →</div>
+                    </button>
+                    <button onClick={() => setPayOption('2')} style={{ flex: 1, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', padding: '18px', borderRadius: 16, border: `2px solid ${ACCENT}55`, background: ACCENT + '0c' }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: ACCENT, marginBottom: 8 }}>Opção 2 · Por atleta</div>
+                      <div style={{ fontSize: 26, fontWeight: 900, color: '#0f172a', letterSpacing: -1 }}>R$ {(800 * numCats).toLocaleString('pt-BR')} <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>+ R$100/atleta</span></div>
+                      <div style={{ fontSize: 12, color: 'rgba(15,23,42,.55)', marginTop: 6, lineHeight: 1.5 }}>R$ 800 por categoria{numCats > 1 ? ` × ${numCats}` : ''} + R$ 100 por atleta (você escolhe a quantidade). Parcele em até 3x.</div>
+                      <div style={{ marginTop: 12, fontSize: 12, fontWeight: 800, color: ACCENT }}>Escolher →</div>
+                    </button>
+                  </div>
+                </div>
               ) : (
                 <div style={{ ...card(), padding: cpad, border: `1px solid ${YELLOW}45` }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                     <div>
-                      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 6 }}>Taxa de inscrição</div>
+                      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 6 }}>
+                        Opção {effOption} {effOption === '2' ? '· por atleta' : '· pacote'}
+                        {!lockedOption && <span onClick={() => { setPayOption(null); setPayMethod('pix'); }} style={{ marginLeft: 10, color: ACCENT, cursor: 'pointer', fontWeight: 800, textTransform: 'none', letterSpacing: 0 }}>trocar</span>}
+                      </div>
                       <div style={{ fontSize: 13, color: 'rgba(15,23,42,.5)', marginBottom: 4 }}>
-                        {registeredCats.length} categoria{registeredCats.length !== 1 ? 's' : ''} × R$ {PRICE_PER_CAT.toLocaleString('pt-BR')}
+                        {effOption === '2' ? `R$ 800 × ${numCats} cat. + R$ 100 × ${effAthletes} atletas` : `${numCats} categoria${numCats !== 1 ? 's' : ''} × R$ 2.000`}
                       </div>
                       <div style={{ fontSize: 11, color: 'rgba(15,23,42,.3)' }}>{registeredCats.join(' · ')}</div>
                     </div>
@@ -1160,12 +1199,29 @@ export default function TimesPortalPage() {
                 </div>
               )}
 
-              {/* Bloco de pagamento (some quando todas as parcelas estão pagas) */}
-              {!allPaid && (
+              {/* Bloco de pagamento (some quando todas as parcelas estão pagas ou sem opção) */}
+              {!allPaid && effOption && (
                 <div style={{ ...card(), padding: cpad }}>
                   <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 16 }}>
                     {paid ? 'Pagar parcelas restantes' : 'Pagar taxa de inscrição'}
                   </div>
+
+                  {/* Opção 2: quantidade de atletas */}
+                  {effOption === '2' && (
+                    <div style={{ marginBottom: 16, padding: '14px', borderRadius: 12, background: ACCENT + '08', border: `1px solid ${ACCENT}22` }}>
+                      <div style={{ fontSize: 12, fontWeight: 800, color: 'rgba(15,23,42,.6)', marginBottom: 8 }}>Quantos atletas vai pagar? (R$ 100 cada)</div>
+                      {lockedOption ? (
+                        <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>{effAthletes} atletas · R$ {(100 * effAthletes).toLocaleString('pt-BR')}</div>
+                      ) : (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <button type="button" onClick={() => setAthleteQty(q => Math.max(1, (parseInt(q, 10) || 1) - 1))} style={{ width: 38, height: 38, borderRadius: 10, border: '1px solid #cbd5e1', background: '#fff', fontSize: 18, fontWeight: 900, cursor: 'pointer', color: '#0f172a' }}>−</button>
+                          <input type="number" min={1} value={athleteQty} onChange={e => setAthleteQty(Math.max(1, parseInt(e.target.value, 10) || 1))} style={{ ...inputSt, width: 90, textAlign: 'center', fontWeight: 800 }} />
+                          <button type="button" onClick={() => setAthleteQty(q => (parseInt(q, 10) || 1) + 1)} style={{ width: 38, height: 38, borderRadius: 10, border: '1px solid #cbd5e1', background: '#fff', fontSize: 18, fontWeight: 900, cursor: 'pointer', color: '#0f172a' }}>+</button>
+                          <div style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 800, color: ACCENT }}>+ R$ {(100 * athleteQty).toLocaleString('pt-BR')}</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {payPolling && (
                     <div style={{ padding: '12px 14px', borderRadius: 10, background: ACCENT+'10', border: `1px solid ${ACCENT}25`, fontSize: 12, color: 'rgba(15,23,42,.6)', lineHeight: 1.5, marginBottom: 14 }}>⏳ Confirmando seu pagamento...</div>
@@ -1189,24 +1245,11 @@ export default function TimesPortalPage() {
                   {/* ── PIX parcelado ── */}
                   {payMethod === 'pix' && (
                     <div>
-                      {/* Seletor de plano */}
-                      <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)', marginBottom: 8 }}>
-                        {lockedPlan ? `Parcelamento escolhido: ${lockedPlan}x` : 'Em quantas vezes quer pagar?'}
+                      {/* Parcelamento automático por data */}
+                      <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)', marginBottom: 12, lineHeight: 1.5 }}>
+                        Parcelamento automático: <span style={{ color: GREEN, fontWeight: 800 }}>{chosenPlan}x</span>
+                        <span style={{ color: 'rgba(15,23,42,.4)' }}> · vencimentos {planDues.join(', ')}</span>
                       </div>
-                      {!lockedPlan && (
-                        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-                          {[1,2,3].map(n => (
-                            <button key={n} onClick={() => setPlanSize(n)} style={{
-                              flex: 1, padding: '12px', borderRadius: 12, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 800,
-                              border: `2px solid ${planSize===n ? GREEN : 'rgba(15,23,42,.08)'}`,
-                              background: planSize===n ? GREEN+'12' : 'rgba(15,23,42,.03)',
-                              color: planSize===n ? GREEN : 'rgba(15,23,42,.6)',
-                            }}>
-                              {n}x<div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(15,23,42,.4)', marginTop: 2 }}>R$ {(Math.ceil(total/n)).toLocaleString('pt-BR')}{n>1?'/mês':''}</div>
-                            </button>
-                          ))}
-                        </div>
-                      )}
 
                       {needDoc && (
                         <div style={{ marginBottom: 12 }}>
@@ -1273,16 +1316,26 @@ export default function TimesPortalPage() {
               <div style={{ ...card(), padding: cpad }}>
                 <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Resumo da cobrança</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                  {registeredCats.map((c, i) => (
-                    <div key={c} style={{ display: 'flex', justifyContent: 'space-between', padding: '11px 0', borderBottom: i < registeredCats.length - 1 ? '1px solid rgba(15,23,42,.05)' : 'none' }}>
-                      <span style={{ fontSize: 13, color: 'rgba(15,23,42,.6)' }}>Categoria {c}</span>
-                      <span style={{ fontSize: 13, fontWeight: 700 }}>R$ {PRICE_PER_CAT.toLocaleString('pt-BR')}</span>
-                    </div>
-                  ))}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 0 0', marginTop: 4, borderTop: `2px solid ${YELLOW}20` }}>
-                    <span style={{ fontSize: 15, fontWeight: 900 }}>Total</span>
-                    <span style={{ fontSize: 15, fontWeight: 900, color: YELLOW }}>R$ {total.toLocaleString('pt-BR')}</span>
-                  </div>
+                  {!effOption ? (
+                    <div style={{ fontSize: 12, color: 'rgba(15,23,42,.4)', padding: '4px 0' }}>Escolha uma opção acima para ver o detalhamento.</div>
+                  ) : (
+                    <>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '11px 0', borderBottom: '1px solid rgba(15,23,42,.05)' }}>
+                        <span style={{ fontSize: 13, color: 'rgba(15,23,42,.6)' }}>{registeredCats.length} categoria{registeredCats.length !== 1 ? 's' : ''} × R$ {(effOption === '2' ? 800 : 2000).toLocaleString('pt-BR')}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700 }}>R$ {((effOption === '2' ? 800 : 2000) * numCats).toLocaleString('pt-BR')}</span>
+                      </div>
+                      {effOption === '2' && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '11px 0' }}>
+                          <span style={{ fontSize: 13, color: 'rgba(15,23,42,.6)' }}>{effAthletes} atleta{effAthletes !== 1 ? 's' : ''} × R$ 100</span>
+                          <span style={{ fontSize: 13, fontWeight: 700 }}>R$ {(100 * effAthletes).toLocaleString('pt-BR')}</span>
+                        </div>
+                      )}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 0 0', marginTop: 4, borderTop: `2px solid ${YELLOW}20` }}>
+                        <span style={{ fontSize: 15, fontWeight: 900 }}>Total</span>
+                        <span style={{ fontSize: 15, fontWeight: 900, color: YELLOW }}>R$ {total.toLocaleString('pt-BR')}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
                 <div style={{ marginTop: 14, padding: '10px 14px', borderRadius: 10, background: 'rgba(15,23,42,.025)', border: '1px solid rgba(15,23,42,.05)', fontSize: 11, color: 'rgba(15,23,42,.4)', lineHeight: 1.6 }}>
                   Status: <span style={{ fontWeight: 800, color: paid ? GREEN : YELLOW }}>{paid ? '✅ Confirmado' : '⏳ Aguardando pagamento'}</span>
