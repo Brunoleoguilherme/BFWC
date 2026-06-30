@@ -4,20 +4,20 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 const ACCENT = '#0D4BFF';
-const YELLOW = '#d4a017';
-const GREEN  = '#20e33f';
-const INK    = '#fff';   // texto principal (cards escuros sólidos, igual /portal)
+const YELLOW = '#b8860b';
+const GREEN  = '#009c3b';
+const INK    = '#0f172a';   // texto principal (cards brancos, padrão do admin)
 
 const card = (extra = {}) => ({
-  background: 'linear-gradient(145deg, #07173f, #02091c)',
-  border: '1px solid rgba(255,255,255,.16)',
-  boxShadow: '0 18px 60px rgba(0,0,0,.5)',
-  borderRadius: 16, padding: '20px 20px', ...extra,
+  background: '#ffffff',
+  border: '1px solid #e2e8f0',
+  boxShadow: '0 1px 4px rgba(0,0,0,.06)',
+  borderRadius: 18, padding: '20px 20px', ...extra,
 });
 
 const miniCard = (extra = {}) => ({
-  background: 'rgba(255,255,255,.06)',
-  border: '1px solid rgba(255,255,255,.12)',
+  background: '#f8fafc',
+  border: '1px solid #e2e8f0',
   borderRadius: 12, padding: '12px 14px', ...extra,
 });
 
@@ -29,21 +29,21 @@ const tag = (color) => ({
 });
 
 const lbl = {
-  fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.5)',
+  fontSize: 10, fontWeight: 700, color: 'rgba(15,23,42,.5)',
   letterSpacing: 1, textTransform: 'uppercase', display: 'block', marginBottom: 5,
 };
 
 const inputSt = {
   width: '100%', boxSizing: 'border-box', padding: '12px 14px',
-  background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.14)',
-  borderRadius: 10, color: '#fff', fontSize: 14, outline: 'none',
+  background: '#ffffff', border: '1px solid #cbd5e1',
+  borderRadius: 10, color: '#0f172a', fontSize: 14, outline: 'none',
   fontFamily: "'Inter', sans-serif",
 };
 
 const selectSt = {
   ...inputSt, cursor: 'pointer',
   appearance: 'none', WebkitAppearance: 'none',
-  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,.45)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
+  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(15,23,42,.45)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
   backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', paddingRight: 36,
 };
 
@@ -116,7 +116,7 @@ const PHASE_LABELS = {
 // ATIVO só aparece quando o atleta finalizou o cadastro (approved)
 function PortalBadge({ a }) {
   if (!a.portal_registered)
-    return <span style={tag('rgba(255,255,255,.3)')}>Sem conta</span>;
+    return <span style={tag('rgba(15,23,42,.3)')}>Sem conta</span>;
 
   if (!a.portal_email_verified)
     return <span style={tag('#f4ff00')}>📧 Verificar e-mail</span>;
@@ -164,20 +164,20 @@ function AthleteCard({ a, onEdit, onDelete, deletingId }) {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
           {a.email && (
             <div style={{ gridColumn: '1 / -1' }}>
-              <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.25)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>E-mail</div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,.5)', wordBreak: 'break-all' }}>{a.email}</div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(15,23,42,.25)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>E-mail</div>
+              <div style={{ fontSize: 12, color: 'rgba(15,23,42,.5)', wordBreak: 'break-all' }}>{a.email}</div>
             </div>
           )}
           {a.birth_date && (
             <div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.25)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>Nascimento</div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,.5)' }}>{new Date(a.birth_date + 'T00:00:00').toLocaleDateString('pt-BR')}</div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(15,23,42,.25)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>Nascimento</div>
+              <div style={{ fontSize: 12, color: 'rgba(15,23,42,.5)' }}>{new Date(a.birth_date + 'T00:00:00').toLocaleDateString('pt-BR')}</div>
             </div>
           )}
           {a.document && (
             <div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.25)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>Documento</div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,.5)' }}>{a.document}</div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(15,23,42,.25)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>Documento</div>
+              <div style={{ fontSize: 12, color: 'rgba(15,23,42,.5)' }}>{a.document}</div>
             </div>
           )}
         </div>
@@ -233,8 +233,8 @@ function EditModal({ athlete, onSave, onCancel, cats = [] }) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(2,8,20,.92)', zIndex: 1000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', backdropFilter: 'blur(6px)' }}>
-      <div style={{ width: '100%', maxWidth: 520, background: 'linear-gradient(180deg, #0d1f3c, #060f20)', borderRadius: '24px 24px 0 0', padding: '24px 20px 40px', boxShadow: '0 -20px 60px rgba(0,0,0,.6)' }}>
-        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(255,255,255,.15)', margin: '0 auto 20px' }} />
+      <div style={{ width: '100%', maxWidth: 520, background: '#ffffff', borderRadius: '24px 24px 0 0', padding: '24px 20px 40px', boxShadow: '0 -20px 60px rgba(0,0,0,.3)' }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(15,23,42,.15)', margin: '0 auto 20px' }} />
         <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 18 }}>Editar atleta</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
           <div><label style={lbl}>Nome completo *</label><input style={inputSt} value={data.name} onChange={e => setData(p => ({ ...p, name: e.target.value }))} /></div>
@@ -243,8 +243,8 @@ function EditModal({ athlete, onSave, onCancel, cats = [] }) {
             <div>
               <label style={lbl}>Categoria</label>
               <select style={selectSt} value={data.category} onChange={e => setData(p => ({ ...p, category: e.target.value }))}>
-                <option value="" style={{ background: '#0a1628' }}>—</option>
-                {cats.map(c => <option key={c} value={c} style={{ background: '#0a1628' }}>{c}</option>)}
+                <option value="" style={{ background: '#ffffff' }}>—</option>
+                {cats.map(c => <option key={c} value={c} style={{ background: '#ffffff' }}>{c}</option>)}
               </select>
             </div>
           </div>
@@ -255,7 +255,7 @@ function EditModal({ athlete, onSave, onCancel, cats = [] }) {
                 Nascimento{subCategory && <span style={{ color: '#f97316', marginLeft: 4 }}>≥ {minBirthYear}</span>}
               </label>
               <input
-                style={{ ...inputSt, borderColor: ageError ? '#ff4444' : 'rgba(255,255,255,.1)' }}
+                style={{ ...inputSt, borderColor: ageError ? '#ff4444' : 'rgba(15,23,42,.1)' }}
                 type="date"
                 value={data.birth_date}
                 onChange={e => setData(p => ({ ...p, birth_date: e.target.value }))}
@@ -271,10 +271,10 @@ function EditModal({ athlete, onSave, onCancel, cats = [] }) {
         </div>
         {(saveErr && !ageError) && <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(255,68,68,.1)', border: '1px solid rgba(255,68,68,.2)', fontSize: 12, color: '#ff8888', marginBottom: 10 }}>{saveErr}</div>}
         <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={onCancel} style={{ flex: 1, padding: '14px', borderRadius: 12, border: '1px solid rgba(255,255,255,.1)', background: 'rgba(255,255,255,.05)', color: 'rgba(255,255,255,.5)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+          <button onClick={onCancel} style={{ flex: 1, padding: '14px', borderRadius: 12, border: '1px solid rgba(15,23,42,.1)', background: 'rgba(15,23,42,.05)', color: 'rgba(15,23,42,.5)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
             Cancelar
           </button>
-          <button onClick={save} disabled={saving || !!ageError} style={{ flex: 2, padding: '14px', borderRadius: 12, border: 'none', background: ageError ? 'rgba(255,68,68,.3)' : GREEN, color: ageError ? '#ff8888' : '#031020', fontSize: 14, fontWeight: 800, cursor: ageError ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
+          <button onClick={save} disabled={saving || !!ageError} style={{ flex: 2, padding: '14px', borderRadius: 12, border: 'none', background: ageError ? 'rgba(255,68,68,.3)' : GREEN, color: ageError ? '#ff8888' : '#fff', fontSize: 14, fontWeight: 800, cursor: ageError ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
             {saving ? 'Salvando...' : '✓ Salvar'}
           </button>
         </div>
@@ -340,7 +340,7 @@ function VenueMap() {
         rrect(px+1,py+1,cw-2,rh-2,2,'#35404f','#25303e',0.5);
         if(Math.random()<0.6){rrect(px+cw/2-6,py+rh*0.25,12,rh*0.5,2,'#1e2a38',null);}
       }
-      txt(lbl,x+w/2,y+h-12,9,'rgba(255,255,255,.35)','700');
+      txt(lbl,x+w/2,y+h-12,9,'rgba(15,23,42,.35)','700');
     }
     drawParking(40,40,180,332,3,5,'🅿 ESTAC. OESTE');
     drawParking(880,40,180,332,3,5,'🅿 ESTAC. LESTE');
@@ -351,7 +351,7 @@ function VenueMap() {
       rrect(x,y,w,h,5,'#1a3d1a',null);
       g.setLineDash([8,5]);rrect(x,y,w,h,5,null,'#4caf50',1.2);g.setLineDash([]);
       for(let lx=x+20;lx<x+w-10;lx+=20){
-        g.strokeStyle='rgba(255,255,255,.1)';g.lineWidth=0.8;
+        g.strokeStyle='rgba(15,23,42,.1)';g.lineWidth=0.8;
         g.beginPath();g.moveTo(lx,y);g.lineTo(lx,y+h);g.stroke();
       }
       txt(lbl,x+w/2,y+h/2+1,8,'rgba(100,220,100,.6)','700');
@@ -375,20 +375,20 @@ function VenueMap() {
       g.fillStyle='#1c4a1c';g.fillRect(x,y+8,FW,EZ-8);
       rrect(x,y+FH-EZ,FW,EZ,8,'#1c4a1c',null);
       g.fillStyle='#1c4a1c';g.fillRect(x,y+FH-EZ,FW,EZ-8);
-      g.save();g.translate(x+FW/2,y+EZ/2);txt('BFWC 2026',0,0,7,'rgba(255,255,255,.15)','800');g.restore();
-      g.save();g.translate(x+FW/2,y+FH-EZ/2);txt('BFWC 2026',0,0,7,'rgba(255,255,255,.15)','800');g.restore();
-      g.strokeStyle='rgba(255,255,255,.18)';g.lineWidth=0.8;
+      g.save();g.translate(x+FW/2,y+EZ/2);txt('BFWC 2026',0,0,7,'rgba(15,23,42,.15)','800');g.restore();
+      g.save();g.translate(x+FW/2,y+FH-EZ/2);txt('BFWC 2026',0,0,7,'rgba(15,23,42,.15)','800');g.restore();
+      g.strokeStyle='rgba(15,23,42,.18)';g.lineWidth=0.8;
       const fieldH=FH-EZ*2;
       [1,2,3,4].forEach(i=>{
         const ly=y+EZ+i*fieldH/5;
         g.beginPath();g.moveTo(x,ly);g.lineTo(x+FW,ly);g.stroke();
-        txt(`${i*10}`,x+8,ly,6,'rgba(255,255,255,.2)');
-        txt(`${i*10}`,x+FW-8,ly,6,'rgba(255,255,255,.2)');
+        txt(`${i*10}`,x+8,ly,6,'rgba(15,23,42,.2)');
+        txt(`${i*10}`,x+FW-8,ly,6,'rgba(15,23,42,.2)');
       });
-      g.setLineDash([5,4]);g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=1;
+      g.setLineDash([5,4]);g.strokeStyle='rgba(15,23,42,.35)';g.lineWidth=1;
       const midY=y+FH/2;
       g.beginPath();g.moveTo(x,midY);g.lineTo(x+FW,midY);g.stroke();g.setLineDash([]);
-      g.strokeStyle='rgba(255,255,255,.2)';g.lineWidth=0.8;
+      g.strokeStyle='rgba(15,23,42,.2)';g.lineWidth=0.8;
       g.beginPath();g.arc(x+FW/2,midY,12,0,Math.PI*2);g.stroke();
       g.shadowColor='rgba(0,200,0,.3)';g.shadowBlur=6;
       rrect(x,y,FW,FH,8,null,'#3dba3d',1.8);ns();
@@ -450,9 +450,9 @@ function VenueMap() {
     rrect(456,H-34,188,28,6,'rgba(0,0,0,.65)','rgba(244,255,0,.3)',1);
     txt('▲  ENTRADA PRINCIPAL',550,H-20,11,'#f4ff00','800');
 
-    g.fillStyle='rgba(255,255,255,.7)';g.fillRect(42,H-30,60,4);
-    g.fillStyle='rgba(255,255,255,.35)';g.fillRect(102,H-30,60,4);
-    txt('0        50m       100m',132,H-18,8,'rgba(255,255,255,.35)');
+    g.fillStyle='rgba(15,23,42,.7)';g.fillRect(42,H-30,60,4);
+    g.fillStyle='rgba(15,23,42,.35)';g.fillRect(102,H-30,60,4);
+    txt('0        50m       100m',132,H-18,8,'rgba(15,23,42,.35)');
 
     const hg=g.createLinearGradient(0,0,W,0);
     hg.addColorStop(0,'rgba(20,50,20,.8)');hg.addColorStop(0.5,'rgba(0,0,0,.85)');hg.addColorStop(1,'rgba(20,50,20,.8)');
@@ -462,23 +462,23 @@ function VenueMap() {
     g.save();g.translate(W-32,58);
     g.beginPath();g.arc(0,0,18,0,Math.PI*2);
     const na=g.createRadialGradient(0,0,2,0,0,18);
-    na.addColorStop(0,'rgba(255,255,255,.12)');na.addColorStop(1,'rgba(0,0,0,.4)');
+    na.addColorStop(0,'rgba(15,23,42,.12)');na.addColorStop(1,'rgba(0,0,0,.4)');
     g.fillStyle=na;g.fill();
-    g.strokeStyle='rgba(255,255,255,.2)';g.lineWidth=1;g.stroke();
+    g.strokeStyle='rgba(15,23,42,.2)';g.lineWidth=1;g.stroke();
     g.beginPath();g.moveTo(0,-13);g.lineTo(-5,2);g.lineTo(0,-1);g.lineTo(5,2);g.closePath();
     g.fillStyle='#f4ff00';g.fill();
     g.beginPath();g.moveTo(0,13);g.lineTo(-5,-2);g.lineTo(0,1);g.lineTo(5,-2);g.closePath();
-    g.fillStyle='rgba(255,255,255,.2)';g.fill();
-    txt('N',0,-18,8,'rgba(255,255,255,.6)','800');
+    g.fillStyle='rgba(15,23,42,.2)';g.fill();
+    txt('N',0,-18,8,'rgba(15,23,42,.6)','800');
     g.restore();
   }, []);
 
   return (
     <div>
       <canvas ref={ref} style={{ width:'100%', borderRadius:12, display:'block' }} />
-      <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginTop:10, padding:'8px 12px', background:'rgba(255,255,255,.03)', borderRadius:10, border:'1px solid rgba(255,255,255,.06)' }}>
+      <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginTop:10, padding:'8px 12px', background:'rgba(15,23,42,.03)', borderRadius:10, border:'1px solid rgba(15,23,42,.06)' }}>
         {[['#2a6e2a','Campos'],['#4caf50','Aquecimento'],['#c9a227','Palco'],['#2a6fc9','Credenciamento'],['#c93a3a','Médico'],['#c97a2a','Alimentação'],['#8a3dcc','Organização'],['#0ea5e9','Vestiários'],['#2a2f3a','Estacionamento']].map(([col,lbl])=>(
-          <div key={lbl} style={{ display:'flex', alignItems:'center', gap:5, fontSize:10, color:'rgba(255,255,255,.45)' }}>
+          <div key={lbl} style={{ display:'flex', alignItems:'center', gap:5, fontSize:10, color:'rgba(15,23,42,.45)' }}>
             <span style={{ width:11,height:11,borderRadius:3,background:col,flexShrink:0,display:'inline-block' }}/>
             {lbl}
           </div>
@@ -790,7 +790,7 @@ export default function TimesPortalPage() {
   }
 
   if (!team) return (
-    <div style={{ minHeight: '100vh', background: '#04052e', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,.3)', fontFamily: 'Inter,sans-serif', fontSize: 14 }}>
+    <div style={{ minHeight: '100vh', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(15,23,42,.5)', fontFamily: 'Inter,sans-serif', fontSize: 14 }}>
       Carregando...
     </div>
   );
@@ -812,7 +812,7 @@ export default function TimesPortalPage() {
   };
   const catColor = (cat) => {
     const s = catStatus(cat);
-    if (s === 'empty')  return 'rgba(255,255,255,.18)';
+    if (s === 'empty')  return 'rgba(15,23,42,.18)';
     if (s === 'low')    return '#f97316';   // laranja — faltam
     if (s === 'over')   return '#ff4444';   // vermelho — excede
     return GREEN;                           // verde — ok
@@ -880,7 +880,7 @@ export default function TimesPortalPage() {
       </div>
 
       {/* ── Tabs ── */}
-      <div style={{ background: 'rgba(255,255,255,.72)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(15,23,42,.1)', overflowX: 'auto' }}>
+      <div style={{ background: '#ffffff', borderBottom: '1px solid #e2e8f0', overflowX: 'auto' }}>
         <div style={{ display: 'flex', maxWidth: 960, margin: '0 auto', alignItems: 'stretch' }}>
           {TABS.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)} style={{
@@ -969,14 +969,14 @@ export default function TimesPortalPage() {
 
               return (
                 <div style={{ ...card(), padding: cpad }}>
-                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: 20 }}>Situação da inscrição</div>
+                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 20 }}>Situação da inscrição</div>
 
                   {/* Steps */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                     {STEPS.map((s, i) => {
                       const isLast = i === STEPS.length - 1;
-                      const color  = s.error ? '#ff4444' : s.done ? GREEN : s.active ? YELLOW : 'rgba(255,255,255,.15)';
-                      const bgDot  = s.error ? '#ff444420' : s.done ? GREEN + '20' : s.active ? YELLOW + '15' : 'rgba(255,255,255,.04)';
+                      const color  = s.error ? '#ff4444' : s.done ? GREEN : s.active ? YELLOW : 'rgba(15,23,42,.15)';
+                      const bgDot  = s.error ? '#ff444420' : s.done ? GREEN + '20' : s.active ? YELLOW + '15' : 'rgba(15,23,42,.04)';
                       const isCurrent = i === currentStep;
 
                       return (
@@ -998,19 +998,19 @@ export default function TimesPortalPage() {
                             </div>
                             {/* Connector line */}
                             {!isLast && (
-                              <div style={{ width: 2, flex: 1, minHeight: 28, background: s.done ? GREEN + '40' : 'rgba(255,255,255,.07)', marginTop: 2, marginBottom: 2 }} />
+                              <div style={{ width: 2, flex: 1, minHeight: 28, background: s.done ? GREEN + '40' : 'rgba(15,23,42,.07)', marginTop: 2, marginBottom: 2 }} />
                             )}
                           </div>
 
                           {/* Content */}
                           <div style={{ flex: 1, paddingBottom: isLast ? 0 : 20, paddingLeft: 14, paddingTop: 6 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                              <span style={{ fontSize: 14, fontWeight: 800, color: s.done || s.active ? INK : 'rgba(255,255,255,.4)' }}>{s.label}</span>
+                              <span style={{ fontSize: 14, fontWeight: 800, color: s.done || s.active ? INK : 'rgba(15,23,42,.4)' }}>{s.label}</span>
                               {s.done && !s.error && <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6, background: GREEN + '18', color: GREEN, letterSpacing: 1 }}>CONCLUÍDO</span>}
                               {s.active && !s.done && <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6, background: YELLOW + '15', color: YELLOW, letterSpacing: 1 }}>EM ANDAMENTO</span>}
                               {s.error  && <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6, background: 'rgba(255,68,68,.12)', color: '#ff4444', letterSpacing: 1 }}>ATENÇÃO</span>}
                             </div>
-                            <div style={{ fontSize: 12, color: s.active || s.done ? 'rgba(255,255,255,.55)' : 'rgba(255,255,255,.25)', lineHeight: 1.55 }}>{s.desc}</div>
+                            <div style={{ fontSize: 12, color: s.active || s.done ? 'rgba(15,23,42,.55)' : 'rgba(15,23,42,.25)', lineHeight: 1.55 }}>{s.desc}</div>
                             {/* Botão de ação inline */}
                             {s.active && i === 3 && !lineupSubmitted && (
                               <button onClick={() => setTab('atletas')} style={{ marginTop: 8, padding: '7px 16px', borderRadius: 9, border: `1px solid ${YELLOW}40`, background: YELLOW + '10', color: YELLOW, fontSize: 11, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -1024,13 +1024,13 @@ export default function TimesPortalPage() {
                   </div>
 
                   {/* Dados do clube */}
-                  <div style={{ borderTop: '1px solid rgba(255,255,255,.06)', marginTop: 20, paddingTop: 16 }}>
-                    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.2)', marginBottom: 10 }}>Dados do cadastro</div>
+                  <div style={{ borderTop: '1px solid rgba(15,23,42,.06)', marginTop: 20, paddingTop: 16 }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.2)', marginBottom: 10 }}>Dados do cadastro</div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 8 }}>
                       {[['País', team.country],['Cidade', team.city],['Contato', team.contact_name],['WhatsApp', team.whatsapp],['Categorias', team.category],['Atletas est.', team.athletes_count]]
                         .filter(([,v]) => v).map(([l, v]) => (
                         <div key={l} style={miniCard()}>
-                          <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: 1.5, color: 'rgba(255,255,255,.22)', textTransform: 'uppercase', marginBottom: 2 }}>{l}</div>
+                          <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: 1.5, color: 'rgba(15,23,42,.22)', textTransform: 'uppercase', marginBottom: 2 }}>{l}</div>
                           <div style={{ fontSize: 12, fontWeight: 700 }}>{v}</div>
                         </div>
                       ))}
@@ -1042,15 +1042,15 @@ export default function TimesPortalPage() {
 
             {/* Datas */}
             <div style={{ ...card(), padding: cpad }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: 14 }}>Datas importantes</div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Datas importantes</div>
               {DATES.map((d, i) => {
                 const c = d.highlight ? '#3b9eff' : YELLOW;
                 return (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 0', borderBottom: i < DATES.length - 1 ? '1px solid rgba(255,255,255,.05)' : 'none' }}>
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 0', borderBottom: i < DATES.length - 1 ? '1px solid rgba(15,23,42,.05)' : 'none' }}>
                     <div style={{ width: 52, flexShrink: 0, fontSize: 10, fontWeight: 800, color: c, textAlign: 'center', padding: '5px 0', borderRadius: 7, background: c+'0a', border: `1px solid ${c}25` }}>
                       {d.date}
                     </div>
-                    <div style={{ flex: 1, fontSize: 13, color: 'rgba(255,255,255,.7)' }}>{d.label}</div>
+                    <div style={{ flex: 1, fontSize: 13, color: 'rgba(15,23,42,.7)' }}>{d.label}</div>
                     {d.highlight && <span style={{ fontSize: 9, fontWeight: 800, padding: '3px 8px', borderRadius: 6, background: '#3b9eff18', color: '#3b9eff', letterSpacing: .8, flexShrink: 0 }}>💳 PGTO</span>}
                   </div>
                 );
@@ -1060,24 +1060,24 @@ export default function TimesPortalPage() {
             {/* Checklist */}
             <div style={{ ...card(), padding: cpad }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)' }}>Checklist de documentos</div>
-                <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.35)' }}>{Object.values(docs).filter(Boolean).length}/{DOCS.length}</span>
+                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)' }}>Checklist de documentos</div>
+                <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.35)' }}>{Object.values(docs).filter(Boolean).length}/{DOCS.length}</span>
               </div>
-              <div style={{ height: 4, borderRadius: 4, background: 'rgba(255,255,255,.08)', marginBottom: 14, overflow: 'hidden' }}>
+              <div style={{ height: 4, borderRadius: 4, background: 'rgba(15,23,42,.08)', marginBottom: 14, overflow: 'hidden' }}>
                 <div style={{ height: '100%', borderRadius: 4, background: GREEN, width: `${(Object.values(docs).filter(Boolean).length / DOCS.length) * 100}%`, transition: 'width .4s' }} />
               </div>
               {DOCS.map(d => (
-                <div key={d.id} onClick={() => toggleDoc(d.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 12px', borderRadius: 10, cursor: 'pointer', marginBottom: 4, background: docs[d.id] ? `${GREEN}08` : 'rgba(255,255,255,.02)', border: `1px solid ${docs[d.id] ? GREEN + '20' : 'rgba(255,255,255,.05)'}`, transition: 'all .15s' }}>
-                  <div style={{ width: 20, height: 20, borderRadius: 6, flexShrink: 0, background: docs[d.id] ? GREEN : 'transparent', border: `2px solid ${docs[d.id] ? GREEN : 'rgba(255,255,255,.2)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#031020', fontWeight: 900 }}>
+                <div key={d.id} onClick={() => toggleDoc(d.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 12px', borderRadius: 10, cursor: 'pointer', marginBottom: 4, background: docs[d.id] ? `${GREEN}08` : 'rgba(15,23,42,.02)', border: `1px solid ${docs[d.id] ? GREEN + '20' : 'rgba(15,23,42,.05)'}`, transition: 'all .15s' }}>
+                  <div style={{ width: 20, height: 20, borderRadius: 6, flexShrink: 0, background: docs[d.id] ? GREEN : 'transparent', border: `2px solid ${docs[d.id] ? GREEN : 'rgba(15,23,42,.2)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#fff', fontWeight: 900 }}>
                     {docs[d.id] ? '✓' : ''}
                   </div>
-                  <span style={{ fontSize: 13, color: docs[d.id] ? 'rgba(255,255,255,.85)' : 'rgba(255,255,255,.5)', lineHeight: 1.4 }}>{d.label}</span>
+                  <span style={{ fontSize: 13, color: docs[d.id] ? 'rgba(15,23,42,.85)' : 'rgba(15,23,42,.5)', lineHeight: 1.4 }}>{d.label}</span>
                 </div>
               ))}
             </div>
 
             {isMobile && (
-              <button onClick={() => { sessionStorage.removeItem('bfwc_team_session'); router.push('/portal'); }} style={{ padding: '14px', borderRadius: 12, border: '1px solid rgba(255,255,255,.1)', background: 'rgba(255,255,255,.03)', color: 'rgba(255,255,255,.3)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+              <button onClick={() => { sessionStorage.removeItem('bfwc_team_session'); router.push('/portal'); }} style={{ padding: '14px', borderRadius: 12, border: '1px solid rgba(15,23,42,.1)', background: 'rgba(15,23,42,.03)', color: 'rgba(15,23,42,.3)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                 Sair do portal
               </button>
             )}
@@ -1110,18 +1110,18 @@ export default function TimesPortalPage() {
           const allPaid = payInfo?.fully_paid || (chosenPlan && paidCount >= chosenPlan);
 
           const qrBlock = (
-            <div style={{ marginTop: 12, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 18, alignItems: isMobile ? 'stretch' : 'flex-start', padding: '14px', borderRadius: 12, background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.07)' }}>
+            <div style={{ marginTop: 12, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 18, alignItems: isMobile ? 'stretch' : 'flex-start', padding: '14px', borderRadius: 12, background: 'rgba(15,23,42,.03)', border: '1px solid rgba(15,23,42,.07)' }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                 <div ref={qrRef} style={{ width: 170, height: 170, borderRadius: 14, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 10 }} />
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,.3)', textAlign: 'center' }}>Escaneie no app do seu banco</div>
+                <div style={{ fontSize: 10, color: 'rgba(15,23,42,.3)', textAlign: 'center' }}>Escaneie no app do seu banco</div>
               </div>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase' }}>Pix copia e cola</div>
-                <div style={{ padding: '10px 12px', borderRadius: 10, background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.1)', fontSize: 11, fontWeight: 600, wordBreak: 'break-all', lineHeight: 1.5, maxHeight: 80, overflow: 'auto' }}>{activePix?.emv}</div>
-                <button onClick={copyEmv} style={{ padding: '11px 16px', borderRadius: 10, border: `1px solid ${emvCopied ? GREEN+'50' : 'rgba(255,255,255,.12)'}`, background: emvCopied ? GREEN+'12' : 'rgba(255,255,255,.05)', color: emvCopied ? GREEN : 'rgba(255,255,255,.6)', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}>
+                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: 'rgba(15,23,42,.3)', textTransform: 'uppercase' }}>Pix copia e cola</div>
+                <div style={{ padding: '10px 12px', borderRadius: 10, background: 'rgba(15,23,42,.04)', border: '1px solid rgba(15,23,42,.1)', fontSize: 11, fontWeight: 600, wordBreak: 'break-all', lineHeight: 1.5, maxHeight: 80, overflow: 'auto' }}>{activePix?.emv}</div>
+                <button onClick={copyEmv} style={{ padding: '11px 16px', borderRadius: 10, border: `1px solid ${emvCopied ? GREEN+'50' : 'rgba(15,23,42,.12)'}`, background: emvCopied ? GREEN+'12' : 'rgba(15,23,42,.05)', color: emvCopied ? GREEN : 'rgba(15,23,42,.6)', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}>
                   {emvCopied ? '✓ Copiado!' : '📋 Copiar código Pix'}
                 </button>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,.45)', lineHeight: 1.55 }}>⏳ Assim que o Pix cair, esta página confirma sozinha.</div>
+                <div style={{ fontSize: 11, color: 'rgba(15,23,42,.45)', lineHeight: 1.55 }}>⏳ Assim que o Pix cair, esta página confirma sozinha.</div>
               </div>
             </div>
           );
@@ -1135,7 +1135,7 @@ export default function TimesPortalPage() {
                   <div style={{ width: 52, height: 52, borderRadius: '50%', background: GREEN + '18', border: `2px solid ${GREEN}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>✅</div>
                   <div>
                     <div style={{ fontSize: 16, fontWeight: 900, color: GREEN, marginBottom: 4 }}>Inscrição confirmada</div>
-                    <div style={{ fontSize: 13, color: 'rgba(255,255,255,.5)' }}>
+                    <div style={{ fontSize: 13, color: 'rgba(15,23,42,.5)' }}>
                       {chosenPlan && chosenPlan > 1 && !allPaid
                         ? `Você está confirmado no BFWC 2026. Parcelas pagas: ${paidCount} de ${chosenPlan}.`
                         : 'Taxa de inscrição recebida. Você está confirmado no BFWC 2026.'}
@@ -1146,15 +1146,15 @@ export default function TimesPortalPage() {
                 <div style={{ ...card(), padding: cpad, border: `1px solid ${YELLOW}45` }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                     <div>
-                      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: 6 }}>Taxa de inscrição</div>
-                      <div style={{ fontSize: 13, color: 'rgba(255,255,255,.5)', marginBottom: 4 }}>
+                      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 6 }}>Taxa de inscrição</div>
+                      <div style={{ fontSize: 13, color: 'rgba(15,23,42,.5)', marginBottom: 4 }}>
                         {registeredCats.length} categoria{registeredCats.length !== 1 ? 's' : ''} × R$ {PRICE_PER_CAT.toLocaleString('pt-BR')}
                       </div>
-                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,.3)' }}>{registeredCats.join(' · ')}</div>
+                      <div style={{ fontSize: 11, color: 'rgba(15,23,42,.3)' }}>{registeredCats.join(' · ')}</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontSize: 32, fontWeight: 900, color: YELLOW, letterSpacing: -1.5 }}>R$ {total.toLocaleString('pt-BR')}</div>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.3)', letterSpacing: 1 }}>TOTAL</div>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(15,23,42,.3)', letterSpacing: 1 }}>TOTAL</div>
                     </div>
                   </div>
                 </div>
@@ -1163,12 +1163,12 @@ export default function TimesPortalPage() {
               {/* Bloco de pagamento (some quando todas as parcelas estão pagas) */}
               {!allPaid && (
                 <div style={{ ...card(), padding: cpad }}>
-                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: 16 }}>
+                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 16 }}>
                     {paid ? 'Pagar parcelas restantes' : 'Pagar taxa de inscrição'}
                   </div>
 
                   {payPolling && (
-                    <div style={{ padding: '12px 14px', borderRadius: 10, background: ACCENT+'10', border: `1px solid ${ACCENT}25`, fontSize: 12, color: 'rgba(255,255,255,.6)', lineHeight: 1.5, marginBottom: 14 }}>⏳ Confirmando seu pagamento...</div>
+                    <div style={{ padding: '12px 14px', borderRadius: 10, background: ACCENT+'10', border: `1px solid ${ACCENT}25`, fontSize: 12, color: 'rgba(15,23,42,.6)', lineHeight: 1.5, marginBottom: 14 }}>⏳ Confirmando seu pagamento...</div>
                   )}
 
                   {/* Seletor de método */}
@@ -1176,12 +1176,12 @@ export default function TimesPortalPage() {
                     {[['pix','🏦','PIX'],['card','💳','Cartão de crédito']].map(([k,ic,lb]) => (
                       <button key={k} onClick={() => setPayMethod(k)} style={{
                         flex: 1, padding: '14px 12px', borderRadius: 14, cursor: 'pointer', fontFamily: 'inherit',
-                        border: `2px solid ${payMethod===k ? YELLOW : 'rgba(255,255,255,.08)'}`,
-                        background: payMethod===k ? YELLOW+'10' : 'rgba(255,255,255,.04)',
+                        border: `2px solid ${payMethod===k ? YELLOW : 'rgba(15,23,42,.08)'}`,
+                        background: payMethod===k ? YELLOW+'10' : 'rgba(15,23,42,.04)',
                         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, transition: 'all .18s',
                       }}>
                         <span style={{ fontSize: 24 }}>{ic}</span>
-                        <span style={{ fontSize: 12, fontWeight: 800, color: payMethod===k ? YELLOW : 'rgba(255,255,255,.55)' }}>{lb}</span>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: payMethod===k ? YELLOW : 'rgba(15,23,42,.55)' }}>{lb}</span>
                       </button>
                     ))}
                   </div>
@@ -1190,7 +1190,7 @@ export default function TimesPortalPage() {
                   {payMethod === 'pix' && (
                     <div>
                       {/* Seletor de plano */}
-                      <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,.5)', marginBottom: 8 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)', marginBottom: 8 }}>
                         {lockedPlan ? `Parcelamento escolhido: ${lockedPlan}x` : 'Em quantas vezes quer pagar?'}
                       </div>
                       {!lockedPlan && (
@@ -1198,11 +1198,11 @@ export default function TimesPortalPage() {
                           {[1,2,3].map(n => (
                             <button key={n} onClick={() => setPlanSize(n)} style={{
                               flex: 1, padding: '12px', borderRadius: 12, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 800,
-                              border: `2px solid ${planSize===n ? GREEN : 'rgba(255,255,255,.08)'}`,
-                              background: planSize===n ? GREEN+'12' : 'rgba(255,255,255,.03)',
-                              color: planSize===n ? GREEN : 'rgba(255,255,255,.6)',
+                              border: `2px solid ${planSize===n ? GREEN : 'rgba(15,23,42,.08)'}`,
+                              background: planSize===n ? GREEN+'12' : 'rgba(15,23,42,.03)',
+                              color: planSize===n ? GREEN : 'rgba(15,23,42,.6)',
                             }}>
-                              {n}x<div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,.4)', marginTop: 2 }}>R$ {(Math.ceil(total/n)).toLocaleString('pt-BR')}{n>1?'/mês':''}</div>
+                              {n}x<div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(15,23,42,.4)', marginTop: 2 }}>R$ {(Math.ceil(total/n)).toLocaleString('pt-BR')}{n>1?'/mês':''}</div>
                             </button>
                           ))}
                         </div>
@@ -1220,19 +1220,19 @@ export default function TimesPortalPage() {
                       )}
 
                       {!chosenPlan ? (
-                        <div style={{ fontSize: 12, color: 'rgba(255,255,255,.4)' }}>Escolha o parcelamento acima para ver as parcelas.</div>
+                        <div style={{ fontSize: 12, color: 'rgba(15,23,42,.4)' }}>Escolha o parcelamento acima para ver as parcelas.</div>
                       ) : (
                         buildParcelas(chosenPlan).map((p) => {
                           const st = instByNum[p.number];
                           const isPaid = st?.status === 'paid';
                           const isActive = activePix?.number === p.number;
                           return (
-                            <div key={p.number} style={{ borderRadius: 12, marginBottom: 8, background: isPaid ? GREEN+'08' : 'rgba(255,255,255,.025)', border: `1px solid ${isPaid ? GREEN+'25' : 'rgba(255,255,255,.07)'}`, padding: '13px 14px' }}>
+                            <div key={p.number} style={{ borderRadius: 12, marginBottom: 8, background: isPaid ? GREEN+'08' : 'rgba(15,23,42,.025)', border: `1px solid ${isPaid ? GREEN+'25' : 'rgba(15,23,42,.07)'}`, padding: '13px 14px' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                 <div style={{ width: 34, height: 34, borderRadius: 10, background: (isPaid?GREEN:YELLOW)+'15', border: `1.5px solid ${(isPaid?GREEN:YELLOW)}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0, fontWeight: 900, color: isPaid?GREEN:YELLOW }}>{isPaid ? '✓' : p.number}</div>
                                 <div style={{ flex: 1 }}>
                                   <div style={{ fontSize: 13, fontWeight: 800 }}>{chosenPlan>1 ? `${p.number}ª parcela` : 'Pagamento'}</div>
-                                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,.38)' }}>📅 {p.date}</div>
+                                  <div style={{ fontSize: 11, color: 'rgba(15,23,42,.38)' }}>📅 {p.date}</div>
                                 </div>
                                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                                   <div style={{ fontSize: 15, fontWeight: 900, color: isPaid?GREEN:YELLOW }}>R$ {p.value.toLocaleString('pt-BR')}</div>
@@ -1261,7 +1261,7 @@ export default function TimesPortalPage() {
                       <button onClick={startCheckout} disabled={checkoutLoading} style={{ width: '100%', padding: '16px', borderRadius: 12, border: 'none', background: `linear-gradient(135deg,${ACCENT},#1a5fff)`, color: '#fff', fontSize: 15, fontWeight: 800, cursor: checkoutLoading ? 'wait' : 'pointer', fontFamily: 'inherit', opacity: checkoutLoading ? .7 : 1 }}>
                         {checkoutLoading ? 'Redirecionando...' : `Pagar R$ ${remainingReais.toLocaleString('pt-BR')} no cartão`}
                       </button>
-                      <div style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,.3)', lineHeight: 1.5, marginTop: 10 }}>
+                      <div style={{ textAlign: 'center', fontSize: 11, color: 'rgba(15,23,42,.3)', lineHeight: 1.5, marginTop: 10 }}>
                         {remainingReais < total ? `Saldo restante (já pago: R$ ${(total - remainingReais).toLocaleString('pt-BR')}). ` : ''}💳 Parcele em até 3x no cartão na tela da Stripe · 🔒 seguro
                       </div>
                     </div>
@@ -1271,11 +1271,11 @@ export default function TimesPortalPage() {
 
               {/* Resumo */}
               <div style={{ ...card(), padding: cpad }}>
-                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: 14 }}>Resumo da cobrança</div>
+                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Resumo da cobrança</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                   {registeredCats.map((c, i) => (
-                    <div key={c} style={{ display: 'flex', justifyContent: 'space-between', padding: '11px 0', borderBottom: i < registeredCats.length - 1 ? '1px solid rgba(255,255,255,.05)' : 'none' }}>
-                      <span style={{ fontSize: 13, color: 'rgba(255,255,255,.6)' }}>Categoria {c}</span>
+                    <div key={c} style={{ display: 'flex', justifyContent: 'space-between', padding: '11px 0', borderBottom: i < registeredCats.length - 1 ? '1px solid rgba(15,23,42,.05)' : 'none' }}>
+                      <span style={{ fontSize: 13, color: 'rgba(15,23,42,.6)' }}>Categoria {c}</span>
                       <span style={{ fontSize: 13, fontWeight: 700 }}>R$ {PRICE_PER_CAT.toLocaleString('pt-BR')}</span>
                     </div>
                   ))}
@@ -1284,7 +1284,7 @@ export default function TimesPortalPage() {
                     <span style={{ fontSize: 15, fontWeight: 900, color: YELLOW }}>R$ {total.toLocaleString('pt-BR')}</span>
                   </div>
                 </div>
-                <div style={{ marginTop: 14, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,.025)', border: '1px solid rgba(255,255,255,.05)', fontSize: 11, color: 'rgba(255,255,255,.4)', lineHeight: 1.6 }}>
+                <div style={{ marginTop: 14, padding: '10px 14px', borderRadius: 10, background: 'rgba(15,23,42,.025)', border: '1px solid rgba(15,23,42,.05)', fontSize: 11, color: 'rgba(15,23,42,.4)', lineHeight: 1.6 }}>
                   Status: <span style={{ fontWeight: 800, color: paid ? GREEN : YELLOW }}>{paid ? '✅ Confirmado' : '⏳ Aguardando pagamento'}</span>
                   {chosenPlan ? <span style={{ marginLeft: 8 }}>· Parcelas pagas: {paidCount}/{chosenPlan}</span> : null}
                 </div>
@@ -1300,7 +1300,7 @@ export default function TimesPortalPage() {
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 10 }}>
               <div>
-                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: 4 }}>Roster do clube</div>
+                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 4 }}>Roster do clube</div>
                 <div style={{ fontSize: isMobile ? 18 : 22, fontWeight: 900 }}>{athletes.length} atleta{athletes.length !== 1 ? 's' : ''}</div>
               </div>
               <button onClick={() => setShowAddForm(!showAddForm)} style={btnPrimary()}>
@@ -1320,8 +1320,8 @@ export default function TimesPortalPage() {
                       <div>
                         <label style={lbl}>Categoria</label>
                         <select style={selectSt} value={newAth.category} onChange={e => setNewAth(p => ({ ...p, category: e.target.value }))}>
-                          <option value="" style={{ background: '#0a1628' }}>Selecionar...</option>
-                          {registeredCats.map(c => <option key={c} value={c} style={{ background: '#0a1628' }}>{c}</option>)}
+                          <option value="" style={{ background: '#ffffff' }}>Selecionar...</option>
+                          {registeredCats.map(c => <option key={c} value={c} style={{ background: '#ffffff' }}>{c}</option>)}
                         </select>
                       </div>
                     </div>
@@ -1332,7 +1332,7 @@ export default function TimesPortalPage() {
                     </div>
                   </div>
                   {athError && <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(255,68,68,.1)', border: '1px solid rgba(255,68,68,.2)', fontSize: 12, color: '#ff8888', marginBottom: 10 }}>{athError}</div>}
-                  <button type="submit" disabled={athSaving} style={{ ...btnPrimary(GREEN, '#031020'), width: '100%', justifyContent: 'center' }}>
+                  <button type="submit" disabled={athSaving} style={{ ...btnPrimary(GREEN, '#fff'), width: '100%', justifyContent: 'center' }}>
                     {athSaving ? 'Salvando...' : '✓ Adicionar atleta'}
                   </button>
                 </form>
@@ -1340,18 +1340,18 @@ export default function TimesPortalPage() {
             )}
 
             {athLoading ? (
-              <div style={{ textAlign: 'center', padding: 40, color: 'rgba(255,255,255,.3)', fontSize: 13 }}>Carregando...</div>
+              <div style={{ textAlign: 'center', padding: 40, color: 'rgba(15,23,42,.3)', fontSize: 13 }}>Carregando...</div>
             ) : athletes.length === 0 ? (
               <div style={{ ...card({ textAlign: 'center', padding: '40px 24px' }) }}>
                 <div style={{ fontSize: 40, marginBottom: 12 }}>👥</div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: 'rgba(255,255,255,.5)', marginBottom: 6 }}>Nenhum atleta cadastrado</div>
-                <div style={{ fontSize: 13, color: 'rgba(255,255,255,.3)' }}>Clique em "+ Atleta" para começar.</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: 'rgba(15,23,42,.5)', marginBottom: 6 }}>Nenhum atleta cadastrado</div>
+                <div style={{ fontSize: 13, color: 'rgba(15,23,42,.3)' }}>Clique em "+ Atleta" para começar.</div>
               </div>
             ) : (
               <>
                 {/* ── Contadores por categoria — clicáveis ── */}
                 <div style={{ marginBottom: 6 }}>
-                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: 10 }}>
+                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 10 }}>
                     Atletas por categoria — clique para filtrar
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: `repeat(${registeredCats.length + 1}, 1fr)`, gap: 8, marginBottom: 8 }}>
@@ -1365,8 +1365,8 @@ export default function TimesPortalPage() {
                         <button key={c} onClick={() => setCatFilter(sel ? 'all' : c)} style={{
                           all: 'unset', cursor: 'pointer', textAlign: 'center',
                           padding: isMobile ? '12px 6px' : '16px 10px', borderRadius: 14,
-                          background: sel ? cc + '26' : 'rgba(255,255,255,.07)',
-                          border: `2px solid ${sel ? cc : st !== 'empty' ? cc + '55' : 'rgba(255,255,255,.16)'}`,
+                          background: sel ? cc + '26' : 'rgba(15,23,42,.07)',
+                          border: `2px solid ${sel ? cc : st !== 'empty' ? cc + '55' : 'rgba(15,23,42,.16)'}`,
                           transition: 'all .18s', boxShadow: sel ? `0 4px 18px ${cc}30` : 'none',
                           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
                           position: 'relative',
@@ -1375,14 +1375,14 @@ export default function TimesPortalPage() {
                           {st !== 'empty' && (
                             <div style={{ position: 'absolute', top: 8, right: 8, width: 7, height: 7, borderRadius: '50%', background: cc }} />
                           )}
-                          <div style={{ fontSize: isMobile ? 20 : 26, fontWeight: 900, color: st === 'empty' ? 'rgba(255,255,255,.2)' : cc, lineHeight: 1 }}>{n}</div>
-                          <div style={{ fontSize: isMobile ? 8 : 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: st === 'empty' ? 'rgba(255,255,255,.22)' : 'rgba(255,255,255,.7)', lineHeight: 1.3 }}>{c}</div>
+                          <div style={{ fontSize: isMobile ? 20 : 26, fontWeight: 900, color: st === 'empty' ? 'rgba(15,23,42,.2)' : cc, lineHeight: 1 }}>{n}</div>
+                          <div style={{ fontSize: isMobile ? 8 : 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: st === 'empty' ? 'rgba(15,23,42,.22)' : 'rgba(15,23,42,.7)', lineHeight: 1.3 }}>{c}</div>
                           {st !== 'empty' && (
                             <div style={{ fontSize: 9, fontWeight: 800, color: cc, letterSpacing: .5 }}>
                               {st === 'ok' ? `${ic} ${MIN_ATH}–${MAX_ATH}` : st === 'low' ? `${ic} mín. ${MIN_ATH}` : `${ic} máx. ${MAX_ATH}`}
                             </div>
                           )}
-                          {st === 'empty' && <div style={{ fontSize: 9, color: 'rgba(255,255,255,.18)', letterSpacing: .5 }}>não inscrita</div>}
+                          {st === 'empty' && <div style={{ fontSize: 9, color: 'rgba(15,23,42,.18)', letterSpacing: .5 }}>não inscrita</div>}
                         </button>
                       );
                     })}
@@ -1390,21 +1390,21 @@ export default function TimesPortalPage() {
                     <button onClick={() => setCatFilter('all')} style={{
                       all: 'unset', cursor: 'pointer', textAlign: 'center',
                       padding: isMobile ? '12px 6px' : '16px 10px', borderRadius: 14,
-                      background: catFilter === 'all' ? `${ACCENT}26` : 'rgba(255,255,255,.07)',
-                      border: `2px solid ${catFilter === 'all' ? ACCENT : 'rgba(255,255,255,.16)'}`,
+                      background: catFilter === 'all' ? `${ACCENT}26` : 'rgba(15,23,42,.07)',
+                      border: `2px solid ${catFilter === 'all' ? ACCENT : 'rgba(15,23,42,.16)'}`,
                       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, transition: 'all .18s',
                       boxShadow: catFilter === 'all' ? `0 4px 18px ${ACCENT}25` : 'none',
                     }}>
-                      <div style={{ fontSize: isMobile ? 20 : 26, fontWeight: 900, color: catFilter === 'all' ? ACCENT : 'rgba(255,255,255,.6)', lineHeight: 1 }}>{athletes.length}</div>
-                      <div style={{ fontSize: isMobile ? 8 : 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: 'rgba(255,255,255,.5)', lineHeight: 1.3 }}>Total</div>
-                      <div style={{ fontSize: 9, color: 'rgba(255,255,255,.3)', letterSpacing: .5 }}>ver todos</div>
+                      <div style={{ fontSize: isMobile ? 20 : 26, fontWeight: 900, color: catFilter === 'all' ? ACCENT : 'rgba(15,23,42,.6)', lineHeight: 1 }}>{athletes.length}</div>
+                      <div style={{ fontSize: isMobile ? 8 : 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: 'rgba(15,23,42,.5)', lineHeight: 1.3 }}>Total</div>
+                      <div style={{ fontSize: 9, color: 'rgba(15,23,42,.3)', letterSpacing: .5 }}>ver todos</div>
                     </button>
                   </div>
 
                   {/* Legenda de regras */}
-                  <div style={{ display: 'flex', gap: 14, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.12)', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: 14, padding: '10px 14px', borderRadius: 10, background: 'rgba(15,23,42,.06)', border: '1px solid rgba(15,23,42,.12)', flexWrap: 'wrap' }}>
                     {[[GREEN, `✓ OK (${MIN_ATH}–${MAX_ATH} atletas)`], ['#f97316', `⚠️ Faltam atletas (mín. ${MIN_ATH})`], ['#ff4444', `🚫 Excede limite (máx. ${MAX_ATH})`]].map(([c, txt]) => (
-                      <span key={txt} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.5)' }}>
+                      <span key={txt} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>
                         <span style={{ width: 8, height: 8, borderRadius: '50%', background: c, display: 'inline-block', flexShrink: 0 }} />{txt}
                       </span>
                     ))}
@@ -1416,10 +1416,10 @@ export default function TimesPortalPage() {
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderRadius: 10, background: catColor(catFilter) + '10', border: `1px solid ${catColor(catFilter)}25`, marginBottom: 10 }}>
                     <span style={{ fontSize: 13, fontWeight: 800, color: catColor(catFilter) }}>
                       {catIcon(catFilter)} {catFilter} — {athByCat[catFilter]?.length || 0} atleta{(athByCat[catFilter]?.length || 0) !== 1 ? 's' : ''}
-                      {catStatus(catFilter) === 'low' && <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,.5)', marginLeft: 8 }}>({MIN_ATH - (athByCat[catFilter]?.length||0)} faltando)</span>}
-                      {catStatus(catFilter) === 'over' && <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,.5)', marginLeft: 8 }}>({(athByCat[catFilter]?.length||0) - MAX_ATH} além do limite)</span>}
+                      {catStatus(catFilter) === 'low' && <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(15,23,42,.5)', marginLeft: 8 }}>({MIN_ATH - (athByCat[catFilter]?.length||0)} faltando)</span>}
+                      {catStatus(catFilter) === 'over' && <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(15,23,42,.5)', marginLeft: 8 }}>({(athByCat[catFilter]?.length||0) - MAX_ATH} além do limite)</span>}
                     </span>
-                    <button onClick={() => setCatFilter('all')} style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,.35)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>✕ Limpar filtro</button>
+                    <button onClick={() => setCatFilter('all')} style={{ fontSize: 11, fontWeight: 800, color: 'rgba(15,23,42,.35)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>✕ Limpar filtro</button>
                   </div>
                 )}
 
@@ -1434,7 +1434,7 @@ export default function TimesPortalPage() {
                     <span style={{ fontSize: 22 }}>✅</span>
                     <div>
                       <div style={{ fontSize: 13, fontWeight: 800, color: GREEN }}>Escalação enviada!</div>
-                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,.4)', marginTop: 2 }}>A organização recebeu seu roster com {athletes.length} atleta{athletes.length !== 1 ? 's' : ''}.</div>
+                      <div style={{ fontSize: 12, color: 'rgba(15,23,42,.4)', marginTop: 2 }}>A organização recebeu seu roster com {athletes.length} atleta{athletes.length !== 1 ? 's' : ''}.</div>
                     </div>
                   </div>
                 ) : (
@@ -1449,7 +1449,7 @@ export default function TimesPortalPage() {
                             📅 Prazo: 20/10
                           </span>
                         </div>
-                        <div style={{ fontSize: 12, color: 'rgba(255,255,255,.45)', lineHeight: 1.5 }}>
+                        <div style={{ fontSize: 12, color: 'rgba(15,23,42,.45)', lineHeight: 1.5 }}>
                           {lineupBlocked
                             ? lineupBlockReason || 'Corrija as categorias antes de enviar.'
                             : `Confirme que todos os atletas estão cadastrados. ${activeCats.map(c=>`${c}: ${athByCat[c].length}`).join(' · ')}`}
@@ -1459,7 +1459,7 @@ export default function TimesPortalPage() {
                         onClick={submitLineup}
                         disabled={sendingLineup || athletes.length === 0 || lineupBlocked}
                         title={lineupBlocked ? lineupBlockReason : 'Enviar escalação'}
-                        style={{ ...btnPrimary(lineupBlocked ? 'rgba(255,68,68,.2)' : YELLOW, lineupBlocked ? '#ff8888' : '#031020'), flexShrink: 0, justifyContent: 'center', opacity: lineupBlocked ? 1 : 1, cursor: lineupBlocked ? 'not-allowed' : 'pointer', border: lineupBlocked ? '1px solid rgba(255,68,68,.3)' : 'none' }}>
+                        style={{ ...btnPrimary(lineupBlocked ? 'rgba(255,68,68,.2)' : YELLOW, lineupBlocked ? '#ff8888' : '#fff'), flexShrink: 0, justifyContent: 'center', opacity: lineupBlocked ? 1 : 1, cursor: lineupBlocked ? 'not-allowed' : 'pointer', border: lineupBlocked ? '1px solid rgba(255,68,68,.3)' : 'none' }}>
                         {sendingLineup ? 'Enviando...' : lineupBlocked ? '🔒 Bloqueado' : '✅ Enviar Escalação'}
                       </button>
                     </div>
@@ -1497,22 +1497,22 @@ export default function TimesPortalPage() {
                         <col style={{ width: 90 }} />
                       </colgroup>
                       <thead>
-                        <tr style={{ borderBottom: '1px solid rgba(255,255,255,.06)', background: 'rgba(255,255,255,.015)' }}>
+                        <tr style={{ borderBottom: '1px solid rgba(15,23,42,.06)', background: 'rgba(15,23,42,.015)' }}>
                           {['#', 'Nome', 'Categoria', 'E-mail', 'Portal', ''].map(h => (
-                            <th key={h} style={{ padding: '11px 14px', textAlign: 'left', fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,.22)' }}>{h}</th>
+                            <th key={h} style={{ padding: '11px 14px', textAlign: 'left', fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(15,23,42,.22)' }}>{h}</th>
                           ))}
                         </tr>
                       </thead>
                       <tbody>
                         {visibleAthletes.map(a => (
-                          <tr key={a.id} style={{ borderBottom: '1px solid rgba(255,255,255,.04)', transition: 'background .1s' }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,.025)'}
+                          <tr key={a.id} style={{ borderBottom: '1px solid rgba(15,23,42,.04)', transition: 'background .1s' }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(15,23,42,.025)'}
                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                           >
-                            <td style={{ padding: '13px 14px', color: 'rgba(255,255,255,.35)', fontWeight: 700, fontSize: 12 }}>{a.jersey_number || '—'}</td>
+                            <td style={{ padding: '13px 14px', color: 'rgba(15,23,42,.35)', fontWeight: 700, fontSize: 12 }}>{a.jersey_number || '—'}</td>
                             <td style={{ padding: '13px 14px', fontWeight: 700, color: INK, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.name}</td>
-                            <td style={{ padding: '13px 14px' }}>{a.category ? <span style={tag(ACCENT)}>{a.category}</span> : <span style={{ color: 'rgba(255,255,255,.2)' }}>—</span>}</td>
-                            <td style={{ padding: '13px 14px', color: 'rgba(255,255,255,.38)', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.email || '—'}</td>
+                            <td style={{ padding: '13px 14px' }}>{a.category ? <span style={tag(ACCENT)}>{a.category}</span> : <span style={{ color: 'rgba(15,23,42,.2)' }}>—</span>}</td>
+                            <td style={{ padding: '13px 14px', color: 'rgba(15,23,42,.38)', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.email || '—'}</td>
                             <td style={{ padding: '10px 14px', verticalAlign: 'middle' }}><PortalBadge a={a} /></td>
                             <td style={{ padding: '13px 10px' }}>
                               <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
@@ -1547,18 +1547,18 @@ export default function TimesPortalPage() {
           <div style={{ ...card(), padding: cpad }}>
             <div style={{ display: 'flex', gap: 6, marginBottom: 16, overflowX: 'auto', paddingBottom: 2 }}>
               {[{ key: 'schedule', label: '🗓 Próximos' }, { key: 'results', label: '📊 Resultados' }, { key: 'venue', label: '🗺️ Venue' }].map(t => (
-                <button key={t.key} onClick={() => setGamesTab(t.key)} style={{ padding: '9px 14px', borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: isMobile ? 12 : 13, fontWeight: 700, whiteSpace: 'nowrap', background: gamesTab === t.key ? ACCENT : 'rgba(255,255,255,.05)', color: gamesTab === t.key ? '#fff' : 'rgba(255,255,255,.4)', transition: 'all .15s' }}>{t.label}</button>
+                <button key={t.key} onClick={() => setGamesTab(t.key)} style={{ padding: '9px 14px', borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: isMobile ? 12 : 13, fontWeight: 700, whiteSpace: 'nowrap', background: gamesTab === t.key ? ACCENT : 'rgba(15,23,42,.05)', color: gamesTab === t.key ? '#fff' : 'rgba(15,23,42,.4)', transition: 'all .15s' }}>{t.label}</button>
               ))}
             </div>
 
-            {gamesLoading && <div style={{ textAlign: 'center', padding: 40, color: 'rgba(255,255,255,.3)', fontSize: 13 }}>Carregando...</div>}
+            {gamesLoading && <div style={{ textAlign: 'center', padding: 40, color: 'rgba(15,23,42,.3)', fontSize: 13 }}>Carregando...</div>}
 
             {!gamesLoading && gamesTab === 'schedule' && (
               upcomingGames.length === 0
                 ? <div style={{ ...card({ textAlign: 'center', padding: 48 }) }}>
                     <div style={{ fontSize: 40, marginBottom: 12 }}>🗓</div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: 'rgba(255,255,255,.5)', marginBottom: 8 }}>Tabela de jogos em breve</div>
-                    <div style={{ fontSize: 13, color: 'rgba(255,255,255,.3)' }}>Horários divulgados após fechamento das inscrições.</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: 'rgba(15,23,42,.5)', marginBottom: 8 }}>Tabela de jogos em breve</div>
+                    <div style={{ fontSize: 13, color: 'rgba(15,23,42,.3)' }}>Horários divulgados após fechamento das inscrições.</div>
                   </div>
                 : <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {upcomingGames.map(g => {
@@ -1569,20 +1569,20 @@ export default function TimesPortalPage() {
                             <div style={{ textAlign: 'center', minWidth: 64 }}>
                               <div style={{ fontSize: 11, fontWeight: 800, color: YELLOW }}>{g.game_date ? new Date(g.game_date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : 'TBD'}</div>
                               <div style={{ fontSize: 20, fontWeight: 900 }}>{g.game_time?.slice(0,5) || '--:--'}</div>
-                              {g.warmup_time && <div style={{ fontSize: 10, color: 'rgba(255,255,255,.3)' }}>🏃 {g.warmup_time?.slice(0,5)}</div>}
+                              {g.warmup_time && <div style={{ fontSize: 10, color: 'rgba(15,23,42,.3)' }}>🏃 {g.warmup_time?.slice(0,5)}</div>}
                             </div>
                             <div style={{ flex: 1, textAlign: 'center' }}>
                               <div style={{ fontSize: 14, fontWeight: 800 }}>
-                                <span style={{ color: me ? '#fff' : 'rgba(255,255,255,.45)' }}>{g.team1_name}</span>
-                                <span style={{ color: 'rgba(255,255,255,.3)', margin: '0 8px', fontSize: 11 }}>vs</span>
-                                <span style={{ color: !me ? '#fff' : 'rgba(255,255,255,.45)' }}>{g.team2_name}</span>
+                                <span style={{ color: me ? '#fff' : 'rgba(15,23,42,.45)' }}>{g.team1_name}</span>
+                                <span style={{ color: 'rgba(15,23,42,.3)', margin: '0 8px', fontSize: 11 }}>vs</span>
+                                <span style={{ color: !me ? '#fff' : 'rgba(15,23,42,.45)' }}>{g.team2_name}</span>
                               </div>
                               <div style={{ marginTop: 6, display: 'flex', justifyContent: 'center', gap: 6, flexWrap: 'wrap' }}>
                                 {g.category && <span style={tag(ACCENT)}>{g.category}</span>}
                                 {g.phase && g.phase !== 'group' && <span style={tag(YELLOW)}>{PHASE_LABELS[g.phase]}</span>}
                               </div>
                             </div>
-                            <div style={{ textAlign: isMobile ? 'left' : 'right', fontSize: 12, color: 'rgba(255,255,255,.4)', whiteSpace: 'nowrap' }}>
+                            <div style={{ textAlign: isMobile ? 'left' : 'right', fontSize: 12, color: 'rgba(15,23,42,.4)', whiteSpace: 'nowrap' }}>
                               📍 {g.field || 'TBD'}
                             </div>
                           </div>
@@ -1596,7 +1596,7 @@ export default function TimesPortalPage() {
               finishedGames.length === 0
                 ? <div style={{ ...card({ textAlign: 'center', padding: 48 }) }}>
                     <div style={{ fontSize: 40, marginBottom: 12 }}>📊</div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: 'rgba(255,255,255,.5)' }}>Nenhum resultado ainda</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>Nenhum resultado ainda</div>
                   </div>
                 : <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {finishedGames.map(g => {
@@ -1608,11 +1608,11 @@ export default function TimesPortalPage() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                             <span style={{ ...tag(rc), fontSize: 11 }}>{rl}</span>
                             <div style={{ flex: 1, fontWeight: 800, fontSize: 15, textAlign: 'center' }}>
-                              <span style={{ color: me ? '#fff' : 'rgba(255,255,255,.4)' }}>{g.team1_name}</span>
+                              <span style={{ color: me ? '#fff' : 'rgba(15,23,42,.4)' }}>{g.team1_name}</span>
                               <span style={{ color: YELLOW, margin: '0 10px' }}>{g.team1_score} – {g.team2_score}</span>
-                              <span style={{ color: !me ? '#fff' : 'rgba(255,255,255,.4)' }}>{g.team2_name}</span>
+                              <span style={{ color: !me ? '#fff' : 'rgba(15,23,42,.4)' }}>{g.team2_name}</span>
                             </div>
-                            <span style={{ fontSize: 11, color: 'rgba(255,255,255,.3)' }}>{g.field}</span>
+                            <span style={{ fontSize: 11, color: 'rgba(15,23,42,.3)' }}>{g.field}</span>
                           </div>
                         </div>
                       );
@@ -1626,7 +1626,7 @@ export default function TimesPortalPage() {
                           {[['Vitórias', w, GREEN],['Derrotas', l,'#ff4444'],['Empates', d, YELLOW],['Jogos', finishedGames.length, INK]].map(([k,v,c]) => (
                             <div key={k} style={miniCard({ textAlign: 'center' })}>
                               <div style={{ fontSize: 20, fontWeight: 900, color: c }}>{v}</div>
-                              <div style={{ fontSize: 9, color: 'rgba(255,255,255,.3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>{k}</div>
+                              <div style={{ fontSize: 9, color: 'rgba(15,23,42,.3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>{k}</div>
                             </div>
                           ))}
                         </div>
@@ -1653,7 +1653,7 @@ export default function TimesPortalPage() {
                     <div style={{ fontSize: 22, flexShrink: 0 }}>{i.icon}</div>
                     <div>
                       <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 3 }}>{i.title}</div>
-                      <div style={{ fontSize: 13, color: 'rgba(255,255,255,.45)', lineHeight: 1.55 }}>{i.text}</div>
+                      <div style={{ fontSize: 13, color: 'rgba(15,23,42,.45)', lineHeight: 1.55 }}>{i.text}</div>
                     </div>
                   </div>
                 ))}
@@ -1667,14 +1667,14 @@ export default function TimesPortalPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
             <div style={{ ...card(), padding: cpad }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: 14 }}>Regulamento</div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Regulamento</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {REGS.map(r => (
                   <div key={r.title} style={{ ...miniCard(), display: 'flex', gap: 12 }}>
                     <span style={{ fontSize: 20, flexShrink: 0 }}>{r.icon}</span>
                     <div>
                       <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 3 }}>{r.title}</div>
-                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,.45)', lineHeight: 1.55 }}>{r.text}</div>
+                      <div style={{ fontSize: 12, color: 'rgba(15,23,42,.45)', lineHeight: 1.55 }}>{r.text}</div>
                     </div>
                   </div>
                 ))}
@@ -1682,24 +1682,24 @@ export default function TimesPortalPage() {
             </div>
 
             <div style={{ ...card(), padding: cpad }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: 14 }}>Equipamentos</div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Equipamentos</div>
               {EQUIP.map(e => (
-                <div key={e.item} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,.04)' }}>
+                <div key={e.item} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 0', borderBottom: '1px solid rgba(15,23,42,.04)' }}>
                   <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{e.type === 'ok' ? '✅' : e.type === 'opt' ? '🔵' : '🚫'}</span>
-                  <span style={{ fontSize: 13, color: e.type === 'no' ? '#ff6666' : 'rgba(255,255,255,.65)', lineHeight: 1.4 }}>{e.item}</span>
+                  <span style={{ fontSize: 13, color: e.type === 'no' ? '#ff6666' : 'rgba(15,23,42,.65)', lineHeight: 1.4 }}>{e.item}</span>
                 </div>
               ))}
             </div>
 
             <div style={{ ...card(), padding: cpad }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.28)', marginBottom: 14 }}>Hospedagem & Logística</div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Hospedagem & Logística</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {TRAVEL.map(t => (
                   <div key={t.title} style={{ ...miniCard(), display: 'flex', gap: 12 }}>
                     <span style={{ fontSize: 20, flexShrink: 0 }}>{t.icon}</span>
                     <div>
                       <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 3 }}>{t.title}</div>
-                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,.45)', lineHeight: 1.55 }}>{t.text}</div>
+                      <div style={{ fontSize: 12, color: 'rgba(15,23,42,.45)', lineHeight: 1.55 }}>{t.text}</div>
                     </div>
                   </div>
                 ))}
@@ -1707,7 +1707,7 @@ export default function TimesPortalPage() {
             </div>
 
             {isMobile && (
-              <button onClick={() => { sessionStorage.removeItem('bfwc_team_session'); router.push('/portal'); }} style={{ padding: '14px', borderRadius: 12, border: '1px solid rgba(255,255,255,.1)', background: 'rgba(255,255,255,.03)', color: 'rgba(255,255,255,.3)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+              <button onClick={() => { sessionStorage.removeItem('bfwc_team_session'); router.push('/portal'); }} style={{ padding: '14px', borderRadius: 12, border: '1px solid rgba(15,23,42,.1)', background: 'rgba(15,23,42,.03)', color: 'rgba(15,23,42,.3)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                 Sair do portal
               </button>
             )}

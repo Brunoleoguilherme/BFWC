@@ -42,10 +42,10 @@ export default function AdminSolicitarPage() {
           <div style={{ fontSize: 48, marginBottom: 16 }}>📨</div>
           <div className="login-badge">Administradores</div>
           <h1 className="login-title" style={{ justifyContent: 'center' }}>Solicitação enviada!</h1>
-          <p style={{ fontSize: 14, color: '#c8d8f5', lineHeight: 1.7, margin: '16px 0 24px' }}>
+          <p style={{ fontSize: 14, color: '#475569', lineHeight: 1.7, margin: '16px 0 24px' }}>
             Sua solicitação foi enviada ao administrador responsável. Você receberá uma resposta pelo e-mail informado.
           </p>
-          <a href="/portal" style={{ display: 'block', textAlign: 'center', padding: '13px', background: '#f4ff00', color: '#031020', fontWeight: 900, fontSize: 13, letterSpacing: '1px', textTransform: 'uppercase', textDecoration: 'none', borderRadius: 10 }}>
+          <a href="/portal" style={{ display: 'block', textAlign: 'center', padding: '13px', background: '#009c3b', color: '#fff', fontWeight: 900, fontSize: 13, letterSpacing: '1px', textTransform: 'uppercase', textDecoration: 'none', borderRadius: 10 }}>
             Voltar ao portal
           </a>
         </div>
@@ -61,7 +61,7 @@ export default function AdminSolicitarPage() {
         <h1 className="login-title">BFWC <span>2026</span></h1>
         <p className="login-sub">Solicitar acesso de administrador</p>
 
-        <div style={{ marginBottom: 20, padding: '12px 14px', borderRadius: 10, background: 'rgba(244,255,0,.04)', border: '1px solid rgba(244,255,0,.12)', fontSize: 12, color: 'rgba(255,255,255,.4)', lineHeight: 1.6 }}>
+        <div style={{ marginBottom: 20, padding: '12px 14px', borderRadius: 10, background: '#fef9c3', border: '1px solid #fde68a', fontSize: 12, color: '#854d0e', lineHeight: 1.6 }}>
           ⚠️ O acesso administrativo é concedido apenas a membros da organização BFWC. Sua solicitação será analisada manualmente.
         </div>
 
@@ -88,13 +88,13 @@ export default function AdminSolicitarPage() {
           {error && <div className="login-error">{error}</div>}
 
           <button className="login-btn" type="submit" disabled={loading}
-            style={{ background: '#f4ff00', color: '#031020', boxShadow: '0 8px 28px rgba(244,255,0,.25)', marginTop: 8 }}>
+            style={{ background: '#009c3b', color: '#fff', boxShadow: '0 8px 28px rgba(0,156,59,.25)', marginTop: 8 }}>
             {loading ? 'Enviando...' : 'Enviar solicitação'}
           </button>
         </form>
 
         <div style={{ marginTop: 14, textAlign: 'center' }}>
-          <a href="/portal" style={{ fontSize: 12, color: 'rgba(255,255,255,.2)', textDecoration: 'none' }}>← Voltar ao portal</a>
+          <a href="/portal" style={{ fontSize: 12, color: 'rgba(15,23,42,.45)', textDecoration: 'none' }}>← Voltar ao portal</a>
         </div>
       </div>
     </div>

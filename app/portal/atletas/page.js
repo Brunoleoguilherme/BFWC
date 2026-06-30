@@ -4,17 +4,17 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { LANGS, detectLang, saveLang, t } from '@/lib/i18n';
 
-const GREEN  = '#20e33f';
-const YELLOW = '#d4a017';
+const GREEN  = '#009c3b';
+const YELLOW = '#b8860b';
 const ACCENT = '#0D4BFF';
 const PURPLE = '#a855f7';
 
 /* ── design tokens ───────────────────────────────────────────── */
 const glass = (extra = {}) => ({
-  background: 'linear-gradient(145deg, #07173f, #02091c)',
-  border: '1px solid rgba(255,255,255,.16)',
-  boxShadow: '0 18px 60px rgba(0,0,0,.5)',
-  borderRadius: 16,
+  background: '#ffffff',
+  border: '1px solid #e2e8f0',
+  boxShadow: '0 1px 4px rgba(0,0,0,.06)',
+  borderRadius: 18,
   ...extra,
 });
 
@@ -27,25 +27,25 @@ const pill = (color) => ({
 
 const inputSt = {
   width: '100%', boxSizing: 'border-box', padding: '13px 16px',
-  background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.09)',
-  borderRadius: 12, color: '#fff', fontSize: 14, outline: 'none', fontFamily: 'inherit',
+  background: '#ffffff', border: '1px solid #cbd5e1',
+  borderRadius: 12, color: '#0f172a', fontSize: 14, outline: 'none', fontFamily: 'inherit',
   transition: 'border-color .15s',
 };
 
 const selectSt = {
   ...inputSt, cursor: 'pointer', appearance: 'none', WebkitAppearance: 'none',
-  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,.35)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
+  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(15,23,42,.35)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
   backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center', paddingRight: 38,
 };
 
 const lbl = {
-  fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.38)',
+  fontSize: 11, fontWeight: 700, color: 'rgba(15,23,42,.38)',
   letterSpacing: .8, textTransform: 'uppercase', display: 'block', marginBottom: 6,
 };
 
 const sectionHead = {
   fontSize: 11, fontWeight: 800, letterSpacing: 2.5, textTransform: 'uppercase',
-  color: 'rgba(255,255,255,.25)', marginBottom: 16,
+  color: 'rgba(15,23,42,.25)', marginBottom: 16,
 };
 
 /* ── data ─────────────────────────────────────────────────── */
@@ -68,11 +68,11 @@ function LangBar({ lang, onChange }) {
     <div style={{
       position: 'sticky', top: 0, zIndex: 200,
       background: 'rgba(2,8,20,.92)', backdropFilter: 'blur(12px)',
-      borderBottom: '1px solid rgba(255,255,255,.06)',
+      borderBottom: '1px solid rgba(15,23,42,.06)',
       display: 'flex', justifyContent: 'flex-end', alignItems: 'center',
       padding: '6px 14px', gap: 4,
     }}>
-      <span style={{ fontSize: 10, color: 'rgba(255,255,255,.25)', fontWeight: 700, letterSpacing: 1, marginRight: 6 }}>🌐</span>
+      <span style={{ fontSize: 10, color: 'rgba(15,23,42,.25)', fontWeight: 700, letterSpacing: 1, marginRight: 6 }}>🌐</span>
       {LANGS.map(l => (
         <button
           key={l.code}
@@ -81,8 +81,8 @@ function LangBar({ lang, onChange }) {
             padding: '5px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
             fontFamily: 'inherit', fontSize: 11, fontWeight: 800, letterSpacing: .5,
             transition: 'all .15s',
-            background: lang === l.code ? GREEN : 'rgba(255,255,255,.05)',
-            color: lang === l.code ? '#031020' : 'rgba(255,255,255,.35)',
+            background: lang === l.code ? GREEN : 'rgba(15,23,42,.05)',
+            color: lang === l.code ? '#fff' : 'rgba(15,23,42,.35)',
           }}
         >
           {l.flag} {l.label}
@@ -121,15 +121,15 @@ function PhotoAvatar({ athleteId, photoUrl, onUpload, lang }) {
         onMouseLeave={() => setHover(false)}
         style={{
           width: 96, height: 96, borderRadius: 48, cursor: loading ? 'wait' : 'pointer',
-          border: `3px solid ${hover ? GREEN : 'rgba(255,255,255,.12)'}`,
+          border: `3px solid ${hover ? GREEN : 'rgba(15,23,42,.12)'}`,
           overflow: 'hidden', position: 'relative', flexShrink: 0,
-          background: 'rgba(255,255,255,.04)', transition: 'border-color .2s',
+          background: 'rgba(15,23,42,.04)', transition: 'border-color .2s',
           boxShadow: hover ? `0 0 20px ${GREEN}30` : 'none',
         }}
       >
         {photoUrl
           ? <img src={photoUrl} alt="foto" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, color: 'rgba(255,255,255,.2)' }}>👤</div>
+          : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, color: 'rgba(15,23,42,.2)' }}>👤</div>
         }
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.55)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', opacity: hover || loading ? 1 : 0, transition: 'opacity .2s' }}>
           {loading
@@ -140,7 +140,7 @@ function PhotoAvatar({ athleteId, photoUrl, onUpload, lang }) {
         <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
       </div>
       {error && <div style={{ fontSize: 11, color: '#ff6666', textAlign: 'center', maxWidth: 160 }}>{error}</div>}
-      {!error && <div style={{ fontSize: 11, color: 'rgba(255,255,255,.28)', textAlign: 'center' }}>
+      {!error && <div style={{ fontSize: 11, color: 'rgba(15,23,42,.28)', textAlign: 'center' }}>
         {photoUrl ? t('photoChange', lang) : t('photoAdd', lang)}<br />
         <span style={{ fontSize: 10 }}>{t('photoHint', lang)}</span>
       </div>}
@@ -152,26 +152,26 @@ function PhotoAvatar({ athleteId, photoUrl, onUpload, lang }) {
 function TermCard({ term, checked, onToggle, lang }) {
   const [open, setOpen] = useState(false);
   return (
-    <div style={{ borderRadius: 14, border: `1px solid ${checked ? term.color + '35' : 'rgba(255,255,255,.06)'}`, overflow: 'hidden', background: checked ? term.color + '06' : 'rgba(255,255,255,.015)', transition: 'all .2s' }}>
+    <div style={{ borderRadius: 14, border: `1px solid ${checked ? term.color + '35' : 'rgba(15,23,42,.06)'}`, overflow: 'hidden', background: checked ? term.color + '06' : 'rgba(15,23,42,.015)', transition: 'all .2s' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', cursor: 'pointer' }} onClick={() => setOpen(o => !o)}>
         <div
           onClick={e => { e.stopPropagation(); onToggle(); }}
           style={{ width: 22, height: 22, borderRadius: 7, flexShrink: 0, cursor: 'pointer', transition: 'all .15s',
             background: checked ? term.color : 'transparent',
-            border: `2px solid ${checked ? term.color : 'rgba(255,255,255,.22)'}`,
+            border: `2px solid ${checked ? term.color : 'rgba(15,23,42,.22)'}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#fff', fontWeight: 900 }}>
           {checked ? '✓' : ''}
         </div>
         <span style={{ fontSize: 18, flexShrink: 0 }}>{term.icon}</span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: checked ? '#fff' : 'rgba(255,255,255,.7)', lineHeight: 1.3 }}>{t(term.titleKey, lang)}</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: checked ? '#fff' : 'rgba(15,23,42,.7)', lineHeight: 1.3 }}>{t(term.titleKey, lang)}</div>
           {!checked && <div style={{ fontSize: 10, color: '#ff6666', fontWeight: 700, marginTop: 2 }}>{t('termsRequired', lang)}</div>}
         </div>
-        <span style={{ fontSize: 11, color: 'rgba(255,255,255,.25)', flexShrink: 0 }}>{open ? '▲' : '▼'}</span>
+        <span style={{ fontSize: 11, color: 'rgba(15,23,42,.25)', flexShrink: 0 }}>{open ? '▲' : '▼'}</span>
       </div>
       {open && (
         <div style={{ padding: '0 16px 16px' }}>
-          <div style={{ padding: '14px 16px', borderRadius: 12, background: 'rgba(0,0,0,.3)', border: '1px solid rgba(255,255,255,.05)', fontSize: 13, color: 'rgba(255,255,255,.5)', lineHeight: 1.8, marginBottom: 12 }}>
+          <div style={{ padding: '14px 16px', borderRadius: 12, background: 'rgba(0,0,0,.3)', border: '1px solid rgba(15,23,42,.05)', fontSize: 13, color: 'rgba(15,23,42,.5)', lineHeight: 1.8, marginBottom: 12 }}>
             {t(term.textKey, lang)}
           </div>
           <button onClick={onToggle} style={{ width: '100%', padding: '12px', borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 800, transition: 'all .15s',
@@ -206,15 +206,15 @@ function Field({ label, children }) {
 function Step({ done, label }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', borderRadius: 10,
-      background: done ? `${GREEN}08` : 'rgba(255,255,255,.025)',
-      border: `1px solid ${done ? GREEN + '25' : 'rgba(255,255,255,.05)'}` }}>
+      background: done ? `${GREEN}08` : 'rgba(15,23,42,.025)',
+      border: `1px solid ${done ? GREEN + '25' : 'rgba(15,23,42,.05)'}` }}>
       <div style={{ width: 18, height: 18, borderRadius: 5, flexShrink: 0, transition: 'all .2s',
         background: done ? GREEN : 'transparent',
-        border: `2px solid ${done ? GREEN : 'rgba(255,255,255,.18)'}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#031020', fontWeight: 900 }}>
+        border: `2px solid ${done ? GREEN : 'rgba(15,23,42,.18)'}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#fff', fontWeight: 900 }}>
         {done ? '✓' : ''}
       </div>
-      <span style={{ fontSize: 12, color: done ? 'rgba(255,255,255,.8)' : 'rgba(255,255,255,.35)', fontWeight: done ? 700 : 500 }}>{label}</span>
+      <span style={{ fontSize: 12, color: done ? 'rgba(15,23,42,.8)' : 'rgba(15,23,42,.35)', fontWeight: done ? 700 : 500 }}>{label}</span>
     </div>
   );
 }
@@ -279,7 +279,7 @@ function VenueMap() {
         rrect(px+1,py+1,cw-2,rh-2,2,'#35404f','#25303e',0.5);
         if(Math.random()<0.6){rrect(px+cw/2-6,py+rh*0.25,12,rh*0.5,2,'#1e2a38',null);}
       }
-      txt(lbl,x+w/2,y+h-12,9,'rgba(255,255,255,.35)','700');
+      txt(lbl,x+w/2,y+h-12,9,'rgba(15,23,42,.35)','700');
     }
     drawParking(40,40,180,332,3,5,'🅿 ESTAC. OESTE');
     drawParking(880,40,180,332,3,5,'🅿 ESTAC. LESTE');
@@ -291,7 +291,7 @@ function VenueMap() {
       rrect(x,y,w,h,5,'#1a3d1a',null);
       g.setLineDash([8,5]);rrect(x,y,w,h,5,null,'#4caf50',1.2);g.setLineDash([]);
       for(let lx=x+20;lx<x+w-10;lx+=20){
-        g.strokeStyle='rgba(255,255,255,.1)';g.lineWidth=0.8;
+        g.strokeStyle='rgba(15,23,42,.1)';g.lineWidth=0.8;
         g.beginPath();g.moveTo(lx,y);g.lineTo(lx,y+h);g.stroke();
       }
       txt(lbl,x+w/2,y+h/2+1,8,'rgba(100,220,100,.6)','700');
@@ -316,20 +316,20 @@ function VenueMap() {
       g.fillStyle='#1c4a1c';g.fillRect(x,y+8,FW,EZ-8);
       rrect(x,y+FH-EZ,FW,EZ,8,'#1c4a1c',null);
       g.fillStyle='#1c4a1c';g.fillRect(x,y+FH-EZ,FW,EZ-8);
-      g.save();g.translate(x+FW/2,y+EZ/2);txt('BFWC 2026',0,0,7,'rgba(255,255,255,.15)','800');g.restore();
-      g.save();g.translate(x+FW/2,y+FH-EZ/2);txt('BFWC 2026',0,0,7,'rgba(255,255,255,.15)','800');g.restore();
-      g.strokeStyle='rgba(255,255,255,.18)';g.lineWidth=0.8;
+      g.save();g.translate(x+FW/2,y+EZ/2);txt('BFWC 2026',0,0,7,'rgba(15,23,42,.15)','800');g.restore();
+      g.save();g.translate(x+FW/2,y+FH-EZ/2);txt('BFWC 2026',0,0,7,'rgba(15,23,42,.15)','800');g.restore();
+      g.strokeStyle='rgba(15,23,42,.18)';g.lineWidth=0.8;
       const fieldH=FH-EZ*2;
       [1,2,3,4].forEach(i=>{
         const ly=y+EZ+i*fieldH/5;
         g.beginPath();g.moveTo(x,ly);g.lineTo(x+FW,ly);g.stroke();
-        txt(`${i*10}`,x+8,ly,6,'rgba(255,255,255,.2)');
-        txt(`${i*10}`,x+FW-8,ly,6,'rgba(255,255,255,.2)');
+        txt(`${i*10}`,x+8,ly,6,'rgba(15,23,42,.2)');
+        txt(`${i*10}`,x+FW-8,ly,6,'rgba(15,23,42,.2)');
       });
-      g.setLineDash([5,4]);g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=1;
+      g.setLineDash([5,4]);g.strokeStyle='rgba(15,23,42,.35)';g.lineWidth=1;
       const midY=y+FH/2;
       g.beginPath();g.moveTo(x,midY);g.lineTo(x+FW,midY);g.stroke();g.setLineDash([]);
-      g.strokeStyle='rgba(255,255,255,.2)';g.lineWidth=0.8;
+      g.strokeStyle='rgba(15,23,42,.2)';g.lineWidth=0.8;
       g.beginPath();g.arc(x+FW/2,midY,12,0,Math.PI*2);g.stroke();
       g.shadowColor='rgba(0,200,0,.3)';g.shadowBlur=6;
       rrect(x,y,FW,FH,8,null,'#3dba3d',1.8);ns();
@@ -394,9 +394,9 @@ function VenueMap() {
     txt('▲  ENTRADA PRINCIPAL',550,H-20,11,'#f4ff00','800');
 
     // Scale
-    g.fillStyle='rgba(255,255,255,.7)';g.fillRect(42,H-30,60,4);
-    g.fillStyle='rgba(255,255,255,.35)';g.fillRect(102,H-30,60,4);
-    txt('0        50m       100m',132,H-18,8,'rgba(255,255,255,.35)');
+    g.fillStyle='rgba(15,23,42,.7)';g.fillRect(42,H-30,60,4);
+    g.fillStyle='rgba(15,23,42,.35)';g.fillRect(102,H-30,60,4);
+    txt('0        50m       100m',132,H-18,8,'rgba(15,23,42,.35)');
 
     // Header
     const hg=g.createLinearGradient(0,0,W,0);
@@ -408,23 +408,23 @@ function VenueMap() {
     g.save();g.translate(W-32,58);
     g.beginPath();g.arc(0,0,18,0,Math.PI*2);
     const na=g.createRadialGradient(0,0,2,0,0,18);
-    na.addColorStop(0,'rgba(255,255,255,.12)');na.addColorStop(1,'rgba(0,0,0,.4)');
+    na.addColorStop(0,'rgba(15,23,42,.12)');na.addColorStop(1,'rgba(0,0,0,.4)');
     g.fillStyle=na;g.fill();
-    g.strokeStyle='rgba(255,255,255,.2)';g.lineWidth=1;g.stroke();
+    g.strokeStyle='rgba(15,23,42,.2)';g.lineWidth=1;g.stroke();
     g.beginPath();g.moveTo(0,-13);g.lineTo(-5,2);g.lineTo(0,-1);g.lineTo(5,2);g.closePath();
     g.fillStyle='#f4ff00';g.fill();
     g.beginPath();g.moveTo(0,13);g.lineTo(-5,-2);g.lineTo(0,1);g.lineTo(5,-2);g.closePath();
-    g.fillStyle='rgba(255,255,255,.2)';g.fill();
-    txt('N',0,-18,8,'rgba(255,255,255,.6)','800');
+    g.fillStyle='rgba(15,23,42,.2)';g.fill();
+    txt('N',0,-18,8,'rgba(15,23,42,.6)','800');
     g.restore();
   }, []);
 
   return (
     <div style={{ borderRadius:14, overflow:'hidden', marginBottom:0 }}>
       <canvas ref={ref} style={{ width:'100%', borderRadius:14, display:'block' }} />
-      <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginTop:10, padding:'8px 12px', background:'rgba(255,255,255,.03)', borderRadius:10, border:'1px solid rgba(255,255,255,.06)' }}>
+      <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginTop:10, padding:'8px 12px', background:'rgba(15,23,42,.03)', borderRadius:10, border:'1px solid rgba(15,23,42,.06)' }}>
         {[['#2a6e2a','Campos de jogo'],['#4caf50','Aquecimento'],['#c9a227','Palco/Cerimônias'],['#2a6fc9','Credenciamento'],['#c93a3a','Médico'],['#c97a2a','Alimentação'],['#8a3dcc','Organização'],['#0ea5e9','Vestiários'],['#2a2f3a','Estacionamento']].map(([col,lbl])=>(
-          <div key={lbl} style={{ display:'flex', alignItems:'center', gap:5, fontSize:10, color:'rgba(255,255,255,.45)' }}>
+          <div key={lbl} style={{ display:'flex', alignItems:'center', gap:5, fontSize:10, color:'rgba(15,23,42,.45)' }}>
             <span style={{ width:11,height:11,borderRadius:3,background:col,flexShrink:0,display:'inline-block' }}/>
             {lbl}
           </div>
@@ -542,7 +542,7 @@ export default function AtletasPortalPage() {
   }
 
   if (!athlete) return (
-    <div style={{ minHeight: '100vh', background: '#020814', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,.3)', fontFamily: 'Inter,sans-serif', fontSize: 14 }}>
+    <div style={{ minHeight: '100vh', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(15,23,42,.5)', fontFamily: 'Inter,sans-serif', fontSize: 14 }}>
       <div style={{ textAlign: 'center' }}>
         <div style={{ width: 32, height: 32, border: `2px solid ${GREEN}`, borderTopColor: 'transparent', borderRadius: 16, animation: 'spin 1s linear infinite', margin: '0 auto 12px' }} />
         {t('loading', lang)}
@@ -596,12 +596,12 @@ export default function AtletasPortalPage() {
   const W   = { maxWidth: 680, margin: '0 auto' };
 
   return (
-    <div style={{ minHeight: '100vh', fontFamily: "'Inter',sans-serif", color: '#fff', position: 'relative', background: '#f1f5f9' }}>
+    <div style={{ minHeight: '100vh', fontFamily: "'Inter',sans-serif", color: '#0f172a', position: 'relative', background: '#f1f5f9' }}>
       <style>{`
         @keyframes spin { to { transform: rotate(360deg) } }
         @keyframes fadeIn { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
         * { -webkit-tap-highlight-color: transparent; }
-        input::placeholder, textarea::placeholder { color: rgba(255,255,255,.2) }
+        input::placeholder, textarea::placeholder { color: rgba(15,23,42,.2) }
       `}</style>
 
       {/* imagem de fundo removida para um visual mais limpo */}
@@ -622,9 +622,9 @@ export default function AtletasPortalPage() {
         <h1 style={{ fontSize: isMobile ? 30 : 44, fontWeight: 900, letterSpacing: -1.5, margin: '0 0 14px', lineHeight: 1.1, color: '#0f172a' }}>{athlete.name}</h1>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
           {complete
-            ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 800, letterSpacing: .8, textTransform: 'uppercase', padding: '7px 18px', borderRadius: 24, background: GREEN, color: '#031020' }}>✓ {t('profileComplete', lang)}</span>
+            ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 800, letterSpacing: .8, textTransform: 'uppercase', padding: '7px 18px', borderRadius: 24, background: GREEN, color: '#fff' }}>✓ {t('profileComplete', lang)}</span>
             : (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 800, letterSpacing: .5, padding: '7px 18px', borderRadius: 24, background: YELLOW, color: '#031020' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 800, letterSpacing: .5, padding: '7px 18px', borderRadius: 24, background: YELLOW, color: '#fff' }}>
                 ⚠ {t('profileIncomplete', lang)}
                 <span style={{ fontSize: 18, fontWeight: 900, letterSpacing: -1 }}>{pct}%</span>
               </span>
@@ -640,13 +640,13 @@ export default function AtletasPortalPage() {
           <div style={{ maxWidth: 680, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <span style={{ fontSize: 20 }}>⚠️</span>
             <span style={{ fontSize: isMobile ? 13 : 15, fontWeight: 800, color: '#854d0e', lineHeight: 1.4 }}>{t('alertBanner', lang)}</span>
-            <span style={{ fontSize: 13, fontWeight: 900, color: '#031020', background: YELLOW, padding: '5px 14px', borderRadius: 8, whiteSpace: 'nowrap' }}>{t('alertCta', lang)}</span>
+            <span style={{ fontSize: 13, fontWeight: 900, color: '#fff', background: YELLOW, padding: '5px 14px', borderRadius: 8, whiteSpace: 'nowrap' }}>{t('alertCta', lang)}</span>
           </div>
         </div>
       )}
 
       {/* ── Tabs ── */}
-      <div style={{ background: 'rgba(255,255,255,.72)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(15,23,42,.1)', overflowX: 'auto' }}>
+      <div style={{ background: '#ffffff', borderBottom: '1px solid #e2e8f0', overflowX: 'auto' }}>
         <div style={{ display: 'flex', maxWidth: 680, margin: '0 auto', alignItems: 'stretch' }}>
           {TABS.map(tb => (
             <button key={tb.key} onClick={() => setTab(tb.key)} style={{
@@ -664,7 +664,7 @@ export default function AtletasPortalPage() {
             </button>
           ))}
           <div style={{ display: 'flex', alignItems: 'center', paddingRight: 16, marginLeft: 'auto' }}>
-            <button onClick={() => { sessionStorage.removeItem('bfwc_athlete_session'); router.push('/portal'); }} style={{ padding: '9px 18px', fontSize: 12, fontWeight: 800, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 10, color: 'rgba(255,255,255,.45)', cursor: 'pointer', fontFamily: 'inherit', letterSpacing: .3, whiteSpace: 'nowrap' }}>
+            <button onClick={() => { sessionStorage.removeItem('bfwc_athlete_session'); router.push('/portal'); }} style={{ padding: '9px 18px', fontSize: 12, fontWeight: 800, background: 'rgba(15,23,42,.06)', border: '1px solid rgba(15,23,42,.12)', borderRadius: 10, color: 'rgba(15,23,42,.45)', cursor: 'pointer', fontFamily: 'inherit', letterSpacing: .3, whiteSpace: 'nowrap' }}>
               {t('logout', lang)}
             </button>
           </div>
@@ -684,7 +684,7 @@ export default function AtletasPortalPage() {
                 <span style={{ fontSize: 14, fontWeight: 800 }}>{t('progressTitle', lang)}</span>
                 <span style={{ fontSize: 13, fontWeight: 900, color: complete ? GREEN : YELLOW }}>{pct}%</span>
               </div>
-              <div style={{ height: 5, borderRadius: 4, background: 'rgba(255,255,255,.07)', marginBottom: 14, overflow: 'hidden' }}>
+              <div style={{ height: 5, borderRadius: 4, background: 'rgba(15,23,42,.07)', marginBottom: 14, overflow: 'hidden' }}>
                 <div style={{ height: '100%', borderRadius: 4, width: `${pct}%`, transition: 'width .5s ease',
                   background: complete ? GREEN : `linear-gradient(90deg,${ACCENT},${GREEN})` }} />
               </div>
@@ -700,7 +700,7 @@ export default function AtletasPortalPage() {
                 <PhotoAvatar athleteId={athlete.id} photoUrl={profile.photo_url} onUpload={url => set('photo_url', url)} lang={lang} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>{t('photoTitle', lang)}</div>
-                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,.4)', lineHeight: 1.65, marginBottom: 10 }}>{t('photoDesc', lang)}</div>
+                  <div style={{ fontSize: 13, color: 'rgba(15,23,42,.4)', lineHeight: 1.65, marginBottom: 10 }}>{t('photoDesc', lang)}</div>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {['photoTagPro', 'photoTagBg', 'photoTagFace'].map(k => (
                       <span key={k} style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 6, background: `${GREEN}10`, color: GREEN, border: `1px solid ${GREEN}20` }}>✓ {t(k, lang)}</span>
@@ -715,7 +715,7 @@ export default function AtletasPortalPage() {
               <div style={sectionHead}>{t('personalSection', lang)} <span style={{ color: '#ff6666' }}>*</span></div>
 
               {/* Locked badge */}
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,.3)', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ fontSize: 11, color: 'rgba(15,23,42,.3)', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span>🔒</span> Campos preenchidos no cadastro não podem ser alterados
               </div>
 
@@ -767,8 +767,8 @@ export default function AtletasPortalPage() {
             {/* Emergência */}
             <div style={glass({ padding: '22px' })}>
               <div style={sectionHead}>{t('emergencySection', lang)} <span style={{ color: '#ff6666' }}>*</span></div>
-              <div style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(239,68,68,.06)', border: '1px solid rgba(239,68,68,.15)', fontSize: 12, color: 'rgba(255,255,255,.45)', lineHeight: 1.55, marginBottom: 14 }}>
-                ⚕️ <strong style={{ color: '#fff' }}>⚠</strong> {t('emergencyNote', lang)}
+              <div style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(239,68,68,.06)', border: '1px solid rgba(239,68,68,.15)', fontSize: 12, color: 'rgba(15,23,42,.45)', lineHeight: 1.55, marginBottom: 14 }}>
+                ⚕️ <strong style={{ color: '#dc2626' }}>⚠</strong> {t('emergencyNote', lang)}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
@@ -781,8 +781,8 @@ export default function AtletasPortalPage() {
                 </div>
                 <Field label={t('emergencyRel', lang)}>
                   <select style={selectSt} value={profile.emergency_relation} onChange={e => set('emergency_relation', e.target.value)}>
-                    <option value="" style={{ background: '#0a1628' }}>{t('select', lang)}</option>
-                    {RELATIONS.map(r => <option key={r} value={r} style={{ background: '#0a1628' }}>{r}</option>)}
+                    <option value="" style={{ background: '#ffffff' }}>{t('select', lang)}</option>
+                    {RELATIONS.map(r => <option key={r} value={r} style={{ background: '#ffffff' }}>{r}</option>)}
                   </select>
                 </Field>
               </div>
@@ -794,14 +794,14 @@ export default function AtletasPortalPage() {
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12, marginBottom: 12 }}>
                 <Field label={t('position', lang)}>
                   <select style={selectSt} value={profile.position} onChange={e => set('position', e.target.value)}>
-                    <option value="" style={{ background: '#0a1628' }}>{t('positionPh', lang)}</option>
-                    {POSITIONS.map(p => <option key={p} value={p} style={{ background: '#0a1628' }}>{p}</option>)}
+                    <option value="" style={{ background: '#ffffff' }}>{t('positionPh', lang)}</option>
+                    {POSITIONS.map(p => <option key={p} value={p} style={{ background: '#ffffff' }}>{p}</option>)}
                   </select>
                 </Field>
                 <Field label={t('shirtSize', lang)}>
                   <select style={selectSt} value={profile.shirt_size} onChange={e => set('shirt_size', e.target.value)}>
-                    <option value="" style={{ background: '#0a1628' }}>{t('shirtPh', lang)}</option>
-                    {SIZES.map(s => <option key={s} value={s} style={{ background: '#0a1628' }}>{s}</option>)}
+                    <option value="" style={{ background: '#ffffff' }}>{t('shirtPh', lang)}</option>
+                    {SIZES.map(s => <option key={s} value={s} style={{ background: '#ffffff' }}>{s}</option>)}
                   </select>
                 </Field>
               </div>
@@ -821,7 +821,7 @@ export default function AtletasPortalPage() {
             <div style={glass({ padding: '22px' })}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 16 }}>
                 <div style={sectionHead}>{t('socialSection', lang)}</div>
-                <span style={{ fontSize: 10, color: 'rgba(255,255,255,.22)', fontWeight: 600 }}>{t('optional', lang)}</span>
+                <span style={{ fontSize: 10, color: 'rgba(15,23,42,.22)', fontWeight: 600 }}>{t('optional', lang)}</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
                 <Field label="Instagram">
@@ -832,7 +832,7 @@ export default function AtletasPortalPage() {
                 </Field>
                 <Field label="TikTok">
                   <div style={{ position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,.35)', fontSize: 14, fontWeight: 800 }}>@</span>
+                    <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'rgba(15,23,42,.35)', fontSize: 14, fontWeight: 800 }}>@</span>
                     <input style={{ ...inp('tt'), paddingLeft: 30 }} {...ff('tt')} value={profile.tiktok} onChange={e => set('tiktok', e.target.value.replace('@', ''))} placeholder="seuusuario" />
                   </div>
                 </Field>
@@ -843,9 +843,9 @@ export default function AtletasPortalPage() {
             <div style={glass({ padding: '22px' })}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 <div style={sectionHead}>{t('termsSection', lang)} <span style={{ color: '#ff6666' }}>*</span></div>
-                <span style={{ fontSize: 12, fontWeight: 800, color: allTerms ? GREEN : 'rgba(255,255,255,.3)' }}>{termsCount}/{TERMS.length}</span>
+                <span style={{ fontSize: 12, fontWeight: 800, color: allTerms ? GREEN : 'rgba(15,23,42,.3)' }}>{termsCount}/{TERMS.length}</span>
               </div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,.32)', marginBottom: 16, lineHeight: 1.5 }}>{t('termsHint', lang)}</div>
+              <div style={{ fontSize: 12, color: 'rgba(15,23,42,.32)', marginBottom: 16, lineHeight: 1.5 }}>{t('termsHint', lang)}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {TERMS.map(term => (
                   <TermCard key={term.key} term={term} checked={profile[term.key]} onToggle={() => set(term.key, !profile[term.key])} lang={lang} />
@@ -867,14 +867,14 @@ export default function AtletasPortalPage() {
               padding: '16px', borderRadius: 14, border: 'none', cursor: saving ? 'wait' : 'pointer',
               fontFamily: 'inherit', fontSize: 15, fontWeight: 900, letterSpacing: .3, transition: 'all .2s',
               background: allTerms && hasReq ? `linear-gradient(135deg,${GREEN},#16c932)` : `linear-gradient(135deg,${ACCENT},#1a5fff)`,
-              color: allTerms && hasReq ? '#031020' : '#fff', opacity: saving ? .7 : 1,
+              color: allTerms && hasReq ? '#fff' : '#fff', opacity: saving ? .7 : 1,
               boxShadow: allTerms && hasReq ? `0 6px 24px ${GREEN}30` : `0 6px 24px ${ACCENT}30`,
             }}>
               {saving ? t('saving', lang) : allTerms && hasReq ? t('finish', lang) : t('save', lang)}
             </button>
 
             {isMobile && (
-              <button onClick={() => { sessionStorage.removeItem('bfwc_athlete_session'); router.push('/portal'); }} style={{ padding: '14px', borderRadius: 12, border: '1px solid rgba(255,255,255,.07)', background: 'rgba(255,255,255,.025)', color: 'rgba(255,255,255,.3)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+              <button onClick={() => { sessionStorage.removeItem('bfwc_athlete_session'); router.push('/portal'); }} style={{ padding: '14px', borderRadius: 12, border: '1px solid rgba(15,23,42,.07)', background: 'rgba(15,23,42,.025)', color: 'rgba(15,23,42,.3)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                 {t('logout', lang)}
               </button>
             )}
@@ -906,7 +906,7 @@ export default function AtletasPortalPage() {
             <div style={glass({ padding: '48px 24px', textAlign: 'center' })}>
               <div style={{ fontSize: 48, marginBottom: 16 }}>{icon}</div>
               <div style={{ fontSize: 18, fontWeight: 900, marginBottom: 8 }}>{title}</div>
-              <div style={{ fontSize: 14, color: 'rgba(255,255,255,.4)', lineHeight: 1.6, maxWidth: 340, margin: '0 auto' }}>{desc}</div>
+              <div style={{ fontSize: 14, color: 'rgba(15,23,42,.4)', lineHeight: 1.6, maxWidth: 340, margin: '0 auto' }}>{desc}</div>
               <div style={{ display: 'inline-block', marginTop: 20, padding: '6px 18px', borderRadius: 20, background: `${YELLOW}12`, color: YELLOW, fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', border: `1px solid ${YELLOW}25` }}>Em breve</div>
             </div>
           );
@@ -919,7 +919,7 @@ export default function AtletasPortalPage() {
                 {[['Times', teams.length, YELLOW], ['Atletas', totalAth2, GREEN], ['Países', byCountry2.length, ACCENT]].map(([l, v, c]) => (
                   <div key={l} style={glass({ padding: '16px 10px', textAlign: 'center' })}>
                     <div style={{ fontSize: isMobile ? 28 : 36, fontWeight: 900, color: c, letterSpacing: -1.5, lineHeight: 1 }}>{loadingTeams ? '—' : v}</div>
-                    <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginTop: 6 }}>{l}</div>
+                    <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.3)', marginTop: 6 }}>{l}</div>
                   </div>
                 ))}
               </div>
@@ -931,8 +931,8 @@ export default function AtletasPortalPage() {
                     display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px',
                     borderRadius: 12, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
                     fontSize: 12, fontWeight: 800, whiteSpace: 'nowrap', transition: 'all .15s',
-                    background: campView === ct.k ? YELLOW : 'rgba(255,255,255,.06)',
-                    color: campView === ct.k ? '#031020' : 'rgba(255,255,255,.45)',
+                    background: campView === ct.k ? YELLOW : 'rgba(15,23,42,.06)',
+                    color: campView === ct.k ? '#fff' : 'rgba(15,23,42,.45)',
                     boxShadow: campView === ct.k ? `0 4px 14px ${YELLOW}25` : 'none',
                   }}>
                     <span>{ct.icon}</span> {ct.label}
@@ -943,12 +943,12 @@ export default function AtletasPortalPage() {
               {/* ── JOGOS ── */}
               {campView === 'jogos' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {loadingGames && <div style={{ padding: 40, textAlign: 'center', color: 'rgba(255,255,255,.3)', fontSize: 14 }}>Carregando jogos...</div>}
+                  {loadingGames && <div style={{ padding: 40, textAlign: 'center', color: 'rgba(15,23,42,.3)', fontSize: 14 }}>Carregando jogos...</div>}
                   {!loadingGames && games.length === 0 && (
                     <div style={glass({ padding: '40px 24px', textAlign: 'center' })}>
                       <div style={{ fontSize: 44, marginBottom: 14 }}>🗓</div>
                       <div style={{ fontSize: 17, fontWeight: 900, marginBottom: 8 }}>Calendário em breve</div>
-                      <div style={{ fontSize: 13, color: 'rgba(255,255,255,.4)', lineHeight: 1.65, maxWidth: 340, margin: '0 auto' }}>Os horários dos jogos serão divulgados após o fechamento das inscrições e sorteio dos grupos.</div>
+                      <div style={{ fontSize: 13, color: 'rgba(15,23,42,.4)', lineHeight: 1.65, maxWidth: 340, margin: '0 auto' }}>Os horários dos jogos serão divulgados após o fechamento das inscrições e sorteio dos grupos.</div>
                       <div style={{ display: 'inline-block', marginTop: 18, padding: '6px 18px', borderRadius: 20, background: `${YELLOW}12`, color: YELLOW, fontSize: 11, fontWeight: 800, letterSpacing: 1.5, border: `1px solid ${YELLOW}25` }}>BFWC 2026 — LEME, SP</div>
                     </div>
                   )}
@@ -958,13 +958,13 @@ export default function AtletasPortalPage() {
                       {upcomingGames.map(g => (
                         <div key={g.id} style={glass({ padding: '16px 20px', marginBottom: 10 })}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                            <div style={{ textAlign: 'center', minWidth: 56, background: 'rgba(255,255,255,.04)', borderRadius: 10, padding: '8px 6px' }}>
+                            <div style={{ textAlign: 'center', minWidth: 56, background: 'rgba(15,23,42,.04)', borderRadius: 10, padding: '8px 6px' }}>
                               <div style={{ fontSize: 11, fontWeight: 800, color: YELLOW }}>{g.game_date ? new Date(g.game_date+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}) : 'TBD'}</div>
                               <div style={{ fontSize: 18, fontWeight: 900 }}>{g.game_time?.slice(0,5)||'--:--'}</div>
                             </div>
                             <div style={{ flex: 1, textAlign: 'center' }}>
-                              <div style={{ fontSize: 15, fontWeight: 800 }}>{g.team1_name} <span style={{ color: 'rgba(255,255,255,.3)', fontSize: 12 }}>vs</span> {g.team2_name}</div>
-                              <div style={{ fontSize: 11, color: 'rgba(255,255,255,.35)', marginTop: 4 }}>📍 {g.field||'Campo TBD'} {g.category ? `· ${g.category}` : ''}</div>
+                              <div style={{ fontSize: 15, fontWeight: 800 }}>{g.team1_name} <span style={{ color: 'rgba(15,23,42,.3)', fontSize: 12 }}>vs</span> {g.team2_name}</div>
+                              <div style={{ fontSize: 11, color: 'rgba(15,23,42,.35)', marginTop: 4 }}>📍 {g.field||'Campo TBD'} {g.category ? `· ${g.category}` : ''}</div>
                             </div>
                           </div>
                         </div>
@@ -986,11 +986,11 @@ export default function AtletasPortalPage() {
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                               <span style={{ fontSize: 11, fontWeight: 800, padding: '4px 12px', borderRadius: 8, background: rc+'18', color: rc, flexShrink: 0 }}>{rl}</span>
                               <div style={{ flex: 1, fontSize: 15, fontWeight: 800, textAlign: 'center' }}>
-                                <span style={{ color: isTeam1?'#fff':'rgba(255,255,255,.4)' }}>{g.team1_name}</span>
+                                <span style={{ color: isTeam1?'#fff':'rgba(15,23,42,.4)' }}>{g.team1_name}</span>
                                 <span style={{ color: YELLOW, margin: '0 10px', fontWeight: 900 }}>{g.team1_score} – {g.team2_score}</span>
-                                <span style={{ color: !isTeam1?'#fff':'rgba(255,255,255,.4)' }}>{g.team2_name}</span>
+                                <span style={{ color: !isTeam1?'#fff':'rgba(15,23,42,.4)' }}>{g.team2_name}</span>
                               </div>
-                              <span style={{ fontSize: 11, color: 'rgba(255,255,255,.3)', flexShrink: 0 }}>{g.field}</span>
+                              <span style={{ fontSize: 11, color: 'rgba(15,23,42,.3)', flexShrink: 0 }}>{g.field}</span>
                             </div>
                           </div>
                         );
@@ -1013,11 +1013,11 @@ export default function AtletasPortalPage() {
                       {[['Jogos', finishedGames.length, ACCENT], ['Vitórias', finishedGames.filter(g => { const i=g.team1_id===athlete?.team_id; return i?g.team1_score>g.team2_score:g.team2_score>g.team1_score; }).length, GREEN], ['Derrotas', finishedGames.filter(g => { const i=g.team1_id===athlete?.team_id; return i?g.team1_score<g.team2_score:g.team2_score<g.team1_score; }).length, '#ff4444']].map(([l,v,c]) => (
                         <div key={l} style={{ textAlign: 'center', padding: '14px 8px', borderRadius: 12, background: c+'0d', border: `1px solid ${c}20` }}>
                           <div style={{ fontSize: 28, fontWeight: 900, color: c }}>{v}</div>
-                          <div style={{ fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,.35)', textTransform: 'uppercase', letterSpacing: 1 }}>{l}</div>
+                          <div style={{ fontSize: 10, fontWeight: 800, color: 'rgba(15,23,42,.35)', textTransform: 'uppercase', letterSpacing: 1 }}>{l}</div>
                         </div>
                       ))}
                     </div>
-                    <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.06)', fontSize: 12, color: 'rgba(255,255,255,.35)', lineHeight: 1.5 }}>
+                    <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(15,23,42,.03)', border: '1px solid rgba(15,23,42,.06)', fontSize: 12, color: 'rgba(15,23,42,.35)', lineHeight: 1.5 }}>
                       ℹ️ Estatísticas individuais detalhadas (touchdowns, recepções, defesas) serão exibidas após o início do campeonato.
                     </div>
                   </div>
@@ -1031,9 +1031,9 @@ export default function AtletasPortalPage() {
                         <div key={cat} style={{ marginBottom: 14 }}>
                           <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
                             <span style={{ fontSize:13, fontWeight:700 }}>{cat}</span>
-                            <span style={{ fontSize:13, color:'rgba(255,255,255,.4)' }}>{v} atletas · {p2}%</span>
+                            <span style={{ fontSize:13, color:'rgba(15,23,42,.4)' }}>{v} atletas · {p2}%</span>
                           </div>
-                          <div style={{ height:7, borderRadius:4, background:'rgba(255,255,255,.06)', overflow:'hidden' }}>
+                          <div style={{ height:7, borderRadius:4, background:'rgba(15,23,42,.06)', overflow:'hidden' }}>
                             <div style={{ height:'100%', width:`${p2}%`, background:c, borderRadius:4, transition:'width .6s' }} />
                           </div>
                         </div>
@@ -1044,10 +1044,10 @@ export default function AtletasPortalPage() {
                   <div style={glass({ overflow:'hidden', padding: 0 })}>
                     <div style={{ padding: '16px 20px 10px', ...sectionHead }}>Por país</div>
                     {byCountry2.slice(0,8).map((c,i) => (
-                      <div key={c.country} style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 20px', borderBottom: i<byCountry2.slice(0,8).length-1?'1px solid rgba(255,255,255,.04)':'none' }}>
-                        <span style={{ fontSize:15, width:24, textAlign:'center', flexShrink:0 }}>{i===0?'🥇':i===1?'🥈':i===2?'🥉':<span style={{fontSize:11,color:'rgba(255,255,255,.25)'}}>{i+1}</span>}</span>
+                      <div key={c.country} style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 20px', borderBottom: i<byCountry2.slice(0,8).length-1?'1px solid rgba(15,23,42,.04)':'none' }}>
+                        <span style={{ fontSize:15, width:24, textAlign:'center', flexShrink:0 }}>{i===0?'🥇':i===1?'🥈':i===2?'🥉':<span style={{fontSize:11,color:'rgba(15,23,42,.25)'}}>{i+1}</span>}</span>
                         <span style={{ flex:1, fontSize:13, fontWeight:700 }}>{c.country}</span>
-                        <span style={{ fontSize:11, color:'rgba(255,255,255,.3)' }}>{c.times} times</span>
+                        <span style={{ fontSize:11, color:'rgba(15,23,42,.3)' }}>{c.times} times</span>
                         <span style={{ fontSize:20, fontWeight:900, color:YELLOW, letterSpacing:-1 }}>{c.athletes}</span>
                       </div>
                     ))}
@@ -1069,10 +1069,10 @@ export default function AtletasPortalPage() {
                     </a>
                     <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
                       {[['🅿️','Estacionamento','Amplo estacionamento gratuito no venue'],['🍽️','Alimentação','Praça de alimentação com opções variadas no local'],['🚿','Vestiários','Vestiários com chuveiros para todos os times']].map(([ico,titulo,txt]) => (
-                        <div key={titulo} style={{ padding:'14px', borderRadius:12, background:'rgba(255,255,255,.04)', border:'1px solid rgba(255,255,255,.07)' }}>
+                        <div key={titulo} style={{ padding:'14px', borderRadius:12, background:'rgba(15,23,42,.04)', border:'1px solid rgba(15,23,42,.07)' }}>
                           <div style={{ fontSize:22, marginBottom:6 }}>{ico}</div>
                           <div style={{ fontSize:12, fontWeight:800, marginBottom:4 }}>{titulo}</div>
-                          <div style={{ fontSize:11, color:'rgba(255,255,255,.4)', lineHeight:1.5 }}>{txt}</div>
+                          <div style={{ fontSize:11, color:'rgba(15,23,42,.4)', lineHeight:1.5 }}>{txt}</div>
                         </div>
                       ))}
                     </div>
@@ -1083,9 +1083,9 @@ export default function AtletasPortalPage() {
                     <VenueMap />
                     <div style={{ display:'flex', flexDirection:'column', gap:8, marginTop:14 }}>
                       {[['🏥','Suporte médico','Equipe médica e posto de primeiros socorros em todos os dias'],['🔥','Aquecimento','Área de aquecimento disponível 45 min antes de cada jogo'],['🎤','Cerimônias','Palco principal para abertura, encerramento e premiações']].map(([ico,titulo,txt]) => (
-                        <div key={titulo} style={{ display:'flex', gap:12, padding:'12px 14px', borderRadius:12, background:'rgba(255,255,255,.03)', border:'1px solid rgba(255,255,255,.06)' }}>
+                        <div key={titulo} style={{ display:'flex', gap:12, padding:'12px 14px', borderRadius:12, background:'rgba(15,23,42,.03)', border:'1px solid rgba(15,23,42,.06)' }}>
                           <span style={{ fontSize:20, flexShrink:0 }}>{ico}</span>
-                          <div><div style={{ fontSize:12, fontWeight:800, marginBottom:3 }}>{titulo}</div><div style={{ fontSize:11, color:'rgba(255,255,255,.4)', lineHeight:1.5 }}>{txt}</div></div>
+                          <div><div style={{ fontSize:12, fontWeight:800, marginBottom:3 }}>{titulo}</div><div style={{ fontSize:11, color:'rgba(15,23,42,.4)', lineHeight:1.5 }}>{txt}</div></div>
                         </div>
                       ))}
                     </div>
@@ -1095,9 +1095,9 @@ export default function AtletasPortalPage() {
                     <div style={sectionHead}>🏨 Hospedagem & Transfer</div>
                     <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
                       {[['🏨','Hotéis & Voos','Nossa agência parceira Blue Panda Travel entrará em contato com as equipes confirmadas. Dúvidas: contato@bluepandatravel.com.br'],['🚌','Transfer oficial','Transfer gratuito no dia 30/10, partindo de Guarulhos (GRU) com parada em Viracopos (VCP): 08h00 · 15h00 · 23h00.'],['🗺️','Guia do participante','Restaurantes, farmácias, bancos e dicas locais de Leme/SP no guia digital.']].map(([ico,titulo,txt]) => (
-                        <div key={titulo} style={{ display:'flex', gap:12, padding:'14px', borderRadius:12, background:'rgba(255,255,255,.03)', border:'1px solid rgba(255,255,255,.06)' }}>
+                        <div key={titulo} style={{ display:'flex', gap:12, padding:'14px', borderRadius:12, background:'rgba(15,23,42,.03)', border:'1px solid rgba(15,23,42,.06)' }}>
                           <span style={{ fontSize:22, flexShrink:0 }}>{ico}</span>
-                          <div><div style={{ fontSize:13, fontWeight:800, marginBottom:4 }}>{titulo}</div><div style={{ fontSize:12, color:'rgba(255,255,255,.4)', lineHeight:1.6 }}>{txt}</div></div>
+                          <div><div style={{ fontSize:13, fontWeight:800, marginBottom:4 }}>{titulo}</div><div style={{ fontSize:12, color:'rgba(15,23,42,.4)', lineHeight:1.6 }}>{txt}</div></div>
                         </div>
                       ))}
                     </div>
@@ -1110,24 +1110,24 @@ export default function AtletasPortalPage() {
                 <div>
                   <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginBottom:14 }}>
                     {[{k:'all',l:'Todos'},{k:'masculino',l:'Masculino'},{k:'feminino',l:'Feminino'},{k:'sub-15',l:'Sub-15'},{k:'sub-12',l:'Sub-12'}].map(c => (
-                      <button key={c.k} onClick={() => setCatFilter(c.k)} style={{ padding:'7px 14px', borderRadius:9, border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:12, fontWeight:800, transition:'all .15s', background:catFilter===c.k?YELLOW:'rgba(255,255,255,.06)', color:catFilter===c.k?'#031020':'rgba(255,255,255,.4)' }}>{c.l}</button>
+                      <button key={c.k} onClick={() => setCatFilter(c.k)} style={{ padding:'7px 14px', borderRadius:9, border:'none', cursor:'pointer', fontFamily:'inherit', fontSize:12, fontWeight:800, transition:'all .15s', background:catFilter===c.k?YELLOW:'rgba(15,23,42,.06)', color:catFilter===c.k?'#fff':'rgba(15,23,42,.4)' }}>{c.l}</button>
                     ))}
                   </div>
                   <div style={glass({ overflow:'hidden', padding:0 })}>
                     {loadingTeams
-                      ? <div style={{ padding:40, textAlign:'center', color:'rgba(255,255,255,.3)', fontSize:14 }}>Carregando...</div>
+                      ? <div style={{ padding:40, textAlign:'center', color:'rgba(15,23,42,.3)', fontSize:14 }}>Carregando...</div>
                       : filtered2.length===0
-                        ? <div style={{ padding:40, textAlign:'center', color:'rgba(255,255,255,.2)', fontSize:13 }}>Nenhum time encontrado.</div>
+                        ? <div style={{ padding:40, textAlign:'center', color:'rgba(15,23,42,.2)', fontSize:13 }}>Nenhum time encontrado.</div>
                         : filtered2.sort((a,b)=>(parseInt(b.athletes_count)||0)-(parseInt(a.athletes_count)||0)).map((tm,i) => (
-                          <div key={tm.id} style={{ display:'flex', alignItems:'center', gap:14, padding:'15px 20px', borderBottom:i<filtered2.length-1?'1px solid rgba(255,255,255,.05)':'none' }}>
-                            <span style={{ fontSize:12, fontWeight:700, color:'rgba(255,255,255,.2)', width:24, textAlign:'right', flexShrink:0 }}>{i+1}</span>
+                          <div key={tm.id} style={{ display:'flex', alignItems:'center', gap:14, padding:'15px 20px', borderBottom:i<filtered2.length-1?'1px solid rgba(15,23,42,.05)':'none' }}>
+                            <span style={{ fontSize:12, fontWeight:700, color:'rgba(15,23,42,.2)', width:24, textAlign:'right', flexShrink:0 }}>{i+1}</span>
                             <div style={{ flex:1, minWidth:0 }}>
                               <div style={{ fontSize:14, fontWeight:800, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{tm.club_name}</div>
-                              <div style={{ fontSize:11, color:'rgba(255,255,255,.3)', marginTop:2 }}>{[tm.country, tm.city, tm.category].filter(Boolean).join(' · ')}</div>
+                              <div style={{ fontSize:11, color:'rgba(15,23,42,.3)', marginTop:2 }}>{[tm.country, tm.city, tm.category].filter(Boolean).join(' · ')}</div>
                             </div>
                             <div style={{ textAlign:'right', flexShrink:0 }}>
                               <div style={{ fontSize:22, fontWeight:900, color:YELLOW, letterSpacing:-1, lineHeight:1 }}>{tm.athletes_count||'—'}</div>
-                              <div style={{ fontSize:9, color:'rgba(255,255,255,.25)', textTransform:'uppercase', letterSpacing:1 }}>atletas</div>
+                              <div style={{ fontSize:9, color:'rgba(15,23,42,.25)', textTransform:'uppercase', letterSpacing:1 }}>atletas</div>
                             </div>
                           </div>
                         ))
