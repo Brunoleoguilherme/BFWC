@@ -1365,9 +1365,8 @@ export default function TimesPortalPage() {
                         <button key={c} onClick={() => setCatFilter(sel ? 'all' : c)} style={{
                           all: 'unset', cursor: 'pointer', textAlign: 'center',
                           padding: isMobile ? '12px 6px' : '16px 10px', borderRadius: 14,
-                          background: sel ? cc + '20' : 'rgba(255,255,255,.04)',
-                          backdropFilter: 'blur(10px)',
-                          border: `2px solid ${sel ? cc : st !== 'empty' ? cc + '45' : 'rgba(255,255,255,.07)'}`,
+                          background: sel ? cc + '26' : 'rgba(255,255,255,.07)',
+                          border: `2px solid ${sel ? cc : st !== 'empty' ? cc + '55' : 'rgba(255,255,255,.16)'}`,
                           transition: 'all .18s', boxShadow: sel ? `0 4px 18px ${cc}30` : 'none',
                           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
                           position: 'relative',
@@ -1391,9 +1390,8 @@ export default function TimesPortalPage() {
                     <button onClick={() => setCatFilter('all')} style={{
                       all: 'unset', cursor: 'pointer', textAlign: 'center',
                       padding: isMobile ? '12px 6px' : '16px 10px', borderRadius: 14,
-                      background: catFilter === 'all' ? `${ACCENT}18` : 'rgba(255,255,255,.04)',
-                      backdropFilter: 'blur(10px)',
-                      border: `2px solid ${catFilter === 'all' ? ACCENT : 'rgba(255,255,255,.07)'}`,
+                      background: catFilter === 'all' ? `${ACCENT}26` : 'rgba(255,255,255,.07)',
+                      border: `2px solid ${catFilter === 'all' ? ACCENT : 'rgba(255,255,255,.16)'}`,
                       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, transition: 'all .18s',
                       boxShadow: catFilter === 'all' ? `0 4px 18px ${ACCENT}25` : 'none',
                     }}>
@@ -1404,7 +1402,7 @@ export default function TimesPortalPage() {
                   </div>
 
                   {/* Legenda de regras */}
-                  <div style={{ display: 'flex', gap: 14, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,.025)', border: '1px solid rgba(255,255,255,.05)', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: 14, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.12)', flexWrap: 'wrap' }}>
                     {[[GREEN, `✓ OK (${MIN_ATH}–${MAX_ATH} atletas)`], ['#f97316', `⚠️ Faltam atletas (mín. ${MIN_ATH})`], ['#ff4444', `🚫 Excede limite (máx. ${MAX_ATH})`]].map(([c, txt]) => (
                       <span key={txt} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.5)' }}>
                         <span style={{ width: 8, height: 8, borderRadius: '50%', background: c, display: 'inline-block', flexShrink: 0 }} />{txt}
