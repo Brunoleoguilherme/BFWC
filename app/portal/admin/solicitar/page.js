@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import '../../../admin/admin.css';
 
 export default function AdminSolicitarPage() {
-  const [form, setForm] = useState({ name: '', email: '', role: '', justification: '' });
+  const [form, setForm] = useState({ name: '', email: '', role: '', justification: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -16,7 +16,8 @@ export default function AdminSolicitarPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!form.name || !form.email || !form.justification) { setError('Preencha todos os campos obrigatórios.'); return; }
+    if (!form.name || !form.email || !form.justification || !form.password) { setError('Preencha todos os campos obrigatórios.'); return; }
+    if (form.password.length < 8) { setError('A senha deve ter no mínimo 8 caracteres.'); return; }
     setLoading(true);
     try {
       const res = await fetch('/api/portal/admin/solicitar', {
@@ -71,6 +72,10 @@ export default function AdminSolicitarPage() {
 
           <label className="login-label" style={{ marginTop: 14 }}>E-mail *</label>
           <input className="login-input" type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="email@organizacao.com" style={{ width: '100%', boxSizing: 'border-box' }} />
+
+          <label className="login-label" style={{ marginTop: 14 }}>Senha *</label>
+          <input className="login-input" type="password" value={form.password} onChange={e => set('password', e.target.value)} placeholder="Mínimo 8 caracteres" minLength={8} style={{ width: '100%', boxSizing: 'border-box' }} />
+          <div style={{ fontSize: 11, color: 'rgba(15,23,42,.45)', marginTop: 6 }}>Você usará essa senha para entrar no painel após a aprovação.</div>
 
           <label className="login-label" style={{ marginTop: 14 }}>Cargo / Função na organização</label>
           <input className="login-input" value={form.role} onChange={e => set('role', e.target.value)} placeholder="Ex: Diretor Técnico, Coordenador..." style={{ width: '100%', boxSizing: 'border-box' }} />

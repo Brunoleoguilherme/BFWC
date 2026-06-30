@@ -11,7 +11,7 @@ async function getAdminUser() {
     .select('name, role')
     .eq('id', user.id)
     .single();
-  if (!profile) return null;
+  if (!profile || profile.role === 'pending') return null;
   return { ...user, profile };
 }
 

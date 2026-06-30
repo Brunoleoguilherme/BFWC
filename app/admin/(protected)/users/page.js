@@ -350,6 +350,39 @@ function UserRow({ u, onDeleteClick }) {
   );
 }
 
+function PendingRow({ u, onApprove, onDeleteClick, busy }) {
+  const oc = '#f97316';
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 18,
+      padding: '18px 24px', borderRadius: 16,
+      background: '#fffaf2', border: '1px solid #fed7aa',
+      boxShadow: '0 1px 4px rgba(0,0,0,.06)',
+    }}>
+      <div style={{
+        width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
+        background: oc + '18', border: `1px solid ${oc}35`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 14, fontWeight: 900, color: oc,
+      }}>{initials(u.name)}</div>
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 3, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: '#0f172a' }}>{u.name}</span>
+          <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', padding: '3px 10px', borderRadius: 6, color: oc, background: oc + '14', border: `1px solid ${oc}30` }}>Aguardando</span>
+        </div>
+        <div style={{ fontSize: 12, color: '#64748b' }}>{u.email}</div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, flexShrink: 0, alignItems: 'center' }}>
+        <button onClick={() => onApprove(u, 'admin')} disabled={busy} style={{ padding: '9px 16px', borderRadius: 10, border: 'none', background: '#009c3b', color: '#fff', fontSize: 12, fontWeight: 800, cursor: busy ? 'wait' : 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>Aprovar Admin</button>
+        <button onClick={() => onApprove(u, 'viewer')} disabled={busy} style={{ padding: '9px 16px', borderRadius: 10, border: 'none', background: '#4d8aff', color: '#fff', fontSize: 12, fontWeight: 800, cursor: busy ? 'wait' : 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>Viewer</button>
+        <button onClick={() => onDeleteClick(u)} title="Recusar" style={{ width: 34, height: 34, borderRadius: 8, flexShrink: 0, background: 'rgba(255,68,68,.07)', border: '1px solid rgba(255,68,68,.18)', color: 'rgba(255,68,68,.65)', fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🗑</button>
+      </div>
+    </div>
+  );
+}
+
 function Toast({ message, onDone }) {
   useEffect(() => {
     const t = setTimeout(onDone, 3000);
@@ -382,6 +415,24 @@ export default function UsersPage() {
   const [toast, setToast] = useState(null);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
+  const [approving, setApproving] = useState(false);
+
+  async function approve(u, role) {
+    setApproving(true);
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: u.id, role }),
+      });
+      const d = await res.json();
+      if (!res.ok) { setToast(d.error || 'Erro ao aprovar'); return; }
+      await fetchUsers();
+      setToast(`${u.name} aprovado como ${role === 'admin' ? 'Admin' : 'Viewer'}`);
+    } finally {
+      setApproving(false);
+    }
+  }
 
   async function fetchUsers() {
     setLoading(true);
@@ -405,6 +456,7 @@ export default function UsersPage() {
     return matchRole && matchSearch;
   });
 
+  const pendingUsers = filtered.filter(u => u.source === 'admin' && u.role === 'pending');
   const adminUsers  = filtered.filter(u => u.source === 'admin' && u.role === 'admin');
   const viewerUsers = filtered.filter(u => u.source === 'admin' && u.role === 'viewer');
   const pandaUsers  = filtered.filter(u => u.source === 'admin' && u.role === 'blue_panda');
@@ -478,6 +530,15 @@ export default function UsersPage() {
         <div style={{ color: '#94a3b8', paddingTop: 60, textAlign: 'center', fontSize: 14 }}>Carregando...</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {pendingUsers.length > 0 && (
+            <>
+              <SectionHeader label="Aguardando aprovação" count={pendingUsers.length} />
+              {pendingUsers.map(u => (
+                <PendingRow key={u.id} u={u} onApprove={approve} onDeleteClick={setDeleteTarget} busy={approving} />
+              ))}
+            </>
+          )}
+
           <SectionHeader label="Administradores" count={adminUsers.length} />
           {adminUsers.length === 0
             ? <div style={{ padding: '12px 16px', fontSize: 12, color: '#94a3b8' }}>Nenhum admin.</div>

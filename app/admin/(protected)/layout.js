@@ -20,6 +20,9 @@ export default async function ProtectedLayout({ children }) {
 
   if (!profile) redirect('/admin/login?error=unauthorized');
 
+  // Solicitações de acesso ainda não aprovadas não entram no painel
+  if (profile.role === 'pending') redirect('/admin/login?error=pending');
+
   // Blue Panda users can only access /admin/blue-panda
   if (profile.role === 'blue_panda') {
     const headersList = await headers();

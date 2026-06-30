@@ -10,7 +10,9 @@ async function getCallerProfile() {
   if (!user) return null;
   const { data: profile } = await supabase
     .from('admin_profiles').select('role').eq('id', user.id).single();
-  return profile ? { ...profile, id: user.id, email: user.email } : null;
+  // Solicitações pendentes não têm acesso a nada do painel
+  if (!profile || profile.role === 'pending') return null;
+  return { ...profile, id: user.id, email: user.email };
 }
 
 // Verify the caller's password by signing in with anon client
@@ -88,6 +90,42 @@ export async function POST(request) {
   }
 
   return NextResponse.json({ ok: true, id: authData.user.id });
+}
+
+// PATCH — aprovar/alterar papel de um usuário do painel (admin-only)
+export async function PATCH(request) {
+  const caller = await getCallerProfile();
+  if (!caller) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (caller.role !== 'admin') return NextResponse.json({ error: 'Apenas admins podem aprovar usuários' }, { status: 403 });
+
+  const { id, role } = await request.json();
+  const ALLOWED = ['admin', 'viewer', 'blue_panda'];
+  if (!id || !ALLOWED.includes(role)) {
+    return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 });
+  }
+
+  const admin = getSupabaseAdmin();
+  const { data: target, error: updErr } = await admin
+    .from('admin_profiles')
+    .update({ role })
+    .eq('id', id)
+    .select('email, name')
+    .single();
+
+  if (updErr) return NextResponse.json({ error: updErr.message }, { status: 500 });
+
+  // Avisa o solicitante que o acesso foi liberado
+  try {
+    const { getResend, fromEmail } = await import('@/lib/email');
+    await getResend().emails.send({
+      from: fromEmail,
+      to: target.email,
+      subject: '✅ Acesso ao painel BFWC 2026 liberado',
+      html: `<div style="font-family:Arial,sans-serif"><h2 style="color:#0a7d28">Acesso liberado!</h2><p>Olá, <strong>${target.name}</strong>. Seu acesso ao painel administrativo do BFWC 2026 foi aprovado. Você já pode entrar com seu e-mail e a senha que você cadastrou.</p><p><a href="https://www.brasilflagworldchampionship.com/admin/login">Entrar no painel</a></p></div>`,
+    });
+  } catch (e) { console.error('approval email error', e.message); }
+
+  return NextResponse.json({ ok: true });
 }
 
 // DELETE — remove user (admin panel, portal atleta or portal times)

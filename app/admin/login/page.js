@@ -13,7 +13,9 @@ function LoginForm() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(
-    params.get('error') === 'unauthorized' ? 'Acesso não autorizado para este e-mail.' : ''
+    params.get('error') === 'unauthorized' ? 'Acesso não autorizado para este e-mail.'
+    : params.get('error') === 'pending' ? 'Sua solicitação de acesso ainda está aguardando aprovação de um administrador.'
+    : ''
   );
 
   const supabase = createBrowserClient(
