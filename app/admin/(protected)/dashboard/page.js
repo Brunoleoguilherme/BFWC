@@ -321,6 +321,7 @@ export default function DashboardPage() {
   const pendentes    = (teams || []).filter(t => t.status === 'pendente_analise').length;
   const rejeitados   = (teams || []).filter(t => t.status === 'rejeitado').length;
   const emRevisao    = (teams || []).filter(t => t.status === 'em_revisao').length;
+  const aguardando   = (teams || []).filter(t => t.status === 'aguardando_validacao').length;
 
   const preCats  = catBreakdown(preInscritos);
   const confCats = catBreakdown(confirmados);
@@ -392,9 +393,10 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Pendentes + Em Revisão + Rejeitados */}
+      {/* Aguardando Validação + Pendentes + Em Revisão + Rejeitados */}
       <div className="dash-grid-3">
         {[
+          { label: 'Aguardando Validação', value: aguardando, color: '#d97706', href: '/admin/teams?status=aguardando_validacao' },
           { label: 'Pendentes de Análise', value: pendentes,  color: '#009c3b', href: '/admin/teams?status=pendente_analise' },
           { label: 'Em Revisão',           value: emRevisao,  color: '#a855f7', href: '/admin/teams?status=em_revisao'       },
           { label: 'Rejeitados',           value: rejeitados, color: '#ff4444', href: '/admin/teams?status=rejeitado'        },
