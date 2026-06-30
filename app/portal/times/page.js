@@ -860,7 +860,7 @@ export default function TimesPortalPage() {
 
   return (
     <div style={{ minHeight: '100vh', fontFamily: "'Inter', sans-serif", color: INK, position: 'relative', background: '#f1f5f9' }}>
-      <div style={{ position: 'fixed', inset: 0, zIndex: 0, backgroundImage: "url('/assets/hero-rio-athletes.png')", backgroundSize: 'cover', backgroundPosition: 'center top', opacity: 0.28 }} />
+      {/* imagem de fundo removida para um visual mais limpo */}
       <div style={{ position: 'fixed', inset: 0, zIndex: 1, background: 'linear-gradient(90deg,#031020 0%,#009c3b 50%,#031020 100%)', height: 4, bottom: 'auto' }} />
       <div style={{ position: 'relative', zIndex: 2 }}>
 
@@ -868,14 +868,14 @@ export default function TimesPortalPage() {
       {editingAth && <EditModal athlete={editingAth} onSave={saveEdit} onCancel={() => setEditingAth(null)} cats={registeredCats} />}
 
       {/* ── Hero ── */}
-      <div style={{ padding: isMobile ? '32px 20px 28px' : '48px 24px 36px', textAlign: 'center', background: 'radial-gradient(ellipse 70% 100% at 50% 40%, rgba(247,250,252,.94) 0%, rgba(247,250,252,.80) 50%, rgba(241,245,249,0) 100%)' }}>
+      <div style={{ padding: isMobile ? '32px 20px 28px' : '48px 24px 36px', textAlign: 'center', borderBottom: '1px solid rgba(15,23,42,.08)' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 10, fontWeight: 900, letterSpacing: 3.5, textTransform: 'uppercase', color: '#fff', marginBottom: 16, padding: '6px 16px', borderRadius: 20, background: '#0f172a' }}>
           🏈 Portal dos Times
         </div>
         <h1 style={{ fontSize: isMobile ? 30 : 44, fontWeight: 900, letterSpacing: -1.5, margin: '0 0 14px', lineHeight: 1.1, color: '#0f172a' }}>{team.club_name}</h1>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 800, letterSpacing: .8, textTransform: 'uppercase', padding: '7px 18px', borderRadius: 24, background: ps.color + '20', color: ps.color, border: `1px solid ${ps.color}55` }}>{ps.label}</span>
-          {team.country && <span style={{ fontSize: 13, color: 'rgba(15,23,42,.55)', fontWeight: 600 }}>🌍 {team.country}{team.city ? `, ${team.city}` : ''}</span>}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 800, letterSpacing: .8, textTransform: 'uppercase', padding: '7px 18px', borderRadius: 24, background: ps.color, color: '#fff', border: 'none' }}>{ps.label}</span>
+          {team.country && <span style={{ fontSize: 13, color: 'rgba(15,23,42,.6)', fontWeight: 600 }}>🌍 {team.country}{team.city ? `, ${team.city}` : ''}</span>}
         </div>
       </div>
 

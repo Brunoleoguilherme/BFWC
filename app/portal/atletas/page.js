@@ -604,10 +604,7 @@ export default function AtletasPortalPage() {
         input::placeholder, textarea::placeholder { color: rgba(255,255,255,.2) }
       `}</style>
 
-      {/* Fundo claro com a foto bem fraca (padrão da tela de login) */}
-      <div style={{ position: 'fixed', inset: 0, zIndex: 0,
-        backgroundImage: "url('/assets/hero-rio-athletes.png')",
-        backgroundSize: 'cover', backgroundPosition: 'center top', opacity: 0.28 }} />
+      {/* imagem de fundo removida para um visual mais limpo */}
       {/* Barra superior verde/azul */}
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 4, zIndex: 2,
         background: 'linear-gradient(90deg,#031020 0%,#009c3b 50%,#031020 100%)' }} />
@@ -618,7 +615,7 @@ export default function AtletasPortalPage() {
       <LangBar lang={lang} onChange={changeLang} />
 
       {/* ── Hero ── */}
-      <div style={{ padding: isMobile ? '32px 20px 28px' : '48px 24px 36px', textAlign: 'center', background: 'radial-gradient(ellipse 70% 100% at 50% 40%, rgba(247,250,252,.94) 0%, rgba(247,250,252,.80) 50%, rgba(241,245,249,0) 100%)' }}>
+      <div style={{ padding: isMobile ? '32px 20px 28px' : '48px 24px 36px', textAlign: 'center', borderBottom: '1px solid rgba(15,23,42,.08)' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 10, fontWeight: 900, letterSpacing: 3.5, textTransform: 'uppercase', color: '#fff', marginBottom: 16, padding: '6px 16px', borderRadius: 20, background: '#0f172a' }}>
           <span>🏈</span> {t('portalTitle', lang)}
         </div>
@@ -633,7 +630,7 @@ export default function AtletasPortalPage() {
               </span>
             )
           }
-          {athlete.category && <span style={{ fontSize: 13, color: 'rgba(15,23,42,.55)', fontWeight: 600 }}>• {athlete.category}</span>}
+          {athlete.category && <span style={{ fontSize: 13, color: 'rgba(15,23,42,.6)', fontWeight: 600 }}>• {athlete.category}</span>}
         </div>
       </div>
 
