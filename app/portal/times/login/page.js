@@ -124,7 +124,9 @@ export default function TimesLoginPage() {
             <button key={code} onClick={() => chooseLang(code)} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 18px', borderRadius: 16, border: '1px solid rgba(255,255,255,.14)', background: 'rgba(255,255,255,.06)', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', transition: 'all .18s' }}
               onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.13)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
               onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.06)'; e.currentTarget.style.transform = 'none'; }}>
-              <Image src={flag} alt={short} width={44} height={44} style={{ borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '1px solid rgba(255,255,255,.25)' }} />
+              <div style={{ width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '1px solid rgba(255,255,255,.25)' }}>
+                <img src={flag} alt={short} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.15)', display: 'block' }} />
+              </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: '#f4ff00' }}>{short}</div>
                 <div style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>{title}</div>

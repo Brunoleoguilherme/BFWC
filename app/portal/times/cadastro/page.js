@@ -95,6 +95,11 @@ const T = {
     termsRequired: 'Você deve aceitar os termos',
     logoInvalidType: 'Formato inválido. Use PNG, JPG ou JPEG.',
     logoTooLarge: 'Arquivo muito grande. Máximo 2 MB.',
+    deadlinesTitle: '📅 Prazos de inscrição',
+    deadlinesText: 'De <strong>08/07 a 12/07</strong> a inscrição é exclusiva para times <strong>já pré-inscritos</strong>. A partir de <strong>13/07</strong>, aberta para qualquer time.',
+    sameEmail: '⚠️ Use o <strong>mesmo e-mail</strong> cadastrado na pré-inscrição para concluir o cadastro.',
+    contactLabel: 'Dúvidas? E-mail',
+    selectCountry: 'Selecione o país',
   },
   en: {
     badge: 'Club Registration',
@@ -137,6 +142,11 @@ const T = {
     termsRequired: 'You must accept the terms',
     logoInvalidType: 'Invalid format. Use PNG, JPG or JPEG.',
     logoTooLarge: 'File too large. Maximum 2 MB.',
+    deadlinesTitle: '📅 Registration deadlines',
+    deadlinesText: 'From <strong>Jul 8–12</strong>, registration is exclusive to <strong>already pre-registered</strong> teams. From <strong>Jul 13</strong>, open to any team.',
+    sameEmail: '⚠️ Use the <strong>same email</strong> from your pre-registration to complete sign-up.',
+    contactLabel: 'Questions? Email',
+    selectCountry: 'Select country',
   },
   es: {
     badge: 'Registro de Club',
@@ -179,6 +189,11 @@ const T = {
     termsRequired: 'Debes aceptar los términos',
     logoInvalidType: 'Formato inválido. Usa PNG, JPG o JPEG.',
     logoTooLarge: 'Archivo demasiado grande. Máximo 2 MB.',
+    deadlinesTitle: '📅 Plazos de inscripción',
+    deadlinesText: 'Del <strong>08/07 al 12/07</strong> la inscripción es exclusiva para equipos <strong>ya pre-inscritos</strong>. A partir del <strong>13/07</strong>, abierta para cualquier equipo.',
+    sameEmail: '⚠️ Usa el <strong>mismo correo</strong> registrado en la pre-inscripción para completar el registro.',
+    contactLabel: '¿Dudas? Correo',
+    selectCountry: 'Selecciona el país',
   },
 };
 
@@ -342,7 +357,9 @@ export default function CadastroPage() {
             <button key={code} onClick={() => chooseLang(code)} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 18px', borderRadius: 16, border: '1px solid rgba(255,255,255,.14)', background: 'rgba(255,255,255,.06)', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', transition: 'all .18s' }}
               onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.13)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
               onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.06)'; e.currentTarget.style.transform = 'none'; }}>
-              <img src={flag} alt={short} width={44} height={44} style={{ borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '1px solid rgba(255,255,255,.25)' }} />
+              <div style={{ width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '1px solid rgba(255,255,255,.25)' }}>
+                <img src={flag} alt={short} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.15)', display: 'block' }} />
+              </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: '#f4ff00' }}>{short}</div>
                 <div style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>{title}</div>
@@ -415,15 +432,11 @@ export default function CadastroPage() {
 
           {/* Aviso: prazos de inscrição + contato */}
           <div style={{ marginBottom: 24, padding: '14px 16px', borderRadius: 12, background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: '#1e3a8a', marginBottom: 6 }}>📅 Prazos de inscrição</div>
-            <div style={{ fontSize: 12.5, color: '#1e40af', lineHeight: 1.6 }}>
-              De <strong>08/07 a 12/07</strong> a inscrição é exclusiva para times <strong>já pré-inscritos</strong>. A partir de <strong>13/07</strong>, aberta para qualquer time.
-            </div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: '#1e3a8a', marginBottom: 6 }}>{t.deadlinesTitle}</div>
+            <div style={{ fontSize: 12.5, color: '#1e40af', lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: t.deadlinesText }} />
+            <div style={{ fontSize: 12.5, color: '#1e40af', lineHeight: 1.6, marginTop: 8 }} dangerouslySetInnerHTML={{ __html: t.sameEmail }} />
             <div style={{ fontSize: 12.5, color: '#1e40af', lineHeight: 1.6, marginTop: 8 }}>
-              ⚠️ Use o <strong>mesmo e-mail</strong> cadastrado na pré-inscrição para concluir o cadastro.
-            </div>
-            <div style={{ fontSize: 12.5, color: '#1e40af', lineHeight: 1.6, marginTop: 8 }}>
-              Dúvidas? E-mail <a href="mailto:contato@brasilflag.com" style={{ color: '#1d4ed8', fontWeight: 700 }}>contato@brasilflag.com</a> · WhatsApp <a href="https://wa.me/5516997754522" target="_blank" rel="noopener noreferrer" style={{ color: '#1d4ed8', fontWeight: 700 }}>(16) 99775-4522</a>.
+              {t.contactLabel} <a href="mailto:contato@brasilflag.com" style={{ color: '#1d4ed8', fontWeight: 700 }}>contato@brasilflag.com</a> · WhatsApp <a href="https://wa.me/5516997754522" target="_blank" rel="noopener noreferrer" style={{ color: '#1d4ed8', fontWeight: 700 }}>(16) 99775-4522</a>.
             </div>
           </div>
 
@@ -439,7 +452,7 @@ export default function CadastroPage() {
                 <div>
                   <label className="login-label">{t.country}</label>
                   <select className="login-input" style={{ ...inputStyle, cursor: 'pointer' }} value={form.country} onChange={e => set('country', e.target.value)}>
-                    <option value="">Selecione o país</option>
+                    <option value="">{t.selectCountry}</option>
                     {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                   {errors.country && <div className="login-error" style={{ marginTop: 4 }}>{errors.country}</div>}

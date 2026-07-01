@@ -65,13 +65,13 @@ const PORTAL_STATUS = {
 const CATS = ['Masculino', 'Feminino', 'Sub-15', 'Sub-12'];
 
 const DATES = [
-  { date: '20/07', label: '1ª parcela do pagamento de inscrição', highlight: true },
-  { date: '20/08', label: '2ª parcela do pagamento de inscrição', highlight: true },
-  { date: '20/09', label: '3ª parcela do pagamento de inscrição', highlight: true },
-  { date: '30/09', label: 'Aprovação de documentos dos atletas' },
-  { date: '30/09', label: 'Prazo de envio do roster completo' },
-  { date: '31/10', label: 'Cerimônia de abertura' },
-  { date: '31/10', label: 'Início das rodadas da fase de grupos' },
+  { date: '20/07', label: { pt: '1ª parcela do pagamento de inscrição', en: 'Registration fee — 1st installment', es: '1.ª cuota del pago de inscripción' }, highlight: true },
+  { date: '20/08', label: { pt: '2ª parcela do pagamento de inscrição', en: 'Registration fee — 2nd installment', es: '2.ª cuota del pago de inscripción' }, highlight: true },
+  { date: '20/09', label: { pt: '3ª parcela do pagamento de inscrição', en: 'Registration fee — 3rd installment', es: '3.ª cuota del pago de inscripción' }, highlight: true },
+  { date: '30/09', label: { pt: 'Aprovação de documentos dos atletas', en: 'Athlete document approval', es: 'Aprobación de documentos de los atletas' } },
+  { date: '30/09', label: { pt: 'Prazo de envio do roster completo', en: 'Deadline to submit the full roster', es: 'Fecha límite para enviar el roster completo' } },
+  { date: '31/10', label: { pt: 'Cerimônia de abertura', en: 'Opening ceremony', es: 'Ceremonia de apertura' } },
+  { date: '31/10', label: { pt: 'Início das rodadas da fase de grupos', en: 'Group stage rounds begin', es: 'Inicio de las rondas de la fase de grupos' } },
 ];
 
 const DOCS = [
@@ -82,31 +82,31 @@ const DOCS = [
 ];
 
 const REGS = [
-  { icon: '🏈', title: 'Formato de jogo', text: '5×5 flag football. 2 tempos de 20 min com 2 min de intervalo.' },
-  { icon: '👥', title: 'Roster', text: 'Mín. 12 / máx. 20 atletas por categoria, com até 7 staffs/coaches permitidos. Entrega até a data limite.' },
-  { icon: '👕', title: 'Uniformes', text: 'Dois jogos de camisas numeradas: um claro e um escuro. Calções sem bolsos. Cleats de borracha.' },
-  { icon: '📋', title: 'Elegibilidade', text: 'E-mail do atleta deve estar na lista do clube. Documento válido exigido.' },
-  { icon: '⚖️', title: 'Fair Play', text: 'Conduta antidesportiva resulta em punição. Decisão da comissão é final.' },
-  { icon: '👨‍⚖️', title: 'Arbitragem', text: 'Arbitragem experiente em todas as partidas.' },
-  { icon: '🤝', title: 'Estrutura fornecida', text: 'A organização fornece água, gelo e espaço para alimentação.' },
-  { icon: '📺', title: 'Transmissão', text: 'Transmissão ao vivo de várias partidas do campeonato.' },
+  { icon: '🏈', title: { pt: 'Formato de jogo', en: 'Game format', es: 'Formato de juego' }, text: { pt: '5×5 flag football. 2 tempos de 20 min com 2 min de intervalo.', en: '5×5 flag football. Two 20-min halves with a 2-min break.', es: '5×5 flag football. Dos tiempos de 20 min con 2 min de descanso.' } },
+  { icon: '👥', title: { pt: 'Roster', en: 'Roster', es: 'Roster' }, text: { pt: 'Mín. 12 / máx. 20 atletas por categoria, com até 7 staffs/coaches permitidos. Entrega até a data limite.', en: 'Min. 12 / max. 20 athletes per category, plus up to 7 staff/coaches. Submit by the deadline.', es: 'Mín. 12 / máx. 20 atletas por categoría, con hasta 7 staff/entrenadores. Entrega hasta la fecha límite.' } },
+  { icon: '👕', title: { pt: 'Uniformes', en: 'Uniforms', es: 'Uniformes' }, text: { pt: 'Dois jogos de camisas numeradas: um claro e um escuro. Calções sem bolsos. Cleats de borracha.', en: 'Two sets of numbered jerseys: one light, one dark. Shorts without pockets. Rubber cleats.', es: 'Dos juegos de camisetas numeradas: una clara y una oscura. Shorts sin bolsillos. Tacos de goma.' } },
+  { icon: '📋', title: { pt: 'Elegibilidade', en: 'Eligibility', es: 'Elegibilidad' }, text: { pt: 'E-mail do atleta deve estar na lista do clube. Documento válido exigido.', en: "The athlete's email must be on the club roster. Valid ID required.", es: 'El correo del atleta debe estar en la lista del club. Se exige documento válido.' } },
+  { icon: '⚖️', title: { pt: 'Fair Play', en: 'Fair Play', es: 'Fair Play' }, text: { pt: 'Conduta antidesportiva resulta em punição. Decisão da comissão é final.', en: "Unsportsmanlike conduct results in penalties. The committee's decision is final.", es: 'La conducta antideportiva resulta en sanción. La decisión del comité es final.' } },
+  { icon: '👨‍⚖️', title: { pt: 'Arbitragem', en: 'Refereeing', es: 'Arbitraje' }, text: { pt: 'Arbitragem experiente em todas as partidas.', en: 'Experienced refereeing in every match.', es: 'Arbitraje experimentado en todos los partidos.' } },
+  { icon: '🤝', title: { pt: 'Estrutura fornecida', en: 'Provided facilities', es: 'Estructura ofrecida' }, text: { pt: 'A organização fornece água, gelo e espaço para alimentação.', en: 'The organization provides water, ice and a food area.', es: 'La organización ofrece agua, hielo y espacio para alimentación.' } },
+  { icon: '📺', title: { pt: 'Transmissão', en: 'Broadcast', es: 'Transmisión' }, text: { pt: 'Transmissão ao vivo de várias partidas do campeonato.', en: 'Live broadcast of several tournament matches.', es: 'Transmisión en vivo de varios partidos del campeonato.' } },
 ];
 
 const TRAVEL = [
-  { icon: '🏨', title: 'Hotéis & Voos', text: 'Nossa agência parceira Blue Panda Travel entrará em contato com as equipes confirmadas para oferecer pacotes com tarifas especiais. Dúvidas: contato@bluepandatravel.com.br' },
-  { icon: '🗺️', title: 'Guia do Participante', text: 'O guia oficial do participante estará disponível no site.' },
+  { icon: '🏨', title: { pt: 'Hotéis & Voos', en: 'Hotels & Flights', es: 'Hoteles y Vuelos' }, text: { pt: 'Nossa agência parceira Blue Panda Travel entrará em contato com as equipes confirmadas para oferecer pacotes com tarifas especiais. Dúvidas: contato@bluepandatravel.com.br', en: 'Our partner agency Blue Panda Travel will contact confirmed teams to offer packages with special rates. Questions: contato@bluepandatravel.com.br', es: 'Nuestra agencia asociada Blue Panda Travel contactará a los equipos confirmados para ofrecer paquetes con tarifas especiales. Dudas: contato@bluepandatravel.com.br' } },
+  { icon: '🗺️', title: { pt: 'Guia do Participante', en: 'Participant Guide', es: 'Guía del Participante' }, text: { pt: 'O guia oficial do participante estará disponível no site.', en: 'The official participant guide will be available on the website.', es: 'La guía oficial del participante estará disponible en el sitio.' } },
 ];
 
 const EQUIP = [
-  { type: 'ok',  item: 'Camisas numeradas (frente e verso, mín. 5cm)' },
-  { type: 'ok',  item: 'Calções sem bolsos externos' },
-  { type: 'ok',  item: 'Calçado esportivo (turf, grama ou tênis)' },
-  { type: 'ok',  item: 'Flags oficiais (trazer o próprio cinto de flags)' },
-  { type: 'opt', item: 'Protetor bucal (recomendado)' },
-  { type: 'opt', item: 'Luvas de receptor (permitido)' },
-  { type: 'opt', item: 'Joelheira e cotoveleira (permitido)' },
-  { type: 'no',  item: 'Cleats com travas de metal — PROIBIDO' },
-  { type: 'no',  item: 'Capacete ou proteção rígida — PROIBIDO' },
+  { type: 'ok',  item: { pt: 'Camisas numeradas (frente e verso, mín. 5cm)', en: 'Numbered jerseys (front and back, min. 5cm)', es: 'Camisetas numeradas (frente y espalda, mín. 5cm)' } },
+  { type: 'ok',  item: { pt: 'Calções sem bolsos externos', en: 'Shorts without external pockets', es: 'Shorts sin bolsillos externos' } },
+  { type: 'ok',  item: { pt: 'Calçado esportivo (turf, grama ou tênis)', en: 'Athletic footwear (turf, grass or sneakers)', es: 'Calzado deportivo (turf, césped o tenis)' } },
+  { type: 'ok',  item: { pt: 'Flags oficiais (trazer o próprio cinto de flags)', en: 'Official flags (bring your own flag belt)', es: 'Flags oficiales (traer tu propio cinturón de flags)' } },
+  { type: 'opt', item: { pt: 'Protetor bucal (recomendado)', en: 'Mouthguard (recommended)', es: 'Protector bucal (recomendado)' } },
+  { type: 'opt', item: { pt: 'Luvas de receptor (permitido)', en: 'Receiver gloves (allowed)', es: 'Guantes de receptor (permitido)' } },
+  { type: 'opt', item: { pt: 'Joelheira e cotoveleira (permitido)', en: 'Knee and elbow pads (allowed)', es: 'Rodilleras y coderas (permitido)' } },
+  { type: 'no',  item: { pt: 'Cleats com travas de metal — PROIBIDO', en: 'Metal-stud cleats — NOT ALLOWED', es: 'Tacos con clavos de metal — PROHIBIDO' } },
+  { type: 'no',  item: { pt: 'Capacete ou proteção rígida — PROIBIDO', en: 'Helmet or hard padding — NOT ALLOWED', es: 'Casco o protección rígida — PROHIBIDO' } },
 ];
 
 const PHASE_LABELS = {
@@ -498,11 +498,25 @@ export default function TimesPortalPage() {
   const [lang, setLang]   = useState('pt');
   const [langReady, setLangReady] = useState(false);
   const L = (pt, en, es) => (lang === 'en' ? en : lang === 'es' ? (es ?? en) : pt);
+  const tabLabel = (key) => ({
+    informacoes: L('Informações', 'Information', 'Información'),
+    inscricao:   L('Inscrição', 'Registration', 'Inscripción'),
+    pagamento:   L('Pagamento', 'Payment', 'Pago'),
+    atletas:     L('Atletas', 'Athletes', 'Atletas'),
+    campeonato:  L('Campeonato', 'Championship', 'Campeonato'),
+  }[key] || key);
+  const LO = (o) => (o && typeof o === 'object' && !Array.isArray(o) ? (o[lang] ?? o.pt) : o);
   useEffect(() => {
     const saved = typeof window !== 'undefined' ? localStorage.getItem('bfwc_lang') : null;
     if (saved && ['pt', 'en', 'es'].includes(saved)) { setLang(saved); setLangReady(true); }
   }, []);
-  function chooseLang(code) { saveLang(code); setLang(code); setLangReady(true); }
+  function chooseLang(code) {
+    setLang(code);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bfwc_lang', code);
+      localStorage.setItem('bfwc_language', code);
+    }
+  }
   const [docs, setDocs]   = useState({});
   const [isMobile, setIsMobile] = useState(false);
 
@@ -816,10 +830,10 @@ export default function TimesPortalPage() {
   const teamFullyPaid = !!payInfo?.fully_paid;
   const teamAllComplete = team.status === 'approved' && teamFullyPaid && lineupSubmitted;
   const ps = team.status === 'rejected'
-    ? { label: 'Não aprovado', color: '#ff4444' }
+    ? { label: L('Não aprovado', 'Not approved', 'No aprobado'), color: '#ff4444' }
     : teamAllComplete
-      ? { label: 'Aprovado ✓', color: GREEN }
-      : { label: 'Aguardando aprovação', color: YELLOW };
+      ? { label: L('Aprovado ✓', 'Approved ✓', 'Aprobado ✓'), color: GREEN }
+      : { label: L('Aguardando aprovação', 'Awaiting approval', 'Esperando aprobación'), color: YELLOW };
   const athByCat = CATS.reduce((acc, c) => { acc[c] = athletes.filter(a => a.category === c); return acc; }, {});
 
   // Só as categorias que o clube escolheu na pré-inscrição
@@ -894,7 +908,7 @@ export default function TimesPortalPage() {
       {/* ── Hero ── */}
       <div style={{ padding: isMobile ? '32px 20px 28px' : '48px 24px 36px', textAlign: 'center', borderBottom: '1px solid rgba(15,23,42,.08)' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 10, fontWeight: 900, letterSpacing: 3.5, textTransform: 'uppercase', color: '#fff', marginBottom: 16, padding: '6px 16px', borderRadius: 20, background: '#0f172a' }}>
-          🏈 Portal dos Times
+          🏈 {L('Portal dos Times', 'Teams Portal', 'Portal de Equipos')}
         </div>
         <h1 style={{ fontSize: isMobile ? 30 : 44, fontWeight: 900, letterSpacing: -1.5, margin: '0 0 14px', lineHeight: 1.1, color: '#0f172a' }}>{team.club_name}</h1>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -917,12 +931,19 @@ export default function TimesPortalPage() {
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, transition: 'all .2s',
             }}>
               <span style={{ fontSize: isMobile ? 22 : 24 }}>{t.icon}</span>
-              <span>{t.label}</span>
+              <span>{tabLabel(t.key)}</span>
             </button>
           ))}
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', paddingRight: 16 }}>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10, paddingRight: 16 }}>
+            <div style={{ display: 'flex', gap: 5 }}>
+              {[['pt', '/assets/flag-br.png'], ['en', '/assets/flag-us.png'], ['es', '/assets/flag-es.png']].map(([code, flag]) => (
+                <button key={code} onClick={() => chooseLang(code)} title={code.toUpperCase()} style={{ width: 30, height: 30, borderRadius: '50%', overflow: 'hidden', padding: 0, cursor: 'pointer', border: lang === code ? '2px solid #0f172a' : '1px solid #cbd5e1', background: 'none', opacity: lang === code ? 1 : 0.5, flexShrink: 0 }}>
+                  <img src={flag} alt={code} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.15)', display: 'block' }} />
+                </button>
+              ))}
+            </div>
             <button onClick={() => { sessionStorage.removeItem('bfwc_team_session'); router.push('/portal'); }} style={{ padding: '9px 18px', fontSize: 12, fontWeight: 800, background: 'rgba(15,23,42,.05)', border: '1px solid rgba(15,23,42,.15)', borderRadius: 10, color: 'rgba(15,23,42,.6)', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
-              Sair
+              {L('Sair', 'Log out', 'Salir')}
             </button>
           </div>
         </div>
@@ -1098,7 +1119,7 @@ export default function TimesPortalPage() {
 
             {/* Datas */}
             <div style={{ ...card(), padding: cpad }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Datas importantes</div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>{L('Datas importantes', 'Important dates', 'Fechas importantes')}</div>
               {DATES.map((d, i) => {
                 const c = d.highlight ? '#3b9eff' : YELLOW;
                 return (
@@ -1106,7 +1127,7 @@ export default function TimesPortalPage() {
                     <div style={{ width: 52, flexShrink: 0, fontSize: 10, fontWeight: 800, color: c, textAlign: 'center', padding: '5px 0', borderRadius: 7, background: c+'0a', border: `1px solid ${c}25` }}>
                       {d.date}
                     </div>
-                    <div style={{ flex: 1, fontSize: 13, color: 'rgba(15,23,42,.7)' }}>{d.label}</div>
+                    <div style={{ flex: 1, fontSize: 13, color: 'rgba(15,23,42,.7)' }}>{LO(d.label)}</div>
                     {d.highlight && <span style={{ fontSize: 9, fontWeight: 800, padding: '3px 8px', borderRadius: 6, background: '#3b9eff18', color: '#3b9eff', letterSpacing: .8, flexShrink: 0 }}>💳 PGTO</span>}
                   </div>
                 );
@@ -1175,7 +1196,7 @@ export default function TimesPortalPage() {
           const instByNum = {};
           (payInfo?.installments || []).forEach((it) => { instByNum[it.number] = it; });
           const paidCount = payInfo?.paid_count || 0;
-          const remainingReais = payInfo?.remaining_cents != null ? Math.round(payInfo.remaining_cents / 100) : total;
+          const remainingReais = Math.max(0, total - Math.round((payInfo?.amount_paid_cents || 0) / 100));
           const allPaid = payInfo?.fully_paid || (lockedPlan && paidCount >= lockedPlan);
 
           const qrBlock = (
@@ -1229,13 +1250,13 @@ export default function TimesPortalPage() {
                   <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 12 }}>
                     <button onClick={() => setPayOption('1')} style={{ flex: 1, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', padding: '18px', borderRadius: 16, border: `2px solid ${YELLOW}55`, background: YELLOW + '0c' }}>
                       <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: YELLOW, marginBottom: 8 }}>Opção 1 · Pacote</div>
-                      <div style={{ fontSize: 26, fontWeight: 900, color: '#0f172a', letterSpacing: -1 }}>R$ 2.000 <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>/categoria</span></div>
+                      <div style={{ fontSize: 26, fontWeight: 900, color: '#0f172a', letterSpacing: -1 }}>R$ 2.000 <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>{L('/categoria', '/category', '/categoría')}</span></div>
                       <div style={{ fontSize: 12, color: 'rgba(15,23,42,.55)', marginTop: 6, lineHeight: 1.5 }}>{numCats > 1 ? `R$ ${(2000 * numCats).toLocaleString('pt-BR')} para ${numCats} categorias. ` : ''}Atletas inclusos. Parcele em até 3x.</div>
                       <div style={{ marginTop: 12, fontSize: 12, fontWeight: 800, color: YELLOW }}>Escolher →</div>
                     </button>
                     <button onClick={() => setPayOption('2')} style={{ flex: 1, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', padding: '18px', borderRadius: 16, border: `2px solid ${ACCENT}55`, background: ACCENT + '0c' }}>
                       <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: ACCENT, marginBottom: 8 }}>Opção 2 · Por atleta</div>
-                      <div style={{ fontSize: 26, fontWeight: 900, color: '#0f172a', letterSpacing: -1 }}>R$ 800 <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>/categoria + R$90/atleta</span></div>
+                      <div style={{ fontSize: 26, fontWeight: 900, color: '#0f172a', letterSpacing: -1 }}>R$ 800 <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>{L('/categoria + R$90/atleta', '/category + R$90/athlete', '/categoría + R$90/atleta')}</span></div>
                       <div style={{ fontSize: 12, color: 'rgba(15,23,42,.55)', marginTop: 6, lineHeight: 1.5 }}>{numCats > 1 ? `R$ ${(800 * numCats).toLocaleString('pt-BR')} para ${numCats} categorias + ` : '+ '}R$ 90 por atleta (você escolhe a quantidade). Parcele em até 3x.</div>
                       <div style={{ marginTop: 12, fontSize: 12, fontWeight: 800, color: ACCENT }}>Escolher →</div>
                     </button>
@@ -1435,7 +1456,7 @@ export default function TimesPortalPage() {
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 10 }}>
               <div>
-                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 4 }}>Roster do clube</div>
+                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.72)', marginBottom: 4 }}>Roster do clube</div>
                 <div style={{ fontSize: isMobile ? 18 : 22, fontWeight: 900 }}>{athletes.length} atleta{athletes.length !== 1 ? 's' : ''}</div>
               </div>
               <button onClick={() => setShowAddForm(!showAddForm)} style={btnPrimary()}>
@@ -1486,7 +1507,7 @@ export default function TimesPortalPage() {
               <>
                 {/* ── Contadores por categoria — clicáveis ── */}
                 <div style={{ marginBottom: 6 }}>
-                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 10 }}>
+                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.72)', marginBottom: 10 }}>
                     Atletas por categoria — clique para filtrar
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: `repeat(${registeredCats.length + 1}, 1fr)`, gap: 8, marginBottom: 8 }}>
@@ -1510,14 +1531,14 @@ export default function TimesPortalPage() {
                           {st !== 'empty' && (
                             <div style={{ position: 'absolute', top: 8, right: 8, width: 7, height: 7, borderRadius: '50%', background: cc }} />
                           )}
-                          <div style={{ fontSize: isMobile ? 20 : 26, fontWeight: 900, color: st === 'empty' ? 'rgba(15,23,42,.2)' : cc, lineHeight: 1 }}>{n}</div>
-                          <div style={{ fontSize: isMobile ? 8 : 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: st === 'empty' ? 'rgba(15,23,42,.22)' : 'rgba(15,23,42,.7)', lineHeight: 1.3 }}>{c}</div>
+                          <div style={{ fontSize: isMobile ? 20 : 26, fontWeight: 900, color: st === 'empty' ? 'rgba(15,23,42,.4)' : cc, lineHeight: 1 }}>{n}</div>
+                          <div style={{ fontSize: isMobile ? 8 : 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: st === 'empty' ? 'rgba(15,23,42,.68)' : 'rgba(15,23,42,.92)', lineHeight: 1.3 }}>{c}</div>
                           {st !== 'empty' && (
                             <div style={{ fontSize: 9, fontWeight: 800, color: cc, letterSpacing: .5 }}>
                               {st === 'ok' ? `${ic} ${MIN_ATH}–${MAX_ATH}` : st === 'low' ? `${ic} mín. ${MIN_ATH}` : `${ic} máx. ${MAX_ATH}`}
                             </div>
                           )}
-                          {st === 'empty' && <div style={{ fontSize: 9, color: 'rgba(15,23,42,.18)', letterSpacing: .5 }}>não inscrita</div>}
+                          {st === 'empty' && <div style={{ fontSize: 9, color: 'rgba(15,23,42,.68)', letterSpacing: .5 }}>não inscrita</div>}
                         </button>
                       );
                     })}
@@ -1531,15 +1552,15 @@ export default function TimesPortalPage() {
                       boxShadow: catFilter === 'all' ? `0 4px 18px ${ACCENT}25` : 'none',
                     }}>
                       <div style={{ fontSize: isMobile ? 20 : 26, fontWeight: 900, color: catFilter === 'all' ? ACCENT : 'rgba(15,23,42,.6)', lineHeight: 1 }}>{athletes.length}</div>
-                      <div style={{ fontSize: isMobile ? 8 : 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: 'rgba(15,23,42,.5)', lineHeight: 1.3 }}>Total</div>
-                      <div style={{ fontSize: 9, color: 'rgba(15,23,42,.3)', letterSpacing: .5 }}>ver todos</div>
+                      <div style={{ fontSize: isMobile ? 8 : 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: 'rgba(15,23,42,.7)', lineHeight: 1.3 }}>Total</div>
+                      <div style={{ fontSize: 9, color: 'rgba(15,23,42,.65)', letterSpacing: .5 }}>ver todos</div>
                     </button>
                   </div>
 
                   {/* Legenda de regras */}
                   <div style={{ display: 'flex', gap: 14, padding: '10px 14px', borderRadius: 10, background: 'rgba(15,23,42,.06)', border: '1px solid rgba(15,23,42,.12)', flexWrap: 'wrap' }}>
                     {[[GREEN, `✓ OK (${MIN_ATH}–${MAX_ATH} atletas)`], ['#f97316', `⚠️ Faltam atletas (mín. ${MIN_ATH})`], ['#ff4444', `🚫 Excede limite (máx. ${MAX_ATH})`]].map(([c, txt]) => (
-                      <span key={txt} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>
+                      <span key={txt} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 700, color: 'rgba(15,23,42,.85)' }}>
                         <span style={{ width: 8, height: 8, borderRadius: '50%', background: c, display: 'inline-block', flexShrink: 0 }} />{txt}
                       </span>
                     ))}
@@ -1584,7 +1605,7 @@ export default function TimesPortalPage() {
                             📅 Prazo: 20/10
                           </span>
                         </div>
-                        <div style={{ fontSize: 12, color: 'rgba(15,23,42,.45)', lineHeight: 1.5 }}>
+                        <div style={{ fontSize: 12, color: 'rgba(15,23,42,.62)', lineHeight: 1.5 }}>
                           {lineupBlocked
                             ? lineupBlockReason || 'Corrija as categorias antes de enviar.'
                             : `Confirme que todos os atletas estão cadastrados. ${activeCats.map(c=>`${c}: ${athByCat[c].length}`).join(' · ')}`}
@@ -1634,7 +1655,7 @@ export default function TimesPortalPage() {
                       <thead>
                         <tr style={{ borderBottom: '1px solid rgba(15,23,42,.06)', background: 'rgba(15,23,42,.015)' }}>
                           {['#', 'Nome', 'Categoria', 'E-mail', 'Portal', ''].map(h => (
-                            <th key={h} style={{ padding: '11px 14px', textAlign: 'left', fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(15,23,42,.22)' }}>{h}</th>
+                            <th key={h} style={{ padding: '11px 14px', textAlign: 'left', fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(15,23,42,.72)' }}>{h}</th>
                           ))}
                         </tr>
                       </thead>
@@ -1644,10 +1665,10 @@ export default function TimesPortalPage() {
                             onMouseEnter={e => e.currentTarget.style.background = 'rgba(15,23,42,.025)'}
                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                           >
-                            <td style={{ padding: '13px 14px', color: 'rgba(15,23,42,.35)', fontWeight: 700, fontSize: 12 }}>{a.jersey_number || '—'}</td>
+                            <td style={{ padding: '13px 14px', color: 'rgba(15,23,42,.72)', fontWeight: 700, fontSize: 12 }}>{a.jersey_number || '—'}</td>
                             <td style={{ padding: '13px 14px', fontWeight: 700, color: INK, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.name}</td>
                             <td style={{ padding: '13px 14px' }}>{a.category ? <span style={tag(ACCENT)}>{a.category}</span> : <span style={{ color: 'rgba(15,23,42,.2)' }}>—</span>}</td>
-                            <td style={{ padding: '13px 14px', color: 'rgba(15,23,42,.38)', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.email || '—'}</td>
+                            <td style={{ padding: '13px 14px', color: 'rgba(15,23,42,.72)', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.email || '—'}</td>
                             <td style={{ padding: '10px 14px', verticalAlign: 'middle' }}><PortalBadge a={a} /></td>
                             <td style={{ padding: '13px 10px' }}>
                               <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
@@ -1803,97 +1824,89 @@ export default function TimesPortalPage() {
 
             {/* Destaque: prazos de confirmação */}
             <div style={{ borderRadius: 16, padding: '18px 20px', background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: ACCENT, marginBottom: 10 }}>📌 Prazos para confirmar a inscrição</div>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: ACCENT, marginBottom: 10 }}>📌 {L('Prazos para confirmar a inscrição', 'Deadlines to confirm registration', 'Plazos para confirmar la inscripción')}</div>
               <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 12 }}>
                 <div style={{ flex: 1, background: '#fff', border: '1px solid #dbeafe', borderRadius: 12, padding: '12px 14px' }}>
-                  <div style={{ fontSize: 14, fontWeight: 900, color: '#1e3a8a', marginBottom: 3 }}>08/07 a 12/07</div>
-                  <div style={{ fontSize: 12.5, color: 'rgba(15,23,42,.6)', lineHeight: 1.5 }}>Prioridade para times <strong>já pré-inscritos</strong> confirmarem a inscrição.</div>
+                  <div style={{ fontSize: 14, fontWeight: 900, color: '#1e3a8a', marginBottom: 3 }}>{L('08/07 a 12/07', 'Jul 8–12', '08/07 al 12/07')}</div>
+                  <div style={{ fontSize: 12.5, color: 'rgba(15,23,42,.6)', lineHeight: 1.5 }} dangerouslySetInnerHTML={{ __html: L('Prioridade para times <strong>já pré-inscritos</strong> confirmarem a inscrição.', 'Priority for <strong>already pre-registered</strong> teams to confirm.', 'Prioridad para equipos <strong>ya pre-inscritos</strong> para confirmar.') }} />
                 </div>
                 <div style={{ flex: 1, background: '#fff', border: '1px solid #dbeafe', borderRadius: 12, padding: '12px 14px' }}>
-                  <div style={{ fontSize: 14, fontWeight: 900, color: '#1e3a8a', marginBottom: 3 }}>13/07 a 20/07</div>
-                  <div style={{ fontSize: 12.5, color: 'rgba(15,23,42,.6)', lineHeight: 1.5 }}>Aberto para <strong>qualquer time</strong> confirmar a inscrição.</div>
+                  <div style={{ fontSize: 14, fontWeight: 900, color: '#1e3a8a', marginBottom: 3 }}>{L('13/07 a 20/07', 'Jul 13–20', '13/07 al 20/07')}</div>
+                  <div style={{ fontSize: 12.5, color: 'rgba(15,23,42,.6)', lineHeight: 1.5 }} dangerouslySetInnerHTML={{ __html: L('Aberto para <strong>qualquer time</strong> confirmar a inscrição.', 'Open for <strong>any team</strong> to confirm.', 'Abierto para <strong>cualquier equipo</strong> para confirmar.') }} />
                 </div>
               </div>
-              <div style={{ marginTop: 10, fontSize: 12, color: 'rgba(15,23,42,.55)', lineHeight: 1.5 }}>
-                As vagas são preenchidas por <strong>ordem de pagamento da 1ª parcela</strong>.
-              </div>
+              <div style={{ marginTop: 10, fontSize: 12, color: 'rgba(15,23,42,.55)', lineHeight: 1.5 }} dangerouslySetInnerHTML={{ __html: L('As vagas são preenchidas por <strong>ordem de pagamento da 1ª parcela</strong>.', 'Spots are filled in <strong>order of 1st installment payment</strong>.', 'Los cupos se llenan por <strong>orden de pago de la 1.ª cuota</strong>.') }} />
             </div>
 
             {/* Valores de inscrição */}
             <div style={{ ...card(), padding: cpad }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Valores de inscrição</div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>{L('Valores de inscrição', 'Registration fees', 'Valores de inscripción')}</div>
               <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 12 }}>
                 <button onClick={() => { setPayOption('1'); setTab('pagamento'); }} style={{ flex: 1, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', padding: '16px', borderRadius: 14, border: `1px solid ${YELLOW}40`, background: YELLOW + '0a' }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: YELLOW, marginBottom: 6 }}>Opção 1 · Pacote</div>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: '#0f172a' }}>R$ 2.000 <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>/categoria</span></div>
-                  <div style={{ fontSize: 12, color: 'rgba(15,23,42,.55)', marginTop: 6, lineHeight: 1.5 }}>Atletas inclusos. Valor por categoria inscrita.</div>
-                  <div style={{ marginTop: 10, fontSize: 12, fontWeight: 800, color: YELLOW }}>Inscrever com esta opção →</div>
+                  <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: YELLOW, marginBottom: 6 }}>{L('Opção 1 · Pacote', 'Option 1 · Package', 'Opción 1 · Paquete')}</div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: '#0f172a' }}>R$ 2.000 <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>{L('/categoria', '/category', '/categoría')}</span></div>
+                  <div style={{ fontSize: 12, color: 'rgba(15,23,42,.55)', marginTop: 6, lineHeight: 1.5 }}>{L('Atletas inclusos. Valor por categoria inscrita.', 'Athletes included. Price per registered category.', 'Atletas incluidos. Valor por categoría inscrita.')}</div>
+                  <div style={{ marginTop: 10, fontSize: 12, fontWeight: 800, color: YELLOW }}>{L('Inscrever com esta opção →', 'Register with this option →', 'Inscribirse con esta opción →')}</div>
                 </button>
                 <button onClick={() => { setPayOption('2'); setTab('pagamento'); }} style={{ flex: 1, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', padding: '16px', borderRadius: 14, border: `1px solid ${ACCENT}40`, background: ACCENT + '0a' }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: ACCENT, marginBottom: 6 }}>Opção 2 · Por atleta</div>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: '#0f172a' }}>R$ 800 <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>/categoria + R$90/atleta</span></div>
-                  <div style={{ fontSize: 12, color: 'rgba(15,23,42,.55)', marginTop: 6, lineHeight: 1.5 }}>R$ 800 por categoria + R$ 90 por atleta (você escolhe a quantidade).</div>
-                  <div style={{ marginTop: 10, fontSize: 12, fontWeight: 800, color: ACCENT }}>Inscrever com esta opção →</div>
+                  <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: ACCENT, marginBottom: 6 }}>{L('Opção 2 · Por atleta', 'Option 2 · Per athlete', 'Opción 2 · Por atleta')}</div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: '#0f172a' }}>R$ 800 <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>{L('/categoria + R$90/atleta', '/category + R$90/athlete', '/categoría + R$90/atleta')}</span></div>
+                  <div style={{ fontSize: 12, color: 'rgba(15,23,42,.55)', marginTop: 6, lineHeight: 1.5 }}>{L('R$ 800 por categoria + R$ 90 por atleta (você escolhe a quantidade).', 'R$ 800 per category + R$ 90 per athlete (you choose the amount).', 'R$ 800 por categoría + R$ 90 por atleta (tú eliges la cantidad).')}</div>
+                  <div style={{ marginTop: 10, fontSize: 12, fontWeight: 800, color: ACCENT }}>{L('Inscrever com esta opção →', 'Register with this option →', 'Inscribirse con esta opción →')}</div>
                 </button>
               </div>
-              <div style={{ marginTop: 12, fontSize: 12, color: 'rgba(15,23,42,.5)', lineHeight: 1.6 }}>
-                Os valores são <strong>por categoria inscrita</strong>. O pagamento pode ser parcelado em até 3x (Pix ou cartão).
-              </div>
+              <div style={{ marginTop: 12, fontSize: 12, color: 'rgba(15,23,42,.5)', lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: L('Os valores são <strong>por categoria inscrita</strong>. O pagamento pode ser parcelado em até 3x (Pix ou cartão).', 'Prices are <strong>per registered category</strong>. Payment can be split into up to 3 installments (Pix or card).', 'Los valores son <strong>por categoría inscrita</strong>. El pago puede dividirse en hasta 3 cuotas (Pix o tarjeta).') }} />
               <button onClick={() => setTab('pagamento')} style={{ ...btnPrimary(ACCENT, '#fff'), width: '100%', justifyContent: 'center', marginTop: 14 }}>
-                🏈 Inscrever minha equipe
+                🏈 {L('Inscrever minha equipe', 'Register my team', 'Inscribir mi equipo')}
               </button>
             </div>
 
             {/* Parcelamento e prazos */}
             <div style={{ ...card(), padding: cpad }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Parcelamento e prazos de pagamento</div>
-              {[['1ª parcela', '20/07/2026'], ['2ª parcela', '20/08/2026'], ['3ª parcela', '20/09/2026']].map(([l, d], i) => (
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>{L('Parcelamento e prazos de pagamento', 'Installments & payment deadlines', 'Cuotas y plazos de pago')}</div>
+              {[[L('1ª parcela', '1st installment', '1.ª cuota'), '20/07/2026'], [L('2ª parcela', '2nd installment', '2.ª cuota'), '20/08/2026'], [L('3ª parcela', '3rd installment', '3.ª cuota'), '20/09/2026']].map(([l, d], i) => (
                 <div key={l} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '11px 0', borderBottom: i < 2 ? '1px solid rgba(15,23,42,.05)' : 'none' }}>
                   <span style={{ fontSize: 13, color: 'rgba(15,23,42,.6)' }}>{l}</span>
                   <span style={{ fontSize: 13, fontWeight: 800, color: '#0f172a' }}>{d}</span>
                 </div>
               ))}
-              <div style={{ marginTop: 12, padding: '12px 14px', borderRadius: 10, background: GREEN + '0e', border: `1px solid ${GREEN}30`, fontSize: 12.5, color: 'rgba(15,23,42,.7)', lineHeight: 1.6 }}>
-                ✅ <strong>Pagando a 1ª parcela você já garante a vaga do seu time.</strong> A 1ª parcela deve ser paga até <strong>20/07/2026</strong>, o que habilita o pagamento em <strong>3x</strong>. A <strong>inscrição é confirmada após a quitação total</strong>.
-              </div>
+              <div style={{ marginTop: 12, padding: '12px 14px', borderRadius: 10, background: GREEN + '0e', border: `1px solid ${GREEN}30`, fontSize: 12.5, color: 'rgba(15,23,42,.7)', lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: L('✅ <strong>Pagando a 1ª parcela você já garante a vaga do seu time.</strong> A 1ª parcela deve ser paga até <strong>20/07/2026</strong>, o que habilita o pagamento em <strong>3x</strong>. A <strong>inscrição é confirmada após a quitação total</strong>.', '✅ <strong>Paying the 1st installment secures your spot.</strong> The 1st installment must be paid by <strong>Jul 20, 2026</strong>, enabling payment in <strong>3 installments</strong>. Registration is <strong>confirmed after full payment</strong>.', '✅ <strong>Pagando la 1.ª cuota ya aseguras el cupo de tu equipo.</strong> La 1.ª cuota debe pagarse hasta el <strong>20/07/2026</strong>, lo que habilita el pago en <strong>3 cuotas</strong>. La inscripción se <strong>confirma tras el pago total</strong>.') }} />
             </div>
 
             {/* Vagas por categoria */}
             <div style={{ ...card(), padding: cpad }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Vagas por categoria</div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>{L('Vagas por categoria', 'Spots per category', 'Cupos por categoría')}</div>
               <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: 10 }}>
                 {['Masculino', 'Feminino', 'Sub-15', 'Sub-12'].map((cat) => (
                   <div key={cat} style={{ ...miniCard(), textAlign: 'center' }}>
                     <div style={{ fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 4 }}>{cat}</div>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: YELLOW, letterSpacing: .2 }}>🔥 Vagas limitadas</div>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: YELLOW, letterSpacing: .2 }}>🔥 {L('Vagas limitadas', 'Limited spots', 'Cupos limitados')}</div>
                   </div>
                 ))}
               </div>
-              <div style={{ marginTop: 12, fontSize: 12, color: 'rgba(15,23,42,.5)', lineHeight: 1.6 }}>
-                As vagas são preenchidas por <strong>ordem de pagamento da 1ª parcela</strong>. Garanta a sua o quanto antes — quando a categoria lota, as inscrições são encerradas.
-              </div>
+              <div style={{ marginTop: 12, fontSize: 12, color: 'rgba(15,23,42,.5)', lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: L('As vagas são preenchidas por <strong>ordem de pagamento da 1ª parcela</strong>. Garanta a sua o quanto antes — quando a categoria lota, as inscrições são encerradas.', 'Spots are filled in <strong>order of 1st installment payment</strong>. Secure yours early — once a category fills up, registration closes.', 'Los cupos se llenan por <strong>orden de pago de la 1.ª cuota</strong>. Asegura el tuyo cuanto antes — cuando la categoría se llena, las inscripciones se cierran.') }} />
             </div>
 
             {/* Datas importantes */}
             <div style={{ ...card(), padding: cpad }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Datas importantes</div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>{L('Datas importantes', 'Important dates', 'Fechas importantes')}</div>
               {DATES.map((d, i) => (
-                <div key={d.label + i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: i < DATES.length - 1 ? '1px solid rgba(15,23,42,.05)' : 'none' }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: i < DATES.length - 1 ? '1px solid rgba(15,23,42,.05)' : 'none' }}>
                   <span style={{ fontSize: 11, fontWeight: 800, color: d.highlight ? ACCENT : YELLOW, background: (d.highlight ? ACCENT : YELLOW) + '14', borderRadius: 6, padding: '3px 9px', flexShrink: 0, minWidth: 46, textAlign: 'center' }}>{d.date}</span>
-                  <span style={{ fontSize: 13, color: 'rgba(15,23,42,.65)', lineHeight: 1.4 }}>{d.label}</span>
+                  <span style={{ fontSize: 13, color: 'rgba(15,23,42,.65)', lineHeight: 1.4 }}>{LO(d.label)}</span>
                 </div>
               ))}
             </div>
 
             <div style={{ ...card(), padding: cpad }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Informações</div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>{L('Informações', 'Information', 'Información')}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {REGS.map(r => (
-                  <div key={r.title} style={{ ...miniCard(), display: 'flex', gap: 12 }}>
+                {REGS.map((r, i) => (
+                  <div key={i} style={{ ...miniCard(), display: 'flex', gap: 12 }}>
                     <span style={{ fontSize: 20, flexShrink: 0 }}>{r.icon}</span>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 3 }}>{r.title}</div>
-                      <div style={{ fontSize: 12, color: 'rgba(15,23,42,.45)', lineHeight: 1.55 }}>{r.text}</div>
+                      <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 3 }}>{LO(r.title)}</div>
+                      <div style={{ fontSize: 12, color: 'rgba(15,23,42,.45)', lineHeight: 1.55 }}>{LO(r.text)}</div>
                     </div>
                   </div>
                 ))}
@@ -1901,24 +1914,24 @@ export default function TimesPortalPage() {
             </div>
 
             <div style={{ ...card(), padding: cpad }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Equipamentos</div>
-              {EQUIP.map(e => (
-                <div key={e.item} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 0', borderBottom: '1px solid rgba(15,23,42,.04)' }}>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>{L('Equipamentos', 'Equipment', 'Equipamiento')}</div>
+              {EQUIP.map((e, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 0', borderBottom: '1px solid rgba(15,23,42,.04)' }}>
                   <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{e.type === 'ok' ? '✅' : e.type === 'opt' ? '🔵' : '🚫'}</span>
-                  <span style={{ fontSize: 13, color: e.type === 'no' ? '#ff6666' : 'rgba(15,23,42,.65)', lineHeight: 1.4 }}>{e.item}</span>
+                  <span style={{ fontSize: 13, color: e.type === 'no' ? '#ff6666' : 'rgba(15,23,42,.65)', lineHeight: 1.4 }}>{LO(e.item)}</span>
                 </div>
               ))}
             </div>
 
             <div style={{ ...card(), padding: cpad }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Hospedagem & Logística</div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>{L('Hospedagem & Logística', 'Lodging & Logistics', 'Alojamiento y Logística')}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {TRAVEL.map(t => (
-                  <div key={t.title} style={{ ...miniCard(), display: 'flex', gap: 12 }}>
-                    <span style={{ fontSize: 20, flexShrink: 0 }}>{t.icon}</span>
+                {TRAVEL.map((tv, i) => (
+                  <div key={i} style={{ ...miniCard(), display: 'flex', gap: 12 }}>
+                    <span style={{ fontSize: 20, flexShrink: 0 }}>{tv.icon}</span>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 3 }}>{t.title}</div>
-                      <div style={{ fontSize: 12, color: 'rgba(15,23,42,.45)', lineHeight: 1.55 }}>{t.text}</div>
+                      <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 3 }}>{LO(tv.title)}</div>
+                      <div style={{ fontSize: 12, color: 'rgba(15,23,42,.45)', lineHeight: 1.55 }}>{LO(tv.text)}</div>
                     </div>
                   </div>
                 ))}

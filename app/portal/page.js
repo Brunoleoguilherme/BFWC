@@ -46,6 +46,14 @@ export default function PortalPage() {
 
   const t = T[lang];
 
+  function chooseLang(code) {
+    setLang(code);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bfwc_language', code);
+      localStorage.setItem('bfwc_lang', code);
+    }
+  }
+
   return (
     <div className="login-root" style={{ alignItems: 'center', overflowY: 'auto', minHeight: '100vh' }}>
       <style>{`
@@ -59,6 +67,24 @@ export default function PortalPage() {
       `}</style>
 
       <div className="portal-wrap">
+        {/* Seletor de idioma */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 20 }}>
+          {[['pt', '/assets/flag-br.png', 'PT'], ['en', '/assets/flag-us.png', 'EN'], ['es', '/assets/flag-es.png', 'ES']].map(([code, flag, label]) => (
+            <button key={code} onClick={() => chooseLang(code)} style={{
+              display: 'flex', alignItems: 'center', gap: 7, padding: '6px 14px', borderRadius: 22,
+              border: `1px solid ${lang === code ? 'rgba(255,255,255,.95)' : 'rgba(255,255,255,.4)'}`,
+              background: lang === code ? 'rgba(255,255,255,.92)' : 'rgba(3,13,31,.45)',
+              color: lang === code ? '#0f172a' : '#fff', cursor: 'pointer', fontFamily: 'inherit',
+              fontSize: 12, fontWeight: 800, backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', transition: 'all .15s',
+            }}>
+              <span style={{ width: 20, height: 20, borderRadius: '50%', overflow: 'hidden', display: 'inline-block', flexShrink: 0, border: '1px solid rgba(0,0,0,.15)' }}>
+                <img src={flag} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.15)', display: 'block' }} />
+              </span>
+              {label}
+            </button>
+          ))}
+        </div>
+
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <div className="login-badge" style={{ background: 'rgba(255,255,255,.85)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}>{t.badge}</div>
