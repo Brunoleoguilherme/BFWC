@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { LANGS, detectLang, saveLang } from '@/lib/i18n';
 
 const ACCENT = '#0D4BFF';
 const YELLOW = '#b8860b';
@@ -64,13 +65,13 @@ const PORTAL_STATUS = {
 const CATS = ['Masculino', 'Feminino', 'Sub-15', 'Sub-12'];
 
 const DATES = [
-  { date: '15/07', label: '1ª parcela do pagamento de inscrição', highlight: true },
-  { date: '15/08', label: '2ª parcela do pagamento de inscrição', highlight: true },
-  { date: '15/09', label: '3ª parcela do pagamento de inscrição', highlight: true },
-  { date: '15/10', label: 'Aprovação de documentos dos atletas' },
-  { date: '20/10', label: 'Prazo de envio do roster completo' },
-  { date: '30/10', label: 'Cerimônia de abertura' },
-  { date: '30/10', label: 'Início das rodadas da fase de grupos' },
+  { date: '20/07', label: '1ª parcela do pagamento de inscrição', highlight: true },
+  { date: '20/08', label: '2ª parcela do pagamento de inscrição', highlight: true },
+  { date: '20/09', label: '3ª parcela do pagamento de inscrição', highlight: true },
+  { date: '30/09', label: 'Aprovação de documentos dos atletas' },
+  { date: '30/09', label: 'Prazo de envio do roster completo' },
+  { date: '31/10', label: 'Cerimônia de abertura' },
+  { date: '31/10', label: 'Início das rodadas da fase de grupos' },
 ];
 
 const DOCS = [
@@ -82,17 +83,18 @@ const DOCS = [
 
 const REGS = [
   { icon: '🏈', title: 'Formato de jogo', text: '5×5 flag football. 2 tempos de 20 min com 2 min de intervalo.' },
-  { icon: '👥', title: 'Roster', text: 'Mín. 10 / máx. 20 atletas por categoria. Entrega até a data limite.' },
-  { icon: '👕', title: 'Uniformes', text: 'Camisas numeradas obrigatórias. Calções sem bolsos. Cleats de borracha.' },
-  { icon: '🚩', title: 'Flags', text: 'Proibido amarrar ou esconder as flags. Rush flag obrigatória.' },
+  { icon: '👥', title: 'Roster', text: 'Mín. 12 / máx. 20 atletas por categoria, com até 7 staffs/coaches permitidos. Entrega até a data limite.' },
+  { icon: '👕', title: 'Uniformes', text: 'Dois jogos de camisas numeradas: um claro e um escuro. Calções sem bolsos. Cleats de borracha.' },
   { icon: '📋', title: 'Elegibilidade', text: 'E-mail do atleta deve estar na lista do clube. Documento válido exigido.' },
   { icon: '⚖️', title: 'Fair Play', text: 'Conduta antidesportiva resulta em punição. Decisão da comissão é final.' },
+  { icon: '👨‍⚖️', title: 'Arbitragem', text: 'Arbitragem experiente em todas as partidas.' },
+  { icon: '🤝', title: 'Estrutura fornecida', text: 'A organização fornece água, gelo e espaço para alimentação.' },
+  { icon: '📺', title: 'Transmissão', text: 'Transmissão ao vivo de várias partidas do campeonato.' },
 ];
 
 const TRAVEL = [
   { icon: '🏨', title: 'Hotéis & Voos', text: 'Nossa agência parceira Blue Panda Travel entrará em contato com as equipes confirmadas para oferecer pacotes com tarifas especiais. Dúvidas: contato@bluepandatravel.com.br' },
-  { icon: '🚌', title: 'Transfer oficial', text: 'Transfer gratuito no dia 30/10, partindo de Guarulhos (GRU) e com parada em Viracopos (VCP), nos horários: 08h00 · 15h00 · 23h00.' },
-  { icon: '🗺️', title: 'Guia do Participante', text: 'Mapa do evento, restaurantes e dicas locais de Leme/SP enviados às equipes confirmadas.' },
+  { icon: '🗺️', title: 'Guia do Participante', text: 'O guia oficial do participante estará disponível no site.' },
 ];
 
 const EQUIP = [
@@ -492,7 +494,15 @@ function VenueMap() {
 export default function TimesPortalPage() {
   const router = useRouter();
   const [team, setTeam]   = useState(null);
-  const [tab, setTab]     = useState('inscricao');
+  const [tab, setTab]     = useState('informacoes');
+  const [lang, setLang]   = useState('pt');
+  const [langReady, setLangReady] = useState(false);
+  const L = (pt, en, es) => (lang === 'en' ? en : lang === 'es' ? (es ?? en) : pt);
+  useEffect(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('bfwc_lang') : null;
+    if (saved && ['pt', 'en', 'es'].includes(saved)) { setLang(saved); setLangReady(true); }
+  }, []);
+  function chooseLang(code) { saveLang(code); setLang(code); setLangReady(true); }
   const [docs, setDocs]   = useState({});
   const [isMobile, setIsMobile] = useState(false);
 
@@ -518,7 +528,7 @@ export default function TimesPortalPage() {
   const [payMethod, setPayMethod]             = useState('pix');
   const [planSize, setPlanSize]               = useState(null);   // 1, 2 ou 3 escolhido
   const [payOption, setPayOption]             = useState(null);   // '1' ou '2' (escolha do time)
-  const [athleteQty, setAthleteQty]           = useState(12);     // atletas pagos na opção 2
+  const [athQtys, setAthQtys]                 = useState({});     // atletas por categoria (opção 2)
   const [payInfo, setPayInfo]                 = useState(null);   // resposta de /payment-status
   const [activePix, setActivePix]             = useState(null);   // { number, emv, qrcode_url }
   const [pixLoadingNum, setPixLoadingNum]     = useState(0);      // nº da parcela gerando (0 = nenhuma)
@@ -661,7 +671,7 @@ export default function TimesPortalPage() {
     if (!team) return;
     const effOption = payInfo?.payment_option || payOption;
     if (!effOption) { setCheckoutErr('Escolha uma opção de pagamento.'); return; }
-    const effAth = payInfo?.payment_option ? (payInfo.athletes_paid_qty || 0) : athleteQty;
+    const effAth = payInfo?.payment_option ? (payInfo.athletes_paid_qty || 0) : registeredCats.reduce((s, c) => s + (athQtys[c] ?? 12), 0);
     setCheckoutErr(''); setCheckoutLoading(true);
     try {
       const r = await fetch('/api/payments/create-checkout', {
@@ -682,7 +692,7 @@ export default function TimesPortalPage() {
   async function generateParcela(number) {
     const effOption = payInfo?.payment_option || payOption;
     if (!team || !effOption) return;
-    const effAth = payInfo?.payment_option ? (payInfo.athletes_paid_qty || 0) : athleteQty;
+    const effAth = payInfo?.payment_option ? (payInfo.athletes_paid_qty || 0) : registeredCats.reduce((s, c) => s + (athQtys[c] ?? 12), 0);
     setPixErr(''); setPixLoadingNum(number);
     try {
       const body = { team_id: team.id, number, option: effOption, athletes_qty: effAth };
@@ -802,13 +812,20 @@ export default function TimesPortalPage() {
     </div>
   );
 
-  const ps = PORTAL_STATUS[team.status] || { label: team.status, color: INK };
+
+  const teamFullyPaid = !!payInfo?.fully_paid;
+  const teamAllComplete = team.status === 'approved' && teamFullyPaid && lineupSubmitted;
+  const ps = team.status === 'rejected'
+    ? { label: 'Não aprovado', color: '#ff4444' }
+    : teamAllComplete
+      ? { label: 'Aprovado ✓', color: GREEN }
+      : { label: 'Aguardando aprovação', color: YELLOW };
   const athByCat = CATS.reduce((acc, c) => { acc[c] = athletes.filter(a => a.category === c); return acc; }, {});
 
   // Só as categorias que o clube escolheu na pré-inscrição
   const registeredCats = CATS.filter(c => team.category?.includes(c));
 
-  const MIN_ATH = 10, MAX_ATH = 20;
+  const MIN_ATH = 12, MAX_ATH = 20;
   const activeCats = registeredCats.filter(c => athByCat[c].length > 0);
   const catStatus = (cat) => {
     const n = athByCat[cat]?.length || 0;
@@ -855,11 +872,11 @@ export default function TimesPortalPage() {
   };
 
   const TABS = [
+    { key: 'informacoes', icon: 'ℹ️', label: 'Informações' },
     { key: 'inscricao',   icon: '📋', label: 'Inscrição' },
     { key: 'pagamento',   icon: '💳', label: 'Pagamento' },
     { key: 'atletas',     icon: '👥', label: 'Atletas' },
     { key: 'campeonato',  icon: '🏟️', label: 'Campeonato' },
-    { key: 'informacoes', icon: 'ℹ️', label: 'Info' },
   ];
 
   const pad = isMobile ? '16px 14px 80px' : '28px 20px 80px';
@@ -924,7 +941,7 @@ export default function TimesPortalPage() {
               const isRejected       = team.status === 'rejected';
               const paymentConfirmed = !!team.payment_confirmed;
               const hasAthletes      = athletes.length >= MIN_ATH || lineupSubmitted;
-              const allDone          = isApproved && paymentConfirmed && lineupSubmitted;
+              const allDone          = isApproved && (payInfo ? !!payInfo.fully_paid : false) && lineupSubmitted;
 
               // Qual é a fase atual (0-based)
               const currentStep = allDone ? 4
@@ -934,6 +951,9 @@ export default function TimesPortalPage() {
                 : isEmailVerified ? 1
                 : 0;
 
+              const fullyPaidStep = payInfo ? !!payInfo.fully_paid : paymentConfirmed;
+              const paidCountStep = payInfo?.paid_count || 0;
+              const startedPaying = paymentConfirmed || paidCountStep > 0;
               const STEPS = [
                 {
                   icon: '📋', label: 'Pré-inscrição',
@@ -942,23 +962,25 @@ export default function TimesPortalPage() {
                   desc: isEmailVerified ? 'Formulário enviado e e-mail confirmado.' : '📧 Confirme seu e-mail para avançar.',
                 },
                 {
-                  icon: '✍️', label: 'Inscrição',
-                  done: isApproved,
-                  active: isEmailVerified && !isApproved && !isRejected,
-                  desc: isRejected ? '❌ Inscrição não aprovada. Entre em contato.' : isApproved ? 'Inscrição aprovada pela organização.' : '⏳ Aguardando aprovação da organização.',
+                  icon: '💳', label: 'Pagamento',
+                  done: fullyPaidStep,
+                  active: isApproved && !fullyPaidStep,
+                  desc: (() => {
+                    if (isRejected) return '❌ Inscrição não aprovada. Entre em contato.';
+                    if (!isApproved) return '⏳ Aguardando aprovação da organização para liberar o pagamento.';
+                    const plan = payInfo?.payment_plan;
+                    if (payInfo?.fully_paid) return 'Pagamento concluído.';
+                    if (plan && paidCountStep > 0) return `${paidCountStep} parcela${paidCountStep !== 1 ? 's' : ''} paga${paidCountStep !== 1 ? 's' : ''} de ${plan}.`;
+                    if (startedPaying) return 'Pagamento em andamento.';
+                    return 'Pague a 1ª parcela para garantir sua vaga.';
+                  })(),
                   error: isRejected,
                 },
                 {
-                  icon: '💳', label: 'Pagamento',
-                  done: paymentConfirmed,
-                  active: isApproved && !paymentConfirmed,
-                  desc: (() => {
-                    const plan = payInfo?.payment_plan;
-                    const paidN = payInfo?.paid_count || 0;
-                    if (payInfo?.fully_paid) return 'Pagamento confirmado.';
-                    if (plan && plan > 1) return `${paidN} de ${plan} parcelas pagas.`;
-                    return paymentConfirmed ? 'Pagamento confirmado.' : 'Instruções enviadas por e-mail após aprovação.';
-                  })(),
+                  icon: '✅', label: 'Inscrição confirmada',
+                  done: isApproved && fullyPaidStep,
+                  active: !fullyPaidStep && startedPaying,
+                  desc: (isApproved && fullyPaidStep) ? 'Inscrição confirmada pela organização.' : 'Sua inscrição é confirmada após o pagamento completo.',
                 },
                 {
                   icon: '👥', label: 'Inscrição de atletas',
@@ -1034,7 +1056,7 @@ export default function TimesPortalPage() {
                   <div style={{ borderTop: '1px solid rgba(15,23,42,.06)', marginTop: 20, paddingTop: 16 }}>
                     <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.2)', marginBottom: 10 }}>Dados do cadastro</div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 8 }}>
-                      {[['País', team.country],['Cidade', team.city],['Contato', team.contact_name],['WhatsApp', team.whatsapp],['Categorias', team.category],['Atletas est.', team.athletes_count]]
+                      {[['País', team.country],['Cidade', team.city],['Contato', team.contact_name],['WhatsApp', team.whatsapp]]
                         .filter(([,v]) => v).map(([l, v]) => (
                         <div key={l} style={miniCard()}>
                           <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: 1.5, color: 'rgba(15,23,42,.22)', textTransform: 'uppercase', marginBottom: 2 }}>{l}</div>
@@ -1042,6 +1064,33 @@ export default function TimesPortalPage() {
                         </div>
                       ))}
                     </div>
+
+                    {/* Categorias escolhidas + atletas por categoria */}
+                    {(() => {
+                      const catCounts = registeredCats.map(c => {
+                        const m = team.category?.match(new RegExp(c.replace('-', '\\-') + '\\s*\\((\\d+)\\)'));
+                        return { cat: c, qty: m ? parseInt(m[1], 10) : null };
+                      });
+                      const soma = catCounts.reduce((s, x) => s + (x.qty || 0), 0);
+                      const total = soma || team.athletes_count || 0;
+                      return (
+                        <div style={{ marginTop: 14 }}>
+                          <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: 1.5, color: 'rgba(15,23,42,.22)', textTransform: 'uppercase', marginBottom: 8 }}>Categorias e atletas</div>
+                          <div style={{ ...miniCard(), padding: '2px 14px' }}>
+                            {catCounts.map((x) => (
+                              <div key={x.cat} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid rgba(15,23,42,.06)' }}>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>{x.cat}</span>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(15,23,42,.6)' }}>{x.qty != null ? `${x.qty} atletas` : '—'}</span>
+                              </div>
+                            ))}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '11px 0' }}>
+                              <span style={{ fontSize: 14, fontWeight: 900, color: '#0f172a' }}>Total</span>
+                              <span style={{ fontSize: 14, fontWeight: 900, color: GREEN }}>{total} atletas</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               );
@@ -1099,10 +1148,12 @@ export default function TimesPortalPage() {
           // Opção: travada após o 1º pagamento (payInfo) ou escolhida agora (payOption)
           const lockedOption = payInfo?.payment_option || null;
           const effOption    = lockedOption || payOption;            // '1' | '2' | null
-          const effAthletes  = lockedOption ? (payInfo?.athletes_paid_qty || 0) : athleteQty;
+          const athCatQty    = (c) => (athQtys[c] ?? 12);
+          const athSum       = registeredCats.reduce((s, c) => s + athCatQty(c), 0);
+          const effAthletes  = lockedOption ? (payInfo?.athletes_paid_qty || 0) : athSum;
 
           // Total conforme a opção escolhida
-          const totalFor = (opt, ath) => opt === '2' ? (800 * numCats + 100 * (parseInt(ath, 10) || 0)) : (2000 * numCats);
+          const totalFor = (opt, ath) => opt === '2' ? (800 * numCats + 90 * (parseInt(ath, 10) || 0)) : (2000 * numCats);
           const total    = effOption ? totalFor(effOption, effAthletes) : 0;
 
           // Parcelamento automático por data: 3x até 20/07, 2x até 20/08, depois 1x
@@ -1148,52 +1199,71 @@ export default function TimesPortalPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'fadeIn .3s ease' }}>
 
               {/* Status geral */}
-              {paid ? (
+              {allPaid && (
                 <div style={{ ...card(), padding: cpad, display: 'flex', alignItems: 'center', gap: 16, border: `1px solid ${GREEN}55` }}>
                   <div style={{ width: 52, height: 52, borderRadius: '50%', background: GREEN + '18', border: `2px solid ${GREEN}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>✅</div>
                   <div>
                     <div style={{ fontSize: 16, fontWeight: 900, color: GREEN, marginBottom: 4 }}>Inscrição confirmada</div>
+                    <div style={{ fontSize: 13, color: 'rgba(15,23,42,.5)' }}>Pagamento concluído. Você está confirmado no BFWC 2026.</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Pagamento em andamento (1ª parcela paga, mas ainda faltam parcelas) */}
+              {!allPaid && paid && (
+                <div style={{ ...card(), padding: cpad, display: 'flex', alignItems: 'center', gap: 16, border: `1px solid ${YELLOW}55` }}>
+                  <div style={{ width: 52, height: 52, borderRadius: '50%', background: YELLOW + '18', border: `2px solid ${YELLOW}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>⏳</div>
+                  <div>
+                    <div style={{ fontSize: 16, fontWeight: 900, color: '#0f172a', marginBottom: 4 }}>Pagamento em andamento</div>
                     <div style={{ fontSize: 13, color: 'rgba(15,23,42,.5)' }}>
-                      {chosenPlan && chosenPlan > 1 && !allPaid
-                        ? `Você está confirmado no BFWC 2026. Parcelas pagas: ${paidCount} de ${chosenPlan}.`
-                        : 'Taxa de inscrição recebida. Você está confirmado no BFWC 2026.'}
+                      {paidCount} de {chosenPlan} parcelas pagas. A inscrição é confirmada após quitar todas.
                     </div>
                   </div>
                 </div>
-              ) : !effOption ? (
+              )}
+
+              {/* Escolha de opção (enquanto há saldo e nenhuma opção definida) */}
+              {!allPaid && !effOption && (
                 <div style={{ ...card(), padding: cpad }}>
                   <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Escolha a forma de inscrição</div>
                   <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 12 }}>
                     <button onClick={() => setPayOption('1')} style={{ flex: 1, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', padding: '18px', borderRadius: 16, border: `2px solid ${YELLOW}55`, background: YELLOW + '0c' }}>
                       <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: YELLOW, marginBottom: 8 }}>Opção 1 · Pacote</div>
-                      <div style={{ fontSize: 26, fontWeight: 900, color: '#0f172a', letterSpacing: -1 }}>R$ {(2000 * numCats).toLocaleString('pt-BR')}</div>
-                      <div style={{ fontSize: 12, color: 'rgba(15,23,42,.55)', marginTop: 6, lineHeight: 1.5 }}>R$ 2.000 por categoria{numCats > 1 ? ` × ${numCats}` : ''}. Atletas inclusos. Parcele em até 3x.</div>
+                      <div style={{ fontSize: 26, fontWeight: 900, color: '#0f172a', letterSpacing: -1 }}>R$ 2.000 <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>/categoria</span></div>
+                      <div style={{ fontSize: 12, color: 'rgba(15,23,42,.55)', marginTop: 6, lineHeight: 1.5 }}>{numCats > 1 ? `R$ ${(2000 * numCats).toLocaleString('pt-BR')} para ${numCats} categorias. ` : ''}Atletas inclusos. Parcele em até 3x.</div>
                       <div style={{ marginTop: 12, fontSize: 12, fontWeight: 800, color: YELLOW }}>Escolher →</div>
                     </button>
                     <button onClick={() => setPayOption('2')} style={{ flex: 1, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', padding: '18px', borderRadius: 16, border: `2px solid ${ACCENT}55`, background: ACCENT + '0c' }}>
                       <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: ACCENT, marginBottom: 8 }}>Opção 2 · Por atleta</div>
-                      <div style={{ fontSize: 26, fontWeight: 900, color: '#0f172a', letterSpacing: -1 }}>R$ {(800 * numCats).toLocaleString('pt-BR')} <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>+ R$100/atleta</span></div>
-                      <div style={{ fontSize: 12, color: 'rgba(15,23,42,.55)', marginTop: 6, lineHeight: 1.5 }}>R$ 800 por categoria{numCats > 1 ? ` × ${numCats}` : ''} + R$ 100 por atleta (você escolhe a quantidade). Parcele em até 3x.</div>
+                      <div style={{ fontSize: 26, fontWeight: 900, color: '#0f172a', letterSpacing: -1 }}>R$ 800 <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>/categoria + R$90/atleta</span></div>
+                      <div style={{ fontSize: 12, color: 'rgba(15,23,42,.55)', marginTop: 6, lineHeight: 1.5 }}>{numCats > 1 ? `R$ ${(800 * numCats).toLocaleString('pt-BR')} para ${numCats} categorias + ` : '+ '}R$ 90 por atleta (você escolhe a quantidade). Parcele em até 3x.</div>
                       <div style={{ marginTop: 12, fontSize: 12, fontWeight: 800, color: ACCENT }}>Escolher →</div>
                     </button>
                   </div>
                 </div>
-              ) : (
+              )}
+
+              {/* Resumo da opção escolhida */}
+              {!allPaid && effOption && (
                 <div style={{ ...card(), padding: cpad, border: `1px solid ${YELLOW}45` }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                     <div>
                       <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 6 }}>
                         Opção {effOption} {effOption === '2' ? '· por atleta' : '· pacote'}
-                        {!lockedOption && <span onClick={() => { setPayOption(null); setPayMethod('pix'); }} style={{ marginLeft: 10, color: ACCENT, cursor: 'pointer', fontWeight: 800, textTransform: 'none', letterSpacing: 0 }}>trocar</span>}
+                        {!lockedOption && <button onClick={() => { setPayOption(null); setPayMethod('pix'); }} style={{ marginLeft: 10, padding: '4px 12px', borderRadius: 8, border: `1px solid ${ACCENT}45`, background: ACCENT + '12', color: ACCENT, cursor: 'pointer', fontWeight: 800, fontSize: 11, textTransform: 'none', letterSpacing: 0, fontFamily: 'inherit' }}>↩ Trocar opção</button>}
                       </div>
                       <div style={{ fontSize: 13, color: 'rgba(15,23,42,.5)', marginBottom: 4 }}>
-                        {effOption === '2' ? `R$ 800 × ${numCats} cat. + R$ 100 × ${effAthletes} atletas` : `${numCats} categoria${numCats !== 1 ? 's' : ''} × R$ 2.000`}
+                        {effOption === '2' ? `R$ 800 × ${numCats} cat. + R$ 90 × ${effAthletes} atletas` : `${numCats} categoria${numCats !== 1 ? 's' : ''} × R$ 2.000`}
                       </div>
                       <div style={{ fontSize: 11, color: 'rgba(15,23,42,.3)' }}>{registeredCats.join(' · ')}</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 32, fontWeight: 900, color: YELLOW, letterSpacing: -1.5 }}>R$ {total.toLocaleString('pt-BR')}</div>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(15,23,42,.3)', letterSpacing: 1 }}>TOTAL</div>
+                      <div style={{ fontSize: 28, fontWeight: 900, color: YELLOW, letterSpacing: -1.2 }}>
+                        {numCats > 1 ? `${numCats}× ` : ''}R$ {(effOption === '2' ? 800 : 2000).toLocaleString('pt-BR')}
+                      </div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(15,23,42,.4)', letterSpacing: .3 }}>
+                        {(numCats > 1 || effOption === '2') ? `Total R$ ${total.toLocaleString('pt-BR')}` : 'TOTAL'}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1209,15 +1279,27 @@ export default function TimesPortalPage() {
                   {/* Opção 2: quantidade de atletas */}
                   {effOption === '2' && (
                     <div style={{ marginBottom: 16, padding: '14px', borderRadius: 12, background: ACCENT + '08', border: `1px solid ${ACCENT}22` }}>
-                      <div style={{ fontSize: 12, fontWeight: 800, color: 'rgba(15,23,42,.6)', marginBottom: 8 }}>Quantos atletas vai pagar? (R$ 100 cada)</div>
+                      <div style={{ fontSize: 12, fontWeight: 800, color: 'rgba(15,23,42,.6)', marginBottom: 10 }}>Atletas por categoria (R$ 90 cada)</div>
                       {lockedOption ? (
-                        <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>{effAthletes} atletas · R$ {(100 * effAthletes).toLocaleString('pt-BR')}</div>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>{effAthletes} atletas · R$ {(90 * effAthletes).toLocaleString('pt-BR')}</div>
                       ) : (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <button type="button" onClick={() => setAthleteQty(q => Math.max(1, (parseInt(q, 10) || 1) - 1))} style={{ width: 38, height: 38, borderRadius: 10, border: '1px solid #cbd5e1', background: '#fff', fontSize: 18, fontWeight: 900, cursor: 'pointer', color: '#0f172a' }}>−</button>
-                          <input type="number" min={1} value={athleteQty} onChange={e => setAthleteQty(Math.max(1, parseInt(e.target.value, 10) || 1))} style={{ ...inputSt, width: 90, textAlign: 'center', fontWeight: 800 }} />
-                          <button type="button" onClick={() => setAthleteQty(q => (parseInt(q, 10) || 1) + 1)} style={{ width: 38, height: 38, borderRadius: 10, border: '1px solid #cbd5e1', background: '#fff', fontSize: 18, fontWeight: 900, cursor: 'pointer', color: '#0f172a' }}>+</button>
-                          <div style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 800, color: ACCENT }}>+ R$ {(100 * athleteQty).toLocaleString('pt-BR')}</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {registeredCats.map((c) => {
+                            const q = athCatQty(c);
+                            return (
+                              <div key={c} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: '#0f172a' }}>{c}</span>
+                                <button type="button" onClick={() => setAthQtys(p => ({ ...p, [c]: Math.max(0, q - 1) }))} style={{ width: 34, height: 34, borderRadius: 9, border: '1px solid #cbd5e1', background: '#fff', fontSize: 17, fontWeight: 900, cursor: 'pointer', color: '#0f172a' }}>−</button>
+                                <input type="number" min={0} value={q} onChange={e => setAthQtys(p => ({ ...p, [c]: Math.max(0, parseInt(e.target.value, 10) || 0) }))} style={{ ...inputSt, width: 70, textAlign: 'center', fontWeight: 800 }} />
+                                <button type="button" onClick={() => setAthQtys(p => ({ ...p, [c]: q + 1 }))} style={{ width: 34, height: 34, borderRadius: 9, border: '1px solid #cbd5e1', background: '#fff', fontSize: 17, fontWeight: 900, cursor: 'pointer', color: '#0f172a' }}>+</button>
+                                <span style={{ width: 90, textAlign: 'right', fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.55)' }}>R$ {(90 * q).toLocaleString('pt-BR')}</span>
+                              </div>
+                            );
+                          })}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4, paddingTop: 10, borderTop: '1px solid rgba(15,23,42,.1)' }}>
+                            <span style={{ fontSize: 13, fontWeight: 900, color: '#0f172a' }}>{athSum} atletas no total</span>
+                            <span style={{ fontSize: 14, fontWeight: 900, color: ACCENT }}>+ R$ {(90 * athSum).toLocaleString('pt-BR')}</span>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -1326,8 +1408,8 @@ export default function TimesPortalPage() {
                       </div>
                       {effOption === '2' && (
                         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '11px 0' }}>
-                          <span style={{ fontSize: 13, color: 'rgba(15,23,42,.6)' }}>{effAthletes} atleta{effAthletes !== 1 ? 's' : ''} × R$ 100</span>
-                          <span style={{ fontSize: 13, fontWeight: 700 }}>R$ {(100 * effAthletes).toLocaleString('pt-BR')}</span>
+                          <span style={{ fontSize: 13, color: 'rgba(15,23,42,.6)' }}>{effAthletes} atleta{effAthletes !== 1 ? 's' : ''} × R$ 90</span>
+                          <span style={{ fontSize: 13, fontWeight: 700 }}>R$ {(90 * effAthletes).toLocaleString('pt-BR')}</span>
                         </div>
                       )}
                       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 0 0', marginTop: 4, borderTop: `2px solid ${YELLOW}20` }}>
@@ -1338,7 +1420,7 @@ export default function TimesPortalPage() {
                   )}
                 </div>
                 <div style={{ marginTop: 14, padding: '10px 14px', borderRadius: 10, background: 'rgba(15,23,42,.025)', border: '1px solid rgba(15,23,42,.05)', fontSize: 11, color: 'rgba(15,23,42,.4)', lineHeight: 1.6 }}>
-                  Status: <span style={{ fontWeight: 800, color: paid ? GREEN : YELLOW }}>{paid ? '✅ Confirmado' : '⏳ Aguardando pagamento'}</span>
+                  Status: <span style={{ fontWeight: 800, color: allPaid ? GREEN : YELLOW }}>{allPaid ? '✅ Confirmado' : (paid ? '🟡 Pagamento em andamento' : '⏳ Aguardando pagamento')}</span>
                   {chosenPlan ? <span style={{ marginLeft: 8 }}>· Parcelas pagas: {paidCount}/{chosenPlan}</span> : null}
                 </div>
               </div>
@@ -1719,8 +1801,92 @@ export default function TimesPortalPage() {
         {tab === 'informacoes' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
+            {/* Destaque: prazos de confirmação */}
+            <div style={{ borderRadius: 16, padding: '18px 20px', background: '#eff6ff', border: '1px solid #bfdbfe' }}>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: ACCENT, marginBottom: 10 }}>📌 Prazos para confirmar a inscrição</div>
+              <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 12 }}>
+                <div style={{ flex: 1, background: '#fff', border: '1px solid #dbeafe', borderRadius: 12, padding: '12px 14px' }}>
+                  <div style={{ fontSize: 14, fontWeight: 900, color: '#1e3a8a', marginBottom: 3 }}>08/07 a 12/07</div>
+                  <div style={{ fontSize: 12.5, color: 'rgba(15,23,42,.6)', lineHeight: 1.5 }}>Prioridade para times <strong>já pré-inscritos</strong> confirmarem a inscrição.</div>
+                </div>
+                <div style={{ flex: 1, background: '#fff', border: '1px solid #dbeafe', borderRadius: 12, padding: '12px 14px' }}>
+                  <div style={{ fontSize: 14, fontWeight: 900, color: '#1e3a8a', marginBottom: 3 }}>13/07 a 20/07</div>
+                  <div style={{ fontSize: 12.5, color: 'rgba(15,23,42,.6)', lineHeight: 1.5 }}>Aberto para <strong>qualquer time</strong> confirmar a inscrição.</div>
+                </div>
+              </div>
+              <div style={{ marginTop: 10, fontSize: 12, color: 'rgba(15,23,42,.55)', lineHeight: 1.5 }}>
+                As vagas são preenchidas por <strong>ordem de pagamento da 1ª parcela</strong>.
+              </div>
+            </div>
+
+            {/* Valores de inscrição */}
             <div style={{ ...card(), padding: cpad }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Regulamento</div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Valores de inscrição</div>
+              <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 12 }}>
+                <button onClick={() => { setPayOption('1'); setTab('pagamento'); }} style={{ flex: 1, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', padding: '16px', borderRadius: 14, border: `1px solid ${YELLOW}40`, background: YELLOW + '0a' }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: YELLOW, marginBottom: 6 }}>Opção 1 · Pacote</div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: '#0f172a' }}>R$ 2.000 <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>/categoria</span></div>
+                  <div style={{ fontSize: 12, color: 'rgba(15,23,42,.55)', marginTop: 6, lineHeight: 1.5 }}>Atletas inclusos. Valor por categoria inscrita.</div>
+                  <div style={{ marginTop: 10, fontSize: 12, fontWeight: 800, color: YELLOW }}>Inscrever com esta opção →</div>
+                </button>
+                <button onClick={() => { setPayOption('2'); setTab('pagamento'); }} style={{ flex: 1, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', padding: '16px', borderRadius: 14, border: `1px solid ${ACCENT}40`, background: ACCENT + '0a' }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: ACCENT, marginBottom: 6 }}>Opção 2 · Por atleta</div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: '#0f172a' }}>R$ 800 <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>/categoria + R$90/atleta</span></div>
+                  <div style={{ fontSize: 12, color: 'rgba(15,23,42,.55)', marginTop: 6, lineHeight: 1.5 }}>R$ 800 por categoria + R$ 90 por atleta (você escolhe a quantidade).</div>
+                  <div style={{ marginTop: 10, fontSize: 12, fontWeight: 800, color: ACCENT }}>Inscrever com esta opção →</div>
+                </button>
+              </div>
+              <div style={{ marginTop: 12, fontSize: 12, color: 'rgba(15,23,42,.5)', lineHeight: 1.6 }}>
+                Os valores são <strong>por categoria inscrita</strong>. O pagamento pode ser parcelado em até 3x (Pix ou cartão).
+              </div>
+              <button onClick={() => setTab('pagamento')} style={{ ...btnPrimary(ACCENT, '#fff'), width: '100%', justifyContent: 'center', marginTop: 14 }}>
+                🏈 Inscrever minha equipe
+              </button>
+            </div>
+
+            {/* Parcelamento e prazos */}
+            <div style={{ ...card(), padding: cpad }}>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Parcelamento e prazos de pagamento</div>
+              {[['1ª parcela', '20/07/2026'], ['2ª parcela', '20/08/2026'], ['3ª parcela', '20/09/2026']].map(([l, d], i) => (
+                <div key={l} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '11px 0', borderBottom: i < 2 ? '1px solid rgba(15,23,42,.05)' : 'none' }}>
+                  <span style={{ fontSize: 13, color: 'rgba(15,23,42,.6)' }}>{l}</span>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: '#0f172a' }}>{d}</span>
+                </div>
+              ))}
+              <div style={{ marginTop: 12, padding: '12px 14px', borderRadius: 10, background: GREEN + '0e', border: `1px solid ${GREEN}30`, fontSize: 12.5, color: 'rgba(15,23,42,.7)', lineHeight: 1.6 }}>
+                ✅ <strong>Pagando a 1ª parcela você já garante a vaga do seu time.</strong> A 1ª parcela deve ser paga até <strong>20/07/2026</strong>, o que habilita o pagamento em <strong>3x</strong>. A <strong>inscrição é confirmada após a quitação total</strong>.
+              </div>
+            </div>
+
+            {/* Vagas por categoria */}
+            <div style={{ ...card(), padding: cpad }}>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Vagas por categoria</div>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: 10 }}>
+                {['Masculino', 'Feminino', 'Sub-15', 'Sub-12'].map((cat) => (
+                  <div key={cat} style={{ ...miniCard(), textAlign: 'center' }}>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 4 }}>{cat}</div>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: YELLOW, letterSpacing: .2 }}>🔥 Vagas limitadas</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: 12, fontSize: 12, color: 'rgba(15,23,42,.5)', lineHeight: 1.6 }}>
+                As vagas são preenchidas por <strong>ordem de pagamento da 1ª parcela</strong>. Garanta a sua o quanto antes — quando a categoria lota, as inscrições são encerradas.
+              </div>
+            </div>
+
+            {/* Datas importantes */}
+            <div style={{ ...card(), padding: cpad }}>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Datas importantes</div>
+              {DATES.map((d, i) => (
+                <div key={d.label + i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: i < DATES.length - 1 ? '1px solid rgba(15,23,42,.05)' : 'none' }}>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: d.highlight ? ACCENT : YELLOW, background: (d.highlight ? ACCENT : YELLOW) + '14', borderRadius: 6, padding: '3px 9px', flexShrink: 0, minWidth: 46, textAlign: 'center' }}>{d.date}</span>
+                  <span style={{ fontSize: 13, color: 'rgba(15,23,42,.65)', lineHeight: 1.4 }}>{d.label}</span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ ...card(), padding: cpad }}>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Informações</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {REGS.map(r => (
                   <div key={r.title} style={{ ...miniCard(), display: 'flex', gap: 12 }}>

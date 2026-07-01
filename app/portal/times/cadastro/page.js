@@ -10,6 +10,34 @@ const CATEGORIES = [
   { value: 'Sub-12',     label: 'Sub-12' },
 ];
 
+const COUNTRIES = [
+  'Brasil',
+  'Afeganistão', 'África do Sul', 'Albânia', 'Alemanha', 'Andorra', 'Angola', 'Antígua e Barbuda', 'Arábia Saudita', 'Argélia', 'Argentina', 'Armênia', 'Austrália', 'Áustria', 'Azerbaijão',
+  'Bahamas', 'Bangladesh', 'Barbados', 'Barein', 'Bélgica', 'Belize', 'Benin', 'Bielorrússia', 'Bolívia', 'Bósnia e Herzegovina', 'Botsuana', 'Brunei', 'Bulgária', 'Burquina Faso', 'Burundi', 'Butão',
+  'Cabo Verde', 'Camarões', 'Camboja', 'Canadá', 'Catar', 'Cazaquistão', 'Chade', 'Chile', 'China', 'Chipre', 'Cingapura', 'Colômbia', 'Comores', 'Congo', 'Coreia do Norte', 'Coreia do Sul', 'Costa do Marfim', 'Costa Rica', 'Croácia', 'Cuba',
+  'Dinamarca', 'Djibuti', 'Dominica',
+  'Egito', 'El Salvador', 'Emirados Árabes Unidos', 'Equador', 'Eritreia', 'Eslováquia', 'Eslovênia', 'Espanha', 'Estados Unidos', 'Estônia', 'Eswatini', 'Etiópia',
+  'Fiji', 'Filipinas', 'Finlândia', 'França',
+  'Gabão', 'Gâmbia', 'Gana', 'Geórgia', 'Granada', 'Grécia', 'Guatemala', 'Guiana', 'Guiné', 'Guiné Equatorial', 'Guiné-Bissau',
+  'Haiti', 'Holanda', 'Honduras', 'Hungria',
+  'Iêmen', 'Ilhas Marshall', 'Ilhas Salomão', 'Índia', 'Indonésia', 'Irã', 'Iraque', 'Irlanda', 'Islândia', 'Israel', 'Itália',
+  'Jamaica', 'Japão', 'Jordânia',
+  'Kiribati', 'Kuwait',
+  'Laos', 'Lesoto', 'Letônia', 'Líbano', 'Libéria', 'Líbia', 'Liechtenstein', 'Lituânia', 'Luxemburgo',
+  'Macedônia do Norte', 'Madagascar', 'Malásia', 'Malaui', 'Maldivas', 'Mali', 'Malta', 'Marrocos', 'Maurício', 'Mauritânia', 'México', 'Mianmar', 'Micronésia', 'Moçambique', 'Moldávia', 'Mônaco', 'Mongólia', 'Montenegro',
+  'Namíbia', 'Nauru', 'Nepal', 'Nicarágua', 'Níger', 'Nigéria', 'Noruega', 'Nova Zelândia',
+  'Omã',
+  'Palau', 'Panamá', 'Papua-Nova Guiné', 'Paquistão', 'Paraguai', 'Peru', 'Polônia', 'Portugal',
+  'Quênia', 'Quirguistão',
+  'Reino Unido', 'República Centro-Africana', 'República Dominicana', 'República Tcheca', 'Romênia', 'Ruanda', 'Rússia',
+  'Samoa', 'San Marino', 'Santa Lúcia', 'São Cristóvão e Névis', 'São Tomé e Príncipe', 'São Vicente e Granadinas', 'Seicheles', 'Senegal', 'Serra Leoa', 'Sérvia', 'Síria', 'Somália', 'Sri Lanka', 'Sudão', 'Sudão do Sul', 'Suécia', 'Suíça', 'Suriname',
+  'Tailândia', 'Taiwan', 'Tajiquistão', 'Tanzânia', 'Timor-Leste', 'Togo', 'Tonga', 'Trinidad e Tobago', 'Tunísia', 'Turcomenistão', 'Turquia', 'Tuvalu',
+  'Ucrânia', 'Uganda', 'Uruguai', 'Uzbequistão',
+  'Vanuatu', 'Vaticano', 'Venezuela', 'Vietnã',
+  'Zâmbia', 'Zimbábue',
+  'Outro',
+];
+
 const TERMS_PT = `1. DADOS DO CLUBE
 As informações fornecidas neste cadastro devem ser verdadeiras e corresponder ao clube/organização representada.
 
@@ -156,6 +184,7 @@ const T = {
 
 export default function CadastroPage() {
   const [lang, setLang] = useState('pt');
+  const [langChosen, setLangChosen] = useState(false);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -176,9 +205,18 @@ export default function CadastroPage() {
   });
 
   useEffect(() => {
-    const saved = localStorage.getItem('bfwc_language');
-    if (saved && T[saved]) setLang(saved);
+    const saved = localStorage.getItem('bfwc_language') || localStorage.getItem('bfwc_lang');
+    if (saved && T[saved]) setLang(saved); // usa como padrão, mas a tela de escolha ainda aparece
   }, []);
+
+  function chooseLang(code) {
+    setLang(code);
+    setLangChosen(true);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bfwc_language', code);
+      localStorage.setItem('bfwc_lang', code);
+    }
+  }
 
   const t = T[lang];
 
@@ -289,6 +327,34 @@ export default function CadastroPage() {
 
   const inputStyle = { width: '100%', boxSizing: 'border-box' };
 
+  // Tela de escolha de idioma (entrada do cadastro)
+  if (!langChosen) return (
+    <div style={{ minHeight: '100vh', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: "'Inter', sans-serif", overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: "url('/assets/hero-rio-athletes.png')", backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(3,13,31,.80), rgba(3,13,31,.93))', zIndex: 1 }} />
+      <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 460, background: 'rgba(10,20,40,.72)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,.14)', borderRadius: 28, padding: '44px 34px', textAlign: 'center', boxShadow: '0 40px 120px rgba(0,0,0,.7)' }}>
+        <img src="/assets/bfwc-logo.jpg" alt="BFWC" width={92} height={92} style={{ borderRadius: 18, marginBottom: 20, objectFit: 'cover' }} />
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 9, fontWeight: 900, letterSpacing: 2.5, textTransform: 'uppercase', color: 'rgba(255,255,255,.65)', marginBottom: 12, padding: '5px 14px', borderRadius: 20, background: 'rgba(255,255,255,.08)' }}>🏈 Cadastro de Clube</div>
+        <h1 style={{ fontSize: 25, fontWeight: 900, color: '#fff', letterSpacing: -0.8, margin: '0 0 8px', lineHeight: 1.2 }}>Brasil Flag World Championship 2026</h1>
+        <p style={{ fontSize: 13, color: 'rgba(255,255,255,.6)', margin: '0 0 26px', lineHeight: 1.6 }}>Selecione o idioma · Select your language · Selecciona el idioma</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {[['pt', '/assets/flag-br.png', 'BR', 'Entrar em Português'], ['en', '/assets/flag-us.png', 'US', 'Enter in English'], ['es', '/assets/flag-es.png', 'ES', 'Entrar en Español']].map(([code, flag, short, title]) => (
+            <button key={code} onClick={() => chooseLang(code)} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 18px', borderRadius: 16, border: '1px solid rgba(255,255,255,.14)', background: 'rgba(255,255,255,.06)', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', transition: 'all .18s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,.13)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,.06)'; e.currentTarget.style.transform = 'none'; }}>
+              <img src={flag} alt={short} width={44} height={44} style={{ borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '1px solid rgba(255,255,255,.25)' }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: '#f4ff00' }}>{short}</div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>{title}</div>
+              </div>
+              <span style={{ color: '#f4ff00', fontSize: 22, fontWeight: 900 }}>→</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
   // Success screen
   if (success) {
     return (
@@ -347,6 +413,20 @@ export default function CadastroPage() {
           <h1 className="login-title">{t.title} <span style={{ color: '#0D4BFF' }}>2026</span></h1>
           <p className="login-sub">{t.sub}</p>
 
+          {/* Aviso: prazos de inscrição + contato */}
+          <div style={{ marginBottom: 24, padding: '14px 16px', borderRadius: 12, background: '#eff6ff', border: '1px solid #bfdbfe' }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: '#1e3a8a', marginBottom: 6 }}>📅 Prazos de inscrição</div>
+            <div style={{ fontSize: 12.5, color: '#1e40af', lineHeight: 1.6 }}>
+              De <strong>08/07 a 12/07</strong> a inscrição é exclusiva para times <strong>já pré-inscritos</strong>. A partir de <strong>13/07</strong>, aberta para qualquer time.
+            </div>
+            <div style={{ fontSize: 12.5, color: '#1e40af', lineHeight: 1.6, marginTop: 8 }}>
+              ⚠️ Use o <strong>mesmo e-mail</strong> cadastrado na pré-inscrição para concluir o cadastro.
+            </div>
+            <div style={{ fontSize: 12.5, color: '#1e40af', lineHeight: 1.6, marginTop: 8 }}>
+              Dúvidas? E-mail <a href="mailto:contato@brasilflag.com" style={{ color: '#1d4ed8', fontWeight: 700 }}>contato@brasilflag.com</a> · WhatsApp <a href="https://wa.me/5516997754522" target="_blank" rel="noopener noreferrer" style={{ color: '#1d4ed8', fontWeight: 700 }}>(16) 99775-4522</a>.
+            </div>
+          </div>
+
           {/* Step 1: Club info */}
           {step === 1 && (
             <div>
@@ -358,7 +438,10 @@ export default function CadastroPage() {
                 </div>
                 <div>
                   <label className="login-label">{t.country}</label>
-                  <input className="login-input" style={inputStyle} value={form.country} onChange={e => set('country', e.target.value)} placeholder="Ex: Brasil, EUA..." />
+                  <select className="login-input" style={{ ...inputStyle, cursor: 'pointer' }} value={form.country} onChange={e => set('country', e.target.value)}>
+                    <option value="">Selecione o país</option>
+                    {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
                   {errors.country && <div className="login-error" style={{ marginTop: 4 }}>{errors.country}</div>}
                 </div>
                 <div>
