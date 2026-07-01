@@ -263,6 +263,25 @@ export default function SitePage() {
     seconds: 0
   });
 
+  const [preLeft, setPreLeft] = useState({ hours: 0, minutes: 0, seconds: 0, over: false });
+
+  useEffect(() => {
+    const deadline = new Date('2026-07-01T23:59:59-03:00');
+    function tick() {
+      const diff = deadline - new Date();
+      if (diff <= 0) { setPreLeft({ hours: 0, minutes: 0, seconds: 0, over: true }); return; }
+      setPreLeft({
+        hours: Math.floor(diff / (1000 * 60 * 60)),
+        minutes: Math.floor((diff / (1000 * 60)) % 60),
+        seconds: Math.floor((diff / 1000) % 60),
+        over: false,
+      });
+    }
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+
   const t = langs[lang] || langs.pt;
 
   useEffect(() => {
@@ -311,6 +330,20 @@ export default function SitePage() {
 
   return (
     <main className="siteShell">
+      {/* Aviso: último dia de pré-inscrição (temporário) */}
+      {!preLeft.over && (
+        <div style={{ background: '#f4ff00', color: '#031020', textAlign: 'center', padding: '13px 16px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 14, lineHeight: 1.3 }}>
+          <span style={{ fontWeight: 950, fontStyle: 'italic', textTransform: 'uppercase', fontSize: 'clamp(14px, 1.6vw, 19px)', letterSpacing: '.2px' }}>
+            {lang === 'en' ? 'Last minutes for team pre-registration' : lang === 'es' ? 'Últimos minutos para la pre-inscripción de equipos' : 'Últimos minutos para a pré-inscrição das equipes'}
+          </span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#031020', color: '#f4ff00', padding: '6px 14px', borderRadius: 8, fontVariantNumeric: 'tabular-nums', fontSize: 'clamp(16px, 1.9vw, 22px)', fontWeight: 900, letterSpacing: '2px' }}>
+            {String(preLeft.hours).padStart(2, '0')}:{String(preLeft.minutes).padStart(2, '0')}:{String(preLeft.seconds).padStart(2, '0')}
+          </span>
+          <a href={`/clubes?lang=${lang}`} style={{ background: '#031020', color: '#f4ff00', fontWeight: 900, textDecoration: 'none', padding: '8px 18px', borderRadius: 8, textTransform: 'uppercase', fontSize: 'clamp(12px, 1.3vw, 15px)', whiteSpace: 'nowrap' }}>
+            {lang === 'en' ? 'Pre-register now →' : lang === 'es' ? 'Pre-inscríbete →' : 'Fazer pré-inscrição →'}
+          </a>
+        </div>
+      )}
       <section className="mainSite">
         <header className="premiumTop">
           <Image
