@@ -297,7 +297,7 @@ export default function SitePage() {
   const [preLeft, setPreLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, over: false });
 
   useEffect(() => {
-    const deadline = new Date('2026-07-06T23:59:59-03:00');
+    const deadline = new Date('2026-07-07T10:00:00-03:00');
     function tick() {
       const diff = deadline - new Date();
       if (diff <= 0) { setPreLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, over: true }); return; }
