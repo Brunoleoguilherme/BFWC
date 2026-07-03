@@ -566,6 +566,7 @@ export default function TimesPortalPage() {
   const [payOption, setPayOption]             = useState(null);   // '1' ou '2' (escolha do time)
   const [athQtys, setAthQtys]                 = useState({});     // atletas por categoria (opção 2)
   const [payInfo, setPayInfo]                 = useState(null);   // resposta de /payment-status
+  const [paidBanner, setPaidBanner]           = useState(false);  // banner "pagamento aprovado" (?paid=1)
   const [activePix, setActivePix]             = useState(null);   // { number, emv, qrcode_url }
   const [pixLoadingNum, setPixLoadingNum]     = useState(0);      // nº da parcela gerando (0 = nenhuma)
   const [pixErr, setPixErr]                   = useState('');
@@ -642,7 +643,17 @@ export default function TimesPortalPage() {
     return false;
   }, []);
 
-  // Ao abrir a aba de pagamento, carrega status/parcelas. Se voltou do PagBank (?paid=1),
+  // Voltou do checkout (?paid=1): abre direto na aba Pagamento com banner de sucesso.
+  useEffect(() => {
+    if (!team) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('paid') === '1') {
+      setTab('pagamento');
+      setPaidBanner(true);
+    }
+  }, [team?.id]);
+
+  // Ao abrir a aba de pagamento, carrega status/parcelas. Se voltou do checkout (?paid=1),
   // faz polling alguns segundos pois a confirmação do cartão pode levar um instante.
   useEffect(() => {
     if (!team || tab !== 'pagamento') return;
@@ -706,7 +717,7 @@ export default function TimesPortalPage() {
     return () => { cancelled = true; s && s.removeEventListener('load', render); };
   }, [activePix]);
 
-  async function startCheckout() {
+  async function startCheckout(installmentNumber) {
     if (!team) return;
     const effOption = payInfo?.payment_option || payOption;
     if (!effOption) { setCheckoutErr('Escolha uma opção de pagamento.'); return; }
@@ -716,7 +727,7 @@ export default function TimesPortalPage() {
       const r = await fetch('/api/payments/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ team_id: team.id, option: effOption, athletes_qty: effAth }),
+        body: JSON.stringify({ team_id: team.id, option: effOption, athletes_qty: effAth, installment_number: installmentNumber || undefined }),
       });
       const d = await r.json();
       if (!d.ok || !d.url) throw new Error(d.message || 'Não foi possível iniciar o pagamento.');
@@ -1269,6 +1280,26 @@ export default function TimesPortalPage() {
           return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'fadeIn .3s ease' }}>
 
+              {/* Banner: voltou do checkout com pagamento aprovado */}
+              {paidBanner && (
+                <div style={{ ...card(), padding: cpad, border: `2px solid ${paid || paidCount > 0 ? GREEN : YELLOW}`, background: paid || paidCount > 0 ? GREEN + '0d' : YELLOW + '0a', display: 'flex', alignItems: 'center', gap: 16, position: 'relative' }}>
+                  <div style={{ fontSize: 40, flexShrink: 0 }}>{paid || paidCount > 0 ? '🎉' : '⏳'}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 17, fontWeight: 900, color: paid || paidCount > 0 ? GREEN : '#0f172a', marginBottom: 4 }}>
+                      {paid || paidCount > 0
+                        ? L('Pagamento concluído com sucesso!', 'Payment completed successfully!', '¡Pago completado con éxito!')
+                        : L('Pagamento recebido — confirmando...', 'Payment received — confirming...', 'Pago recibido — confirmando...')}
+                    </div>
+                    <div style={{ fontSize: 13, color: 'rgba(15,23,42,.6)', lineHeight: 1.5 }}>
+                      {paid || paidCount > 0
+                        ? L('Recebemos seu pagamento e enviamos um e-mail de confirmação. Acompanhe o resumo abaixo.', 'We received your payment and sent a confirmation email. See the summary below.', 'Recibimos tu pago y enviamos un correo de confirmación. Mira el resumen abajo.')
+                        : L('Seu pagamento está sendo processado. Esta página atualiza sozinha em instantes.', 'Your payment is being processed. This page refreshes automatically.', 'Tu pago se está procesando. Esta página se actualiza sola.')}
+                    </div>
+                  </div>
+                  <button onClick={() => setPaidBanner(false)} style={{ position: 'absolute', top: 10, right: 12, background: 'none', border: 'none', fontSize: 16, color: 'rgba(15,23,42,.35)', cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
+                </div>
+              )}
+
               {/* Status geral */}
               {allPaid && (
                 <div style={{ ...card(), padding: cpad, display: 'flex', alignItems: 'center', gap: 16, border: `1px solid ${GREEN}55` }}>
@@ -1461,17 +1492,42 @@ export default function TimesPortalPage() {
                     </div>
                   )}
 
-                  {/* ── CARTÃO (PagBank, parcelado no próprio checkout) ── */}
+                  {/* ── CARTÃO (Stripe, uma cobrança por parcela — igual ao Pix) ── */}
                   {payMethod === 'card' && (
                     <div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)', marginBottom: 12, lineHeight: 1.5 }}>
+                        {L('Parcelamento automático:', 'Automatic installments:', 'Cuotas automáticas:')} <span style={{ color: GREEN, fontWeight: 800 }}>{chosenPlan}x</span>
+                        <span style={{ color: 'rgba(15,23,42,.4)' }}> · {L('pague cada parcela no cartão até o vencimento', 'pay each installment by card until its due date', 'paga cada cuota con tarjeta hasta su vencimiento')}</span>
+                      </div>
                       {checkoutErr && (
                         <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(255,68,68,.08)', border: '1px solid rgba(255,68,68,.25)', fontSize: 12, color: '#ff8080', lineHeight: 1.5, marginBottom: 12 }}>{checkoutErr}</div>
                       )}
-                      <button onClick={startCheckout} disabled={checkoutLoading} style={{ width: '100%', padding: '16px', borderRadius: 12, border: 'none', background: `linear-gradient(135deg,${ACCENT},#1a5fff)`, color: '#fff', fontSize: 15, fontWeight: 800, cursor: checkoutLoading ? 'wait' : 'pointer', fontFamily: 'inherit', opacity: checkoutLoading ? .7 : 1 }}>
-                        {checkoutLoading ? L('Redirecionando...','Redirecting...','Redirigiendo...') : L(`Pagar R$ ${remainingReais.toLocaleString('pt-BR')} no cartão`, `Pay R$ ${remainingReais.toLocaleString('pt-BR')} by card`, `Pagar R$ ${remainingReais.toLocaleString('pt-BR')} con tarjeta`)}
-                      </button>
+                      {buildParcelas(chosenPlan).map((p) => {
+                        const st = instByNum[p.number];
+                        const isPaid = st?.status === 'paid';
+                        return (
+                          <div key={p.number} style={{ borderRadius: 12, marginBottom: 8, background: isPaid ? GREEN+'08' : 'rgba(15,23,42,.025)', border: `1px solid ${isPaid ? GREEN+'25' : 'rgba(15,23,42,.07)'}`, padding: '13px 14px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                              <div style={{ width: 34, height: 34, borderRadius: 10, background: (isPaid?GREEN:ACCENT)+'15', border: `1.5px solid ${(isPaid?GREEN:ACCENT)}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0, fontWeight: 900, color: isPaid?GREEN:ACCENT }}>{isPaid ? '✓' : p.number}</div>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: 13, fontWeight: 800 }}>{chosenPlan>1 ? L(`${p.number}ª parcela`, `Installment ${p.number}`, `Cuota ${p.number}`) : L('Pagamento','Payment','Pago')}</div>
+                                <div style={{ fontSize: 11, color: 'rgba(15,23,42,.38)' }}>📅 {L('Pagamento até', 'Pay by', 'Pago hasta')} {p.date}</div>
+                              </div>
+                              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                <div style={{ fontSize: 15, fontWeight: 900, color: isPaid?GREEN:ACCENT }}>R$ {p.value.toLocaleString('pt-BR')}</div>
+                              </div>
+                              {!isPaid && (
+                                <button onClick={() => startCheckout(p.number)} disabled={checkoutLoading} style={{ padding: '10px 16px', borderRadius: 10, border: 'none', background: `linear-gradient(135deg,${ACCENT},#1a5fff)`, color: '#fff', fontSize: 12, fontWeight: 800, cursor: checkoutLoading ? 'wait' : 'pointer', fontFamily: 'inherit', flexShrink: 0, opacity: checkoutLoading ? 0.7 : 1 }}>
+                                  {checkoutLoading ? '...' : L('Pagar','Pay','Pagar')}
+                                </button>
+                              )}
+                              {isPaid && <span style={{ fontSize: 10, fontWeight: 900, color: GREEN, letterSpacing: 1 }}>{L('PAGO','PAID','PAGADO')}</span>}
+                            </div>
+                          </div>
+                        );
+                      })}
                       <div style={{ textAlign: 'center', fontSize: 11, color: 'rgba(15,23,42,.3)', lineHeight: 1.5, marginTop: 10 }}>
-                        {remainingReais < total ? L(`Saldo restante (já pago: R$ ${(total - remainingReais).toLocaleString('pt-BR')}). `, `Remaining balance (already paid: R$ ${(total - remainingReais).toLocaleString('pt-BR')}). `, `Saldo restante (ya pagado: R$ ${(total - remainingReais).toLocaleString('pt-BR')}). `) : ''}💳 {L('Parcele em até 3x no cartão no checkout do PagBank','Split into up to 3x on card at the PagBank checkout','Divide hasta en 3x con tarjeta en el checkout de PagBank')} · 🔒 {L('seguro','secure','seguro')}
+                        {remainingReais < total ? L(`Já pago: R$ ${(total - remainingReais).toLocaleString('pt-BR')} · `, `Already paid: R$ ${(total - remainingReais).toLocaleString('pt-BR')} · `, `Ya pagado: R$ ${(total - remainingReais).toLocaleString('pt-BR')} · `) : ''}💳 {L('Checkout seguro Stripe','Secure Stripe checkout','Checkout seguro Stripe')} · 🔒 {L('seguro','secure','seguro')}
                       </div>
                     </div>
                   )}

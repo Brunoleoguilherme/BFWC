@@ -23,7 +23,7 @@ async function markPaid(session) {
   // Idempotência: se esse mesmo PaymentIntent já foi processado, ignora
   if (current.stripe_payment_intent && current.stripe_payment_intent === session.payment_intent) return;
 
-  const charged = session.amount_total ?? 0; // o cartão cobrou o saldo restante
+  const charged = session.amount_total ?? 0;
   await supabase
     .from('portal_teams')
     .update({
@@ -34,12 +34,22 @@ async function markPaid(session) {
     })
     .eq('id', teamId);
 
-  // Cartão quita o restante: marca todas as parcelas pendentes como pagas
-  await supabase
-    .from('payment_installments')
-    .update({ status: 'paid', paid_at: new Date().toISOString() })
-    .eq('team_id', teamId)
-    .neq('status', 'paid');
+  const instNum = parseInt(session?.metadata?.installment_number, 10) || 0;
+  if (instNum > 0) {
+    // Pagamento de UMA parcela específica (cartão por parcela)
+    await supabase
+      .from('payment_installments')
+      .update({ status: 'paid', paid_at: new Date().toISOString() })
+      .eq('team_id', teamId)
+      .eq('number', instNum);
+  } else {
+    // Compatibilidade: cobrança do saldo total quita todas as parcelas pendentes
+    await supabase
+      .from('payment_installments')
+      .update({ status: 'paid', paid_at: new Date().toISOString() })
+      .eq('team_id', teamId)
+      .neq('status', 'paid');
+  }
 
   // E-mail de confirmação (best-effort, não bloqueia o webhook)
   try {
