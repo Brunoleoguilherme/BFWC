@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { createCheckoutSession } from '@/lib/stripe';
+import { createCheckout, createLegacyCheckout } from '@/lib/pagbank';
 import { countCategories, optionTotalReais, activePlanSize, fullCategoryFor } from '@/lib/installments';
 
+// Cartão de crédito via PagBank (checkout hospedado).
+// Mantém o mesmo contrato: retorna { ok, url } e o portal redireciona.
 export async function POST(req) {
   try {
+    // Interruptor: NEXT_PUBLIC_CARD_ENABLED=0 desliga o cartão (mostra "em breve")
+    if (process.env.NEXT_PUBLIC_CARD_ENABLED === '0') {
+      return NextResponse.json({ ok: false, code: 'CARD_SOON', message: 'Pagamento por cartão estará disponível em breve. Por enquanto, use o Pix.' }, { status: 503 });
+    }
     const { team_id, option, athletes_qty } = await req.json();
     if (!team_id) {
       return NextResponse.json({ ok: false, message: 'team_id obrigatório.' }, { status: 400 });
@@ -57,46 +63,74 @@ export async function POST(req) {
 
     const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/$/, '');
 
-    const session = await createCheckoutSession({
-      mode: 'payment',
-      client_reference_id: team.id,
-      customer_email: team.email,
-      locale: 'pt-BR',
-      metadata: { team_id: team.id, club_name: team.club_name },
-      payment_intent_data: { metadata: { team_id: team.id } },
-      // Parcelamento no cartão na própria tela da Stripe
-      payment_method_options: { card: { installments: { enabled: true } } },
-      line_items: [
+    // Override de teste: cobra R$ 1 só do time deste e-mail (igual ao PIX_TEST_EMAIL)
+    const testEmail = (process.env.CARD_TEST_EMAIL || '').trim().toLowerCase();
+    const chargeCents = testEmail && (team.email || '').toLowerCase() === testEmail ? 100 : remaining;
+
+    const notifUrl = `${(process.env.PAGBANK_NOTIFICATION_BASE || siteUrl).replace(/\/$/, '')}/api/payments/pagbank/webhook`;
+
+    let checkout;
+    try {
+      checkout = await createCheckout({
+      reference_id: String(team.id),
+      customer_modifiable: true,
+      items: [
         {
+          name: `Inscrição BFWC 2026 — ${team.club_name}`.slice(0, 100),
           quantity: 1,
-          price_data: {
-            currency: 'brl',
-            unit_amount: remaining,
-            product_data: {
-              name: `Inscrição BFWC 2026 — ${team.club_name}`,
-              description: paidCents > 0 ? 'Saldo restante da inscrição' : 'Taxa de inscrição',
-            },
-          },
+          unit_amount: chargeCents, // centavos
         },
       ],
-      success_url: `${siteUrl}/portal/times?paid=1&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl}/portal/times?canceled=1`,
-    });
+      // Só cartão de crédito neste fluxo (Pix já é feito pela Cora no portal)
+      payment_methods: [{ type: 'CREDIT_CARD' }],
+      payment_methods_configs: [
+        {
+          type: 'CREDIT_CARD',
+          config_options: [{ option: 'INSTALLMENTS_LIMIT', value: '3' }], // até 3x
+        },
+      ],
+      soft_descriptor: 'BFWC 2026',
+      redirect_url: `${siteUrl}/portal/times?paid=1`,
+      return_url: `${siteUrl}/portal/times?paid=1`,
+      // IMPORTANTE: precisa ser o domínio com www (webhook não segue redirect).
+      // Em teste, defina PAGBANK_NOTIFICATION_BASE com a URL do preview da Vercel.
+      payment_notification_urls: [notifUrl],
+      });
+    } catch (err) {
+      // API nova ainda não liberada pra conta (allowlist) → usa o checkout
+      // clássico ("Pagamento via Formulário HTML"), habilitado por padrão.
+      if (/allowlist/i.test(err.message || '')) {
+        const legacy = await createLegacyCheckout({
+          reference: team.id,
+          description: `Inscricao BFWC 2026 - ${team.club_name}`,
+          amountCents: chargeCents,
+          redirectUrl: `${siteUrl}/portal/times?paid=1`,
+          notificationUrl: notifUrl,
+        });
+        checkout = { id: legacy.code, pay_url: legacy.pay_url };
+      } else {
+        throw err;
+      }
+    }
 
-    // Trava opção/atletas/plano e guarda a sessão
+    if (!checkout.pay_url) {
+      throw new Error('PagBank não retornou a URL de pagamento.');
+    }
+
+    // Trava opção/atletas/plano e guarda o checkout
     await supabase
       .from('portal_teams')
       .update({
-        stripe_session_id: session.id,
+        pagbank_checkout_id: checkout.id,
         payment_option: chosenOption,
         athletes_paid_qty: athQty,
         payment_plan: team.payment_plan || activePlanSize(new Date()),
       })
       .eq('id', team.id);
 
-    return NextResponse.json({ ok: true, url: session.url, id: session.id, amount: remaining });
+    return NextResponse.json({ ok: true, url: checkout.pay_url, id: checkout.id, amount: chargeCents });
   } catch (err) {
-    console.error('create-checkout error', err);
+    console.error('create-checkout (pagbank) error', err);
     return NextResponse.json({ ok: false, message: err.message || 'Erro ao criar pagamento.' }, { status: 500 });
   }
 }

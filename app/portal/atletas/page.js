@@ -654,7 +654,7 @@ export default function AtletasPortalPage() {
   const W   = { maxWidth: 680, margin: '0 auto' };
 
   return (
-    <div style={{ minHeight: '100vh', fontFamily: "'Inter',sans-serif", color: '#0f172a', position: 'relative', background: '#f1f5f9' }}>
+    <div style={{ minHeight: '100vh', fontFamily: "'Inter',sans-serif", color: '#0f172a', position: 'relative', background: '#ffffff' }}>
       <style>{`
         @keyframes spin { to { transform: rotate(360deg) } }
         @keyframes fadeIn { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
@@ -662,7 +662,8 @@ export default function AtletasPortalPage() {
         input::placeholder, textarea::placeholder { color: rgba(15,23,42,.2) }
       `}</style>
 
-      {/* imagem de fundo removida para um visual mais limpo */}
+      {/* Fundo: pinceladas verde/amarelo/azul + mapa do Brasil (Leme-SP) */}
+      <div style={{ position: 'fixed', inset: 0, zIndex: 0, backgroundImage: "url('/assets/portal-bg-brasil.png')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', opacity: .2, pointerEvents: 'none' }} />
       {/* Barra superior verde/azul */}
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 4, zIndex: 2,
         background: 'linear-gradient(90deg,#031020 0%,#009c3b 50%,#031020 100%)' }} />

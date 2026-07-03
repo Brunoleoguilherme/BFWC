@@ -642,7 +642,7 @@ export default function TimesPortalPage() {
     return false;
   }, []);
 
-  // Ao abrir a aba de pagamento, carrega status/parcelas. Se voltou do Stripe (?paid=1),
+  // Ao abrir a aba de pagamento, carrega status/parcelas. Se voltou do PagBank (?paid=1),
   // faz polling alguns segundos pois a confirmação do cartão pode levar um instante.
   useEffect(() => {
     if (!team || tab !== 'pagamento') return;
@@ -720,7 +720,7 @@ export default function TimesPortalPage() {
       });
       const d = await r.json();
       if (!d.ok || !d.url) throw new Error(d.message || 'Não foi possível iniciar o pagamento.');
-      window.location.href = d.url; // redireciona para o Checkout hospedado da Stripe
+      window.location.href = d.url; // redireciona para o checkout hospedado do PagBank
     } catch (e) {
       setCheckoutErr(e.message);
       setCheckoutLoading(false);
@@ -935,8 +935,9 @@ export default function TimesPortalPage() {
   const cpad = isMobile ? '16px' : '24px 28px';
 
   return (
-    <div style={{ minHeight: '100vh', fontFamily: "'Inter', sans-serif", color: INK, position: 'relative', background: '#f1f5f9' }}>
-      {/* imagem de fundo removida para um visual mais limpo */}
+    <div style={{ minHeight: '100vh', fontFamily: "'Inter', sans-serif", color: INK, position: 'relative', background: '#ffffff' }}>
+      {/* Fundo: pinceladas verde/amarelo/azul + mapa do Brasil (Leme-SP) */}
+      <div style={{ position: 'fixed', inset: 0, zIndex: 0, backgroundImage: "url('/assets/portal-bg-brasil.png')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', opacity: .2, pointerEvents: 'none' }} />
       <div style={{ position: 'fixed', inset: 0, zIndex: 1, background: 'linear-gradient(90deg,#031020 0%,#009c3b 50%,#031020 100%)', height: 4, bottom: 'auto' }} />
       {/* Logo do mundial — canto superior esquerdo */}
       <a href="/site" style={{ position: 'fixed', top: isMobile ? 10 : 18, left: isMobile ? 10 : 18, zIndex: 20 }}>
@@ -967,7 +968,7 @@ export default function TimesPortalPage() {
       </div>
 
       {/* ── Tabs ── */}
-      <div style={{ background: '#ffffff', borderBottom: '1px solid #e2e8f0', overflowX: 'auto' }}>
+      <div style={{ background: 'rgba(255,255,255,.88)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderBottom: '1px solid #e2e8f0', overflowX: 'auto' }}>
         <div style={{ display: 'flex', maxWidth: 960, margin: '0 auto', alignItems: 'stretch' }}>
           {TABS.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)} style={{
@@ -1381,7 +1382,16 @@ export default function TimesPortalPage() {
 
                   {/* Seletor de método */}
                   <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-                    {[['pix','🏦','PIX'],['card','💳', L('Cartão de crédito','Credit card','Tarjeta de crédito')]].map(([k,ic,lb]) => (
+                    {[['pix','🏦','PIX'],['card','💳', L('Cartão de crédito','Credit card','Tarjeta de crédito')]].map(([k,ic,lb]) => {
+                      const cardOff = k === 'card' && process.env.NEXT_PUBLIC_CARD_ENABLED === '0';
+                      if (cardOff) return (
+                        <div key={k} style={{ flex: 1, padding: '14px 12px', borderRadius: 14, border: '2px dashed rgba(15,23,42,.12)', background: 'rgba(15,23,42,.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, opacity: .65 }}>
+                          <span style={{ fontSize: 24 }}>{ic}</span>
+                          <span style={{ fontSize: 12, fontWeight: 800, color: 'rgba(15,23,42,.45)' }}>{lb}</span>
+                          <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: 1, padding: '2px 8px', borderRadius: 6, background: 'rgba(249,115,22,.12)', color: '#c2620f' }}>{L('EM BREVE','COMING SOON','PRÓXIMAMENTE')}</span>
+                        </div>
+                      );
+                      return (
                       <button key={k} onClick={() => setPayMethod(k)} style={{
                         flex: 1, padding: '14px 12px', borderRadius: 14, cursor: 'pointer', fontFamily: 'inherit',
                         border: `2px solid ${payMethod===k ? YELLOW : 'rgba(15,23,42,.08)'}`,
@@ -1391,16 +1401,20 @@ export default function TimesPortalPage() {
                         <span style={{ fontSize: 24 }}>{ic}</span>
                         <span style={{ fontSize: 12, fontWeight: 800, color: payMethod===k ? YELLOW : 'rgba(15,23,42,.55)' }}>{lb}</span>
                       </button>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   {/* ── PIX parcelado ── */}
                   {payMethod === 'pix' && (
                     <div>
                       {/* Parcelamento automático por data */}
-                      <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)', marginBottom: 12, lineHeight: 1.5 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)', marginBottom: 8, lineHeight: 1.5 }}>
                         {L('Parcelamento automático:', 'Automatic installments:', 'Cuotas automáticas:')} <span style={{ color: GREEN, fontWeight: 800 }}>{chosenPlan}x</span>
                         <span style={{ color: 'rgba(15,23,42,.4)' }}> · {L('vencimentos', 'due dates', 'vencimientos')} {planDues.join(', ')}</span>
+                      </div>
+                      <div style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(249,115,22,.08)', border: '1px solid rgba(249,115,22,.25)', fontSize: 12, fontWeight: 700, color: '#c2620f', lineHeight: 1.55, marginBottom: 12 }}>
+                        ⚠️ {L('Vagas limitadas por categoria — preenchidas por ordem de pagamento da 1ª parcela.', 'Limited spots per category — filled in order of payment of the 1st installment.', 'Plazas limitadas por categoría — se llenan por orden de pago de la 1.ª cuota.')}
                       </div>
 
                       {needDoc && (
@@ -1427,7 +1441,7 @@ export default function TimesPortalPage() {
                                 <div style={{ width: 34, height: 34, borderRadius: 10, background: (isPaid?GREEN:YELLOW)+'15', border: `1.5px solid ${(isPaid?GREEN:YELLOW)}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0, fontWeight: 900, color: isPaid?GREEN:YELLOW }}>{isPaid ? '✓' : p.number}</div>
                                 <div style={{ flex: 1 }}>
                                   <div style={{ fontSize: 13, fontWeight: 800 }}>{chosenPlan>1 ? L(`${p.number}ª parcela`, `Installment ${p.number}`, `Cuota ${p.number}`) : L('Pagamento','Payment','Pago')}</div>
-                                  <div style={{ fontSize: 11, color: 'rgba(15,23,42,.38)' }}>📅 {p.date}</div>
+                                  <div style={{ fontSize: 11, color: 'rgba(15,23,42,.38)' }}>📅 {L('Pagamento até', 'Pay by', 'Pago hasta')} {p.date}</div>
                                 </div>
                                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                                   <div style={{ fontSize: 15, fontWeight: 900, color: isPaid?GREEN:YELLOW }}>R$ {p.value.toLocaleString('pt-BR')}</div>
@@ -1447,7 +1461,7 @@ export default function TimesPortalPage() {
                     </div>
                   )}
 
-                  {/* ── CARTÃO (Stripe, parcelado na própria Stripe) ── */}
+                  {/* ── CARTÃO (PagBank, parcelado no próprio checkout) ── */}
                   {payMethod === 'card' && (
                     <div>
                       {checkoutErr && (
@@ -1457,7 +1471,7 @@ export default function TimesPortalPage() {
                         {checkoutLoading ? L('Redirecionando...','Redirecting...','Redirigiendo...') : L(`Pagar R$ ${remainingReais.toLocaleString('pt-BR')} no cartão`, `Pay R$ ${remainingReais.toLocaleString('pt-BR')} by card`, `Pagar R$ ${remainingReais.toLocaleString('pt-BR')} con tarjeta`)}
                       </button>
                       <div style={{ textAlign: 'center', fontSize: 11, color: 'rgba(15,23,42,.3)', lineHeight: 1.5, marginTop: 10 }}>
-                        {remainingReais < total ? L(`Saldo restante (já pago: R$ ${(total - remainingReais).toLocaleString('pt-BR')}). `, `Remaining balance (already paid: R$ ${(total - remainingReais).toLocaleString('pt-BR')}). `, `Saldo restante (ya pagado: R$ ${(total - remainingReais).toLocaleString('pt-BR')}). `) : ''}💳 {L('Parcele em até 3x no cartão na tela da Stripe','Split into up to 3x on card at the Stripe screen','Divide hasta en 3x con tarjeta en la pantalla de Stripe')} · 🔒 {L('seguro','secure','seguro')}
+                        {remainingReais < total ? L(`Saldo restante (já pago: R$ ${(total - remainingReais).toLocaleString('pt-BR')}). `, `Remaining balance (already paid: R$ ${(total - remainingReais).toLocaleString('pt-BR')}). `, `Saldo restante (ya pagado: R$ ${(total - remainingReais).toLocaleString('pt-BR')}). `) : ''}💳 {L('Parcele em até 3x no cartão no checkout do PagBank','Split into up to 3x on card at the PagBank checkout','Divide hasta en 3x con tarjeta en el checkout de PagBank')} · 🔒 {L('seguro','secure','seguro')}
                       </div>
                     </div>
                   )}
