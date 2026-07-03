@@ -19,6 +19,7 @@ const T = {
     noAccount: 'Ainda não tem conta?',
     register: 'Criar conta',
     back: '← Voltar ao portal',
+    forgot: 'Esqueci a senha',
     verified: '✅ E-mail verificado! Aguarde a aprovação do administrador para acessar.',
   },
   en: {
@@ -34,6 +35,7 @@ const T = {
     noAccount: "Don't have an account yet?",
     register: 'Create account',
     back: '← Back to portal',
+    forgot: 'Forgot my password',
     verified: '✅ Email verified! Awaiting admin approval to access.',
   },
   es: {
@@ -49,6 +51,7 @@ const T = {
     noAccount: '¿Aún no tienes cuenta?',
     register: 'Crear cuenta',
     back: '← Volver al portal',
+    forgot: 'Olvidé mi contraseña',
     verified: '✅ Correo verificado. Esperando aprobación del administrador.',
   },
 };
@@ -190,6 +193,10 @@ export default function TimesLoginPage() {
           />
 
           {error && <div className="login-error">{error}</div>}
+
+          <div style={{ marginTop: 8, textAlign: 'right' }}>
+            <a href="/portal/times/recuperar-senha" style={{ fontSize: 12, color: ACCENT, textDecoration: 'none', fontWeight: 600 }}>{t.forgot}</a>
+          </div>
 
           <button
             className="login-btn" type="submit" disabled={loading}

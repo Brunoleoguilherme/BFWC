@@ -290,7 +290,6 @@
 /* ABOUT */
 
 .aboutBlock {
-  /* Alinha o conteúdo com a foto do venue (container central de 1132px) */
   padding: 72px var(--band) 64px;
   display: flex;
   flex-direction: column;
@@ -388,7 +387,6 @@
 /* INFO */
 
 .infoGrid {
-  /* Mesmo alinhamento da foto do venue (container central de 1132px) */
   padding: 34px var(--band) 44px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1057,3 +1055,4 @@
     padding: 24px 18px;
   }
 }
+
