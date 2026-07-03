@@ -371,7 +371,7 @@ export default function SitePage() {
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#031020', color: '#f4ff00', padding: '6px 14px', borderRadius: 8, fontVariantNumeric: 'tabular-nums', fontSize: 'clamp(16px, 1.9vw, 22px)', fontWeight: 900, letterSpacing: '2px' }}>
             {preLeft.days > 0 ? `${preLeft.days}d ` : ''}{String(preLeft.hours).padStart(2, '0')}:{String(preLeft.minutes).padStart(2, '0')}:{String(preLeft.seconds).padStart(2, '0')}
           </span>
-          <a href={`/clubes?lang=${lang}`} style={{ background: '#031020', color: '#f4ff00', fontWeight: 900, textDecoration: 'none', padding: '8px 18px', borderRadius: 8, textTransform: 'uppercase', fontSize: 'clamp(12px, 1.3vw, 15px)', whiteSpace: 'nowrap' }}>
+          <a href="#team-registration" style={{ background: '#031020', color: '#f4ff00', fontWeight: 900, textDecoration: 'none', padding: '8px 18px', borderRadius: 8, textTransform: 'uppercase', fontSize: 'clamp(12px, 1.3vw, 15px)', whiteSpace: 'nowrap' }}>
             {lang === 'en' ? 'Learn more →' : lang === 'es' ? 'Saber más →' : 'Saiba mais →'}
           </a>
         </div>
