@@ -533,7 +533,7 @@ export default function SitePage() {
         </section>
 
         {/* ── INSCRIÇÃO DE EQUIPES ──────────────────────────────────── */}
-        <section id="team-registration" style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 24px 20px' }}>
+        <section id="team-registration" style={{ maxWidth: 1180, margin: '0 auto', padding: '48px 24px 20px' }}>
           <div style={{ background: 'linear-gradient(145deg, #06183f, #030d1f)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 24, padding: '44px 36px', textAlign: 'center' }}>
             <div style={{ fontSize: 'clamp(34px, 4.6vw, 60px)', fontWeight: 950, fontStyle: 'italic', textTransform: 'uppercase', letterSpacing: '-.045em', color: '#f4ff00', marginBottom: 20, lineHeight: .92 }}>{t.regTitle}</div>
             <p style={{ fontSize: 'clamp(15px, 1.4vw, 19px)', color: '#d5e1f7', lineHeight: 1.6, fontStyle: 'italic', fontWeight: 600, maxWidth: 860, margin: '0 auto 30px' }}>{t.regIntro}</p>

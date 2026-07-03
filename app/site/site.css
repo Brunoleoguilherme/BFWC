@@ -1,4 +1,6 @@
 .siteShell {
+  /* Faixa central da página: conteúdo de 1132px alinhado com a foto do venue */
+  --band: max(24px, calc((100% - 1132px) / 2));
   min-height: 100vh;
   background: linear-gradient(180deg, #031020 0%, #061b3a 50%, #031020 100%);
 }
@@ -10,7 +12,7 @@
 
 .premiumTop {
   height: 82px;
-  padding: 0 44px;
+  padding: 0 var(--band);
   display: flex;
   align-items: center;
   gap: 34px;
@@ -113,7 +115,7 @@
   position: relative;
   min-height: 620px;
   overflow: hidden;
-  padding: 78px 64px 44px;
+  padding: 78px var(--band) 44px;
   display: flex;
   align-items: center;
   background: #031020;
@@ -288,7 +290,7 @@
 /* ABOUT */
 
 .aboutBlock {
-  padding: 72px 58px 64px;
+  padding: 72px var(--band) 64px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -385,7 +387,7 @@
 /* INFO */
 
 .infoGrid {
-  padding: 34px 58px 44px;
+  padding: 34px var(--band) 44px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 0;
@@ -398,6 +400,16 @@
   display: grid;
   gap: 10px;
   transition: background .25s ease;
+}
+
+/* Alinha o conteúdo dos cards das pontas com o texto da seção acima */
+.infoCard:first-child {
+  padding-left: 0;
+}
+
+.infoCard:last-child {
+  padding-right: 0;
+  border-right: none;
 }
 
 .infoCard:hover {
@@ -443,7 +455,7 @@
 /* NEWS */
 
 .newsBlock {
-  padding: 40px 58px 44px;
+  padding: 40px var(--band) 44px;
   background: #061b3a;
 }
 
@@ -526,7 +538,7 @@
 /* PARTNERS */
 
 .officialPartners {
-  padding: 36px 58px;
+  padding: 36px var(--band);
   background: #031020;
   border-top: 1px solid rgba(255,255,255,.08);
 }
@@ -618,7 +630,7 @@
 
 .newsletterBar {
   margin: 0;
-  padding: 34px 58px;
+  padding: 34px var(--band);
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 28px;
@@ -692,7 +704,7 @@
 /* FOOTER */
 
 .premiumFooter {
-  padding: 38px 58px 48px;
+  padding: 38px var(--band) 48px;
   display: grid;
   grid-template-columns: 1.2fr 1.4fr repeat(3, .8fr);
   gap: 28px;
@@ -815,6 +827,15 @@
   .infoCard:nth-child(1),
   .infoCard:nth-child(2) {
     border-bottom: 1px solid rgba(255,255,255,.09);
+  }
+
+  /* Em 2 colunas: coluna esquerda alinha à esquerda, direita à direita */
+  .infoCard:nth-child(odd) {
+    padding-left: 0;
+  }
+
+  .infoCard:nth-child(even) {
+    padding-right: 0;
   }
 
 }
