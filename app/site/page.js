@@ -22,6 +22,9 @@ const langs = {
     info: 'INFORMAÇÕES',
     
     registrations: 'INSCRIÇÕES',
+    games: 'JOGOS',
+    ranking: 'ESTATÍSTICAS',
+    venue: 'LOCAL',
     partners: 'PARCEIROS',
     contact: 'CONTATO',
     heroTitle: 'O FLAG FOOTBALL MUNDIAL\nVAI SE ENCONTRAR NO BRASIL.',
@@ -47,14 +50,14 @@ register: 'CADASTRAR INTERESSE DA MINHA EQUIPE',
     regTitle: 'INSCRIÇÃO DE EQUIPES',
     regPref: 'Times já pré-inscritos têm preferência na inscrição.',
     regLimited: 'Vagas limitadas por categoria — garanta a sua.',
-    regDates: 'Inscrição: 08 a 12/07 (pré-inscritos) · 13 a 20/07 (aberta a todos).',
+    regDates: 'Inscrição: 07 a 12/07 (pré-inscritos) · 13 a 20/07 (aberta a todos).',
     regCtaBefore: 'As equipes devem clicar',
     regHere: 'AQUI',
     regCtaAfter: 'para fazer o cadastro oficial da equipe. Depois, a equipe acessa todas as informações do campeonato no portal.',
     regButton: 'Cadastrar minha equipe',
     regScarcity: 'Vagas limitadas por categoria — garanta a sua',
     regIntro: 'O cadastro oficial é onde sua equipe cria a conta no portal, escolhe a forma de pagamento e passa a acessar todas as informações do campeonato. As vagas são limitadas por categoria e preenchidas por ordem de pagamento da 1ª parcela.',
-    regPreTag: '08 a 12/07 · Prioridade',
+    regPreTag: '07 a 12/07 · Prioridade',
     regPreTitle: 'Times pré-inscritos',
     regPreText: 'Já fez a pré-inscrição? Sua equipe tem prioridade para confirmar o cadastro oficial neste período.',
     regOpenTag: '13 a 20/07 · Aberto a todos',
@@ -89,6 +92,9 @@ register: 'CADASTRAR INTERESSE DA MINHA EQUIPE',
     info: 'INFO',
     
     registrations: 'REGISTRATION',
+    games: 'GAMES',
+    ranking: 'STATISTICS',
+    venue: 'VENUE',
     partners: 'PARTNERS',
     contact: 'CONTACT',
     heroTitle: 'THE WORLD MEETS IN BRAZIL.',
@@ -115,14 +121,14 @@ register: 'CADASTRAR INTERESSE DA MINHA EQUIPE',
     regTitle: 'TEAM REGISTRATION',
     regPref: 'Already pre-registered teams have priority in registration.',
     regLimited: 'Limited spots per category — secure yours.',
-    regDates: 'Registration: Jul 8–12 (pre-registered) · Jul 13–20 (open to all).',
+    regDates: 'Registration: Jul 7–12 (pre-registered) · Jul 13–20 (open to all).',
     regCtaBefore: 'Teams should click',
     regHere: 'HERE',
     regCtaAfter: 'to complete the official team registration. Afterwards, the team can access all championship information in the portal.',
     regButton: 'Register my team',
     regScarcity: 'Limited spots per category — secure yours',
     regIntro: 'The official registration is where your team creates its portal account, chooses a payment method and gains access to all championship information. Spots are limited per category and filled in order of 1st installment payment.',
-    regPreTag: 'Jul 8–12 · Priority',
+    regPreTag: 'Jul 7–12 · Priority',
     regPreTitle: 'Pre-registered teams',
     regPreText: 'Already pre-registered? Your team has priority to confirm the official registration during this window.',
     regOpenTag: 'Jul 13–20 · Open to all',
@@ -154,6 +160,9 @@ register: 'CADASTRAR INTERESSE DA MINHA EQUIPE',
     about: 'SOBRE',
     info: 'INFO',
     registrations: 'INSCRIPCIONES',
+    games: 'PARTIDOS',
+    ranking: 'ESTADÍSTICAS',
+    venue: 'SEDE',
     partners: 'SOCIOS',
     contact: 'CONTACTO',
     heroTitle: 'EL MUNDO SE ENCUENTRA EN BRASIL.',
@@ -180,14 +189,14 @@ register: 'CADASTRAR INTERESSE DA MINHA EQUIPE',
     regTitle: 'INSCRIPCIÓN DE EQUIPOS',
     regPref: 'Los equipos ya pre-inscritos tienen preferencia en la inscripción.',
     regLimited: 'Cupos limitados por categoría — asegura el tuyo.',
-    regDates: 'Inscripción: 08 al 12/07 (pre-inscritos) · 13 al 20/07 (abierta a todos).',
+    regDates: 'Inscripción: 07 al 12/07 (pre-inscritos) · 13 al 20/07 (abierta a todos).',
     regCtaBefore: 'Los equipos deben hacer clic',
     regHere: 'AQUÍ',
     regCtaAfter: 'para completar el registro oficial del equipo. Luego, el equipo accede a toda la información del campeonato en el portal.',
     regButton: 'Inscribir mi equipo',
     regScarcity: 'Cupos limitados por categoría — asegura el tuyo',
     regIntro: 'El registro oficial es donde tu equipo crea su cuenta en el portal, elige la forma de pago y accede a toda la información del campeonato. Los cupos son limitados por categoría y se llenan por orden de pago de la 1.ª cuota.',
-    regPreTag: '08 al 12/07 · Prioridad',
+    regPreTag: '07 al 12/07 · Prioridad',
     regPreTitle: 'Equipos pre-inscritos',
     regPreText: '¿Ya te pre-inscribiste? Tu equipo tiene prioridad para confirmar el registro oficial en este período.',
     regOpenTag: '13 al 20/07 · Abierto a todos',
@@ -375,6 +384,9 @@ export default function SitePage() {
           <nav>
             <a href="#top">{t.home}</a>
             <a href="#team-registration">{t.registrations}</a>
+            <a href="/jogos">{t.games}</a>
+            <a href="/ranking">{t.ranking}</a>
+            <a href="#venue-local">{t.venue}</a>
             <a href="#about">{t.about}</a>
             <a href="#info">{t.info}</a>
                         <a href="#partners">{t.partners}</a>
@@ -404,6 +416,9 @@ export default function SitePage() {
           <div className="mobileMenu">
             <a href="#top">{t.home}</a>
             <a href="#team-registration">{t.registrations}</a>
+            <a href="/jogos">{t.games}</a>
+            <a href="/ranking">{t.ranking}</a>
+            <a href="#venue-local">{t.venue}</a>
             <a href="#about">{t.about}</a>
             <a href="#info">{t.info}</a>
            
@@ -488,6 +503,7 @@ export default function SitePage() {
           </div>
         </section>
 
+
         {/* Inscrição de equipes */}
         <section id="team-registration" style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 24px 20px' }}>
           <div style={{ background: 'linear-gradient(145deg, #06183f, #030d1f)', border: '1px solid rgba(255,255,255,.12)', borderRadius: 24, padding: '44px 36px', textAlign: 'center' }}>
@@ -537,6 +553,64 @@ export default function SitePage() {
               <span>{card[3]}</span>
             </div>
           ))}
+        </section>
+
+        {/* ── LOCAL / VENUE ─────────────────────────────────────────── */}
+        <section id="venue-local" style={{ maxWidth: 1180, margin: '0 auto', padding: '56px 24px 24px' }}>
+          <div style={{ textAlign: 'center', marginBottom: 32 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: '#f4ff00', marginBottom: 10 }}>
+              {lang === 'en' ? 'The Venue' : lang === 'es' ? 'La Sede' : 'O Local'}
+            </div>
+            <h2 style={{ fontSize: 'clamp(28px, 5vw, 46px)', fontWeight: 900, letterSpacing: -1.5, color: '#fff', margin: 0, lineHeight: 1.05 }}>
+              {lang === 'en' ? 'WHERE THE CHAMPIONSHIP HAPPENS' : lang === 'es' ? 'DONDE SUCEDE EL CAMPEONATO' : 'ONDE O MUNDIAL ACONTECE'}
+            </h2>
+            <p style={{ fontSize: 15, color: 'rgba(255,255,255,.65)', maxWidth: 640, margin: '14px auto 0', lineHeight: 1.6 }}>
+              {lang === 'en'
+                ? 'A complete sports complex in Leme, SP — flag football fields, leisure structure and full infrastructure for the world championship.'
+                : lang === 'es'
+                ? 'Un complejo deportivo completo en Leme, SP — campos de flag football, estructura de ocio e infraestructura completa para el mundial.'
+                : 'Um complexo esportivo completo em Leme, SP — campos de flag football, estrutura de lazer e toda a infraestrutura para o mundial.'}
+            </p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+            {['/assets/local-1.jpg', '/assets/local-2.jpg', '/assets/local-3.jpg'].map((src, i) => (
+              <div key={src} style={{ borderRadius: 18, overflow: 'hidden', border: '1px solid rgba(255,255,255,.12)', background: 'rgba(255,255,255,.04)', boxShadow: '0 20px 60px rgba(0,0,0,.4)', gridColumn: i === 0 ? '1 / -1' : 'auto' }}>
+                <img src={src} alt="Local do evento" style={{ width: '100%', height: i === 0 ? 380 : 260, objectFit: 'cover', display: 'block' }} />
+              </div>
+            ))}
+          </div>
+          <div style={{ textAlign: 'center', marginTop: 24 }}>
+            <a href="https://maps.google.com/?q=Leme,SP,Brasil" target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 26px', borderRadius: 12, background: '#f4ff00', color: '#031020', fontSize: 13, fontWeight: 900, letterSpacing: 1, textTransform: 'uppercase', textDecoration: 'none' }}>
+              🌍 {lang === 'en' ? 'View on Google Maps' : lang === 'es' ? 'Ver en Google Maps' : 'Ver no Google Maps'}
+            </a>
+          </div>
+        </section>
+
+        {/* ── ESTATÍSTICAS TEASER ───────────────────────────────────── */}
+        <section id="stats-teaser" style={{ maxWidth: 1180, margin: '0 auto', padding: '40px 24px 24px' }}>
+          <a href="/ranking" style={{ textDecoration: 'none', display: 'block' }}>
+            <div style={{ borderRadius: 22, overflow: 'hidden', border: '1px solid rgba(244,255,0,.25)', background: 'linear-gradient(135deg, rgba(10,42,107,.6), rgba(4,16,39,.85))', padding: 'clamp(28px,5vw,44px)', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto', gap: 24, alignItems: 'center', boxShadow: '0 20px 60px rgba(0,0,0,.4)' }}>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: '#f4ff00', marginBottom: 10 }}>
+                  {lang === 'en' ? 'Live Statistics' : lang === 'es' ? 'Estadísticas en Vivo' : 'Estatísticas ao Vivo'}
+                </div>
+                <h2 style={{ fontSize: 'clamp(24px,4vw,38px)', fontWeight: 900, letterSpacing: -1, color: '#fff', margin: 0, lineHeight: 1.08 }}>
+                  {lang === 'en' ? 'FOLLOW EVERY SCORE, GAME BY GAME' : lang === 'es' ? 'SIGUE CADA PUNTUACIÓN, JUEGO A JUEGO' : 'ACOMPANHE CADA PONTUAÇÃO, JOGO A JOGO'}
+                </h2>
+                <p style={{ fontSize: 15, color: 'rgba(255,255,255,.7)', maxWidth: 620, margin: '12px 0 20px', lineHeight: 1.6 }}>
+                  {lang === 'en'
+                    ? 'Scorer rankings, touchdowns, conversions and defensive plays updated as the delegates confirm each game. See who is leading the championship.'
+                    : lang === 'es'
+                    ? 'Ranking de anotadores, touchdowns, conversiones y jugadas defensivas actualizados a medida que los delegados confirman cada juego. Mira quién lidera el campeonato.'
+                    : 'Ranking de pontuadores, touchdowns, conversões e jogadas defensivas atualizados conforme os delegados confirmam cada jogo. Veja quem lidera o campeonato.'}
+                </p>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 26px', borderRadius: 12, background: '#f4ff00', color: '#031020', fontSize: 13, fontWeight: 900, letterSpacing: 1, textTransform: 'uppercase' }}>
+                  {lang === 'en' ? 'View statistics →' : lang === 'es' ? 'Ver estadísticas →' : 'Ver estatísticas →'}
+                </span>
+              </div>
+              <div style={{ fontSize: 'clamp(56px,10vw,110px)', lineHeight: 1 }}>🏈</div>
+            </div>
+          </a>
         </section>
 
                 <section id="partners" className="officialPartners">
@@ -593,6 +667,9 @@ export default function SitePage() {
             <b>{t.quickLinks}</b>
             <a href="#top">{t.home}</a>
             <a href="#team-registration">{t.registrations}</a>
+            <a href="/jogos">{t.games}</a>
+            <a href="/ranking">{t.ranking}</a>
+            <a href="#venue-local">{t.venue}</a>
             <a href="#about">{t.about}</a>
             <Link href={`/clubes?lang=${lang}`}>{t.register}</Link>
           </div>

@@ -36,6 +36,10 @@ export default function PortalTeamsPage() {
   const [notes, setNotes] = useState({});
   const [acting, setActing] = useState(null);
   const [toast, setToast] = useState('');
+  const [delTarget, setDelTarget] = useState(null); // clube a excluir
+  const [delPwd, setDelPwd] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [delErr, setDelErr] = useState('');
 
   async function load() {
     setLoading(true);
@@ -67,6 +71,24 @@ export default function PortalTeamsPage() {
       setExpanded(null);
     } else {
       showToast('Erro: ' + data.message);
+    }
+  }
+
+  async function confirmDelete() {
+    if (!delTarget || !delPwd) return;
+    setDeleting(true); setDelErr('');
+    const res = await fetch(`/api/admin/portal-teams/${delTarget.id}`, {
+      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: delPwd }),
+    });
+    const data = await res.json();
+    setDeleting(false);
+    if (data.ok) {
+      setTeams(ts => ts.filter(t => t.id !== delTarget.id));
+      setDelTarget(null); setDelPwd('');
+      showToast('🗑 Clube excluído.');
+    } else {
+      setDelErr(data.message || 'Erro ao excluir.');
     }
   }
 
@@ -189,6 +211,10 @@ export default function PortalTeamsPage() {
                     {isOpen ? '▲' : '▼'} Detalhes
                   </button>
                 )}
+                <button onClick={() => { setDelTarget(team); setDelPwd(''); setDelErr(''); }} title="Excluir clube" style={{
+                  padding: '7px 11px', borderRadius: 9, fontSize: 12, fontWeight: 700,
+                  background: 'rgba(255,68,68,.08)', color: '#ff4444', border: '1px solid rgba(255,68,68,.2)', cursor: 'pointer', fontFamily: 'inherit',
+                }}>🗑</button>
               </div>
             </div>
 
@@ -242,6 +268,31 @@ export default function PortalTeamsPage() {
           </div>
         );
       })}
+
+      {/* Modal: excluir clube (confirmação por senha) */}
+      {delTarget && (
+        <div onClick={e => e.target === e.currentTarget && setDelTarget(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(2,8,20,.55)', backdropFilter: 'blur(4px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div style={{ width: '100%', maxWidth: 420, background: '#fff', borderRadius: 18, padding: 26, boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
+            <div style={{ fontSize: 17, fontWeight: 900, color: '#0f172a', marginBottom: 6 }}>Excluir clube</div>
+            <p style={{ fontSize: 13, color: '#64748b', lineHeight: 1.55, marginTop: 0, marginBottom: 16 }}>
+              Você vai excluir <strong style={{ color: '#0f172a' }}>{delTarget.club_name}</strong> e todos os seus dados (atletas do roster, conta e parcelas). Esta ação é <strong style={{ color: '#ff4444' }}>irreversível</strong>. Digite sua senha de login para confirmar.
+            </p>
+            <input
+              type="password" value={delPwd} onChange={e => setDelPwd(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && confirmDelete()}
+              placeholder="Sua senha de login" autoFocus
+              style={{ width: '100%', boxSizing: 'border-box', padding: '12px 14px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, fontSize: 14, outline: 'none', fontFamily: 'inherit', marginBottom: delErr ? 8 : 16 }}
+            />
+            {delErr && <div style={{ fontSize: 12.5, color: '#dc2626', fontWeight: 600, marginBottom: 14 }}>❌ {delErr}</div>}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setDelTarget(null)} style={{ flex: 1, padding: '12px', borderRadius: 10, border: '1px solid #e2e8f0', background: '#f1f5f9', color: '#475569', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
+              <button onClick={confirmDelete} disabled={deleting || !delPwd} style={{ flex: 1.4, padding: '12px', borderRadius: 10, border: 'none', background: (deleting || !delPwd) ? '#fca5a5' : '#dc2626', color: '#fff', fontSize: 13, fontWeight: 800, cursor: (deleting || !delPwd) ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
+                {deleting ? 'Excluindo...' : 'Excluir definitivamente'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

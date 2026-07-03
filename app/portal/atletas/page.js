@@ -2,7 +2,23 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { LANGS, detectLang, saveLang, t } from '@/lib/i18n';
+import { detectLang, saveLang, t } from '@/lib/i18n';
+
+// Ícones de linha (SVG) para as abas — visual mais limpo que emoji
+function TabIcon({ name, size = 22 }) {
+  const p = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round' };
+  if (name === 'perfil') return (<svg {...p}><circle cx="12" cy="8" r="3.6" /><path d="M4.5 20c0-3.6 3.4-5.6 7.5-5.6s7.5 2 7.5 5.6" /></svg>);
+  if (name === 'estatisticas') return (<svg {...p}><line x1="6" y1="20" x2="6" y2="12" /><line x1="12" y1="20" x2="12" y2="6" /><line x1="18" y1="20" x2="18" y2="14" /></svg>);
+  if (name === 'campeonato') return (<svg {...p}><path d="M7 4h10v3.5a5 5 0 0 1-10 0V4Z" /><path d="M7 5H4.5a2.5 2.5 0 0 0 3 3.4" /><path d="M17 5h2.5a2.5 2.5 0 0 1-3 3.4" /><path d="M12 12.5V16" /><path d="M9 20h6" /><path d="M10 16h4v4h-4z" /></svg>);
+  if (name === 'informacoes') return (<svg {...p}><circle cx="12" cy="12" r="9" /><path d="M12 11v5" /><path d="M12 8h.01" /></svg>);
+  // sub-abas do Campeonato
+  if (name === 'jogos') return (<svg {...p}><rect x="3.5" y="5" width="17" height="15" rx="2" /><path d="M3.5 9h17" /><path d="M8 3.5v3M16 3.5v3" /></svg>);
+  if (name === 'classif') return (<svg {...p}><path d="M7 4h10v3.5a5 5 0 0 1-10 0V4Z" /><path d="M7 5H4.5a2.5 2.5 0 0 0 3 3.4" /><path d="M17 5h2.5a2.5 2.5 0 0 1-3 3.4" /><path d="M12 12.5V16" /><path d="M9 20h6" /><path d="M10 16h4v4h-4z" /></svg>);
+  if (name === 'stats') return (<svg {...p}><line x1="6" y1="20" x2="6" y2="12" /><line x1="12" y1="20" x2="12" y2="6" /><line x1="18" y1="20" x2="18" y2="14" /></svg>);
+  if (name === 'venue') return (<svg {...p}><path d="M12 21s7-5.5 7-11a7 7 0 0 0-14 0c0 5.5 7 11 7 11Z" /><circle cx="12" cy="10" r="2.4" /></svg>);
+  if (name === 'times') return (<svg {...p}><circle cx="8.5" cy="9" r="2.6" /><path d="M3.5 19c0-2.8 2.2-4.4 5-4.4s5 1.6 5 4.4" /><path d="M16 7.5a2.5 2.5 0 0 1 0 5" /><path d="M15.5 14.7c2.4.2 4 1.8 4 4.3" /></svg>);
+  return null;
+}
 
 const GREEN  = '#009c3b';
 const YELLOW = '#b8860b';
@@ -45,7 +61,7 @@ const lbl = {
 
 const sectionHead = {
   fontSize: 11, fontWeight: 800, letterSpacing: 2.5, textTransform: 'uppercase',
-  color: 'rgba(15,23,42,.25)', marginBottom: 16,
+  color: '#334155', marginBottom: 16,
 };
 
 /* ── data ─────────────────────────────────────────────────── */
@@ -63,35 +79,6 @@ const POSITIONS = [
 const SIZES = ['PP', 'P', 'M', 'G', 'GG', 'XG'];
 
 /* ── Language switcher bar ───────────────────────────────────── */
-function LangBar({ lang, onChange }) {
-  return (
-    <div style={{
-      position: 'sticky', top: 0, zIndex: 200,
-      background: 'rgba(2,8,20,.92)', backdropFilter: 'blur(12px)',
-      borderBottom: '1px solid rgba(15,23,42,.06)',
-      display: 'flex', justifyContent: 'flex-end', alignItems: 'center',
-      padding: '6px 14px', gap: 4,
-    }}>
-      <span style={{ fontSize: 10, color: 'rgba(15,23,42,.25)', fontWeight: 700, letterSpacing: 1, marginRight: 6 }}>🌐</span>
-      {LANGS.map(l => (
-        <button
-          key={l.code}
-          onClick={() => onChange(l.code)}
-          style={{
-            padding: '5px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
-            fontFamily: 'inherit', fontSize: 11, fontWeight: 800, letterSpacing: .5,
-            transition: 'all .15s',
-            background: lang === l.code ? GREEN : 'rgba(15,23,42,.05)',
-            color: lang === l.code ? '#fff' : 'rgba(15,23,42,.35)',
-          }}
-        >
-          {l.flag} {l.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 /* ── photo upload avatar ─────────────────────────────────────── */
 function PhotoAvatar({ athleteId, photoUrl, onUpload, lang }) {
   const fileRef = useRef();
@@ -143,6 +130,67 @@ function PhotoAvatar({ athleteId, photoUrl, onUpload, lang }) {
       {!error && <div style={{ fontSize: 11, color: 'rgba(15,23,42,.28)', textAlign: 'center' }}>
         {photoUrl ? t('photoChange', lang) : t('photoAdd', lang)}<br />
         <span style={{ fontSize: 10 }}>{t('photoHint', lang)}</span>
+      </div>}
+    </div>
+  );
+}
+
+/* ── document upload (RG/CNH/passaporte — imagem ou PDF) ──────── */
+function DocumentUpload({ athleteId, documentUrl, onUpload, lang }) {
+  const fileRef = useRef();
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState('');
+  const [hover, setHover]     = useState(false);
+
+  async function handleFile(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLoading(true); setError('');
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('athlete_id', athleteId);
+    const r = await fetch('/api/portal/atletas/upload-document', { method: 'POST', body: fd });
+    const d = await r.json();
+    setLoading(false);
+    if (d.ok) onUpload(d.url);
+    else setError(d.message || 'Erro no upload.');
+  }
+
+  const isPdf = documentUrl && documentUrl.split('?')[0].toLowerCase().endsWith('.pdf');
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+      <div
+        onClick={() => !loading && fileRef.current?.click()}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+        style={{
+          width: 96, height: 96, borderRadius: 16, cursor: loading ? 'wait' : 'pointer',
+          border: `2px dashed ${hover || documentUrl ? GREEN : 'rgba(15,23,42,.2)'}`,
+          overflow: 'hidden', position: 'relative', flexShrink: 0,
+          background: 'rgba(15,23,42,.04)', transition: 'border-color .2s',
+          boxShadow: hover ? `0 0 20px ${GREEN}30` : 'none',
+        }}
+      >
+        {documentUrl && !isPdf
+          ? <img src={documentUrl} alt="documento" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, color: documentUrl ? GREEN : 'rgba(15,23,42,.28)' }}>
+              <span style={{ fontSize: 30 }}>{documentUrl ? '📄' : '🪪'}</span>
+              {documentUrl && <span style={{ fontSize: 9, fontWeight: 800 }}>PDF</span>}
+            </div>
+        }
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.55)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', opacity: hover || loading ? 1 : 0, transition: 'opacity .2s' }}>
+          {loading
+            ? <div style={{ width: 22, height: 22, border: `2px solid ${GREEN}`, borderTopColor: 'transparent', borderRadius: 11, animation: 'spin 1s linear infinite' }} />
+            : <><div style={{ fontSize: 18 }}>📎</div><div style={{ fontSize: 9, fontWeight: 800, color: '#fff', marginTop: 3, letterSpacing: .5 }}>{t('docAlter', lang)}</div></>
+          }
+        </div>
+        <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={handleFile} style={{ display: 'none' }} />
+      </div>
+      {error && <div style={{ fontSize: 11, color: '#ff6666', textAlign: 'center', maxWidth: 160 }}>{error}</div>}
+      {!error && <div style={{ fontSize: 11, color: 'rgba(15,23,42,.28)', textAlign: 'center' }}>
+        {documentUrl ? t('docChange', lang) : t('docAdd', lang)}<br />
+        <span style={{ fontSize: 10 }}>{t('docHint', lang)}</span>
       </div>}
     </div>
   );
@@ -447,7 +495,7 @@ export default function AtletasPortalPage() {
     nationality: '', phone: '', whatsapp: '', document: '',
     emergency_name: '', emergency_phone: '', emergency_relation: '',
     position: '', shirt_size: '',
-    photo_url: '', instagram: '', tiktok: '',
+    photo_url: '', document_url: '', instagram: '', tiktok: '',
     birthdate: '', history: '',
     terms_health: false, terms_image: false, terms_rules: false,
     terms_privacy: false, terms_conduct: false,
@@ -461,6 +509,12 @@ export default function AtletasPortalPage() {
   const [campView, setCampView]     = useState('jogos');
   const [games, setGames]           = useState([]);
   const [loadingGames, setLoadingGames] = useState(false);
+  const [ranking, setRanking]       = useState(null); // { scorers, categories }
+
+  useEffect(() => {
+    if (tab !== 'estatisticas' && tab !== 'campeonato') return;
+    fetch('/api/rankings').then(r => r.json()).then(d => { if (d.ok) setRanking(d); }).catch(() => {});
+  }, [tab]);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 640);
@@ -493,7 +547,7 @@ export default function AtletasPortalPage() {
             emergency_name: p.emergency_name || '', emergency_phone: p.emergency_phone || '',
             emergency_relation: p.emergency_relation || '',
             position: p.position || '', shirt_size: p.shirt_size || '',
-            photo_url: p.photo_url || '', instagram: p.instagram || '', tiktok: p.tiktok || '',
+            photo_url: p.photo_url || '', document_url: p.document_url || '', instagram: p.instagram || '', tiktok: p.tiktok || '',
             birthdate: p.birthdate || '', history: p.history || '',
             terms_health: !!p.terms_health, terms_image: !!p.terms_image,
             terms_rules: !!p.terms_rules, terms_privacy: !!p.terms_privacy, terms_conduct: !!p.terms_conduct,
@@ -582,8 +636,12 @@ export default function AtletasPortalPage() {
 
   const TABS = [
     { key: 'perfil', icon: '👤', label: t('tabProfile', lang) },
+    { key: 'estatisticas', icon: '📊', label: t('tabStats', lang) },
     { key: 'campeonato', icon: '🏆', label: t('tabChampionship', lang) },
+    { key: 'informacoes', icon: 'ℹ️', label: t('tabInfo', lang) },
   ];
+  // helper de tradução inline (conteúdo das abas novas)
+  const tl = (pt, en, es) => (lang === 'en' ? en : lang === 'es' ? es : pt);
   const RELATIONS = [
     t('relParent', lang), t('relSpouse', lang), t('relSibling', lang), t('relFriend', lang), t('relOther', lang),
   ];
@@ -608,18 +666,24 @@ export default function AtletasPortalPage() {
       {/* Barra superior verde/azul */}
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 4, zIndex: 2,
         background: 'linear-gradient(90deg,#031020 0%,#009c3b 50%,#031020 100%)' }} />
+      {/* Logo do mundial — canto superior esquerdo */}
+      <a href="/site" style={{ position: 'fixed', top: isMobile ? 10 : 18, left: isMobile ? 10 : 18, zIndex: 20 }}>
+        <img src="/assets/bfwc-logo.jpg" alt="BFWC 2026" width={isMobile ? 58 : 176} height={isMobile ? 58 : 176} style={{ borderRadius: isMobile ? 12 : 22, objectFit: 'cover', boxShadow: '0 10px 34px rgba(0,0,0,.22)', border: isMobile ? '2px solid #fff' : '3px solid #fff' }} />
+      </a>
       {/* Conteúdo acima do overlay */}
       <div style={{ position: 'relative', zIndex: 2 }}>
-
-      {/* ── Language bar ── */}
-      <LangBar lang={lang} onChange={changeLang} />
 
       {/* ── Hero ── */}
       <div style={{ padding: isMobile ? '32px 20px 28px' : '48px 24px 36px', textAlign: 'center', borderBottom: '1px solid rgba(15,23,42,.08)' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 10, fontWeight: 900, letterSpacing: 3.5, textTransform: 'uppercase', color: '#fff', marginBottom: 16, padding: '6px 16px', borderRadius: 20, background: '#0f172a' }}>
           <span>🏈</span> {t('portalTitle', lang)}
         </div>
-        <h1 style={{ fontSize: isMobile ? 30 : 44, fontWeight: 900, letterSpacing: -1.5, margin: '0 0 14px', lineHeight: 1.1, color: '#0f172a' }}>{athlete.name}</h1>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: isMobile ? 12 : 16, margin: '0 0 14px' }}>
+          {profile?.photo_url ? (
+            <img src={profile.photo_url} alt="" style={{ width: isMobile ? 52 : 68, height: isMobile ? 52 : 68, borderRadius: '50%', objectFit: 'cover', border: '3px solid #fff', boxShadow: '0 4px 16px rgba(0,0,0,.12)', flexShrink: 0, background: '#e2e8f0' }} />
+          ) : null}
+          <h1 style={{ fontSize: isMobile ? 30 : 44, fontWeight: 900, letterSpacing: -1.5, margin: 0, lineHeight: 1.1, color: '#0f172a' }}>{athlete.name}</h1>
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
           {complete
             ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 800, letterSpacing: .8, textTransform: 'uppercase', padding: '7px 18px', borderRadius: 24, background: GREEN, color: '#fff' }}>✓ {t('profileComplete', lang)}</span>
@@ -659,12 +723,19 @@ export default function AtletasPortalPage() {
               letterSpacing: .3, textTransform: isMobile ? 'none' : 'none',
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, transition: 'all .2s',
             }}>
-              <span style={{ fontSize: isMobile ? 22 : 24 }}>{tb.icon}</span>
-              <span>{tb.label}</span>
+              <TabIcon name={tb.key} size={isMobile ? 20 : 22} />
+              <span style={{ whiteSpace: 'nowrap' }}>{tb.label}</span>
             </button>
           ))}
-          <div style={{ display: 'flex', alignItems: 'center', paddingRight: 16, marginLeft: 'auto' }}>
-            <button onClick={() => { sessionStorage.removeItem('bfwc_athlete_session'); router.push('/portal'); }} style={{ padding: '9px 18px', fontSize: 12, fontWeight: 800, background: 'rgba(15,23,42,.06)', border: '1px solid rgba(15,23,42,.12)', borderRadius: 10, color: 'rgba(15,23,42,.45)', cursor: 'pointer', fontFamily: 'inherit', letterSpacing: .3, whiteSpace: 'nowrap' }}>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10, paddingRight: 16 }}>
+            <div style={{ display: 'flex', gap: 5 }}>
+              {[['pt', '/assets/flag-br.png'], ['en', '/assets/flag-us.png'], ['es', '/assets/flag-es.png']].map(([code, flag]) => (
+                <button key={code} onClick={() => changeLang(code)} title={code.toUpperCase()} style={{ width: 30, height: 30, borderRadius: '50%', overflow: 'hidden', padding: 0, cursor: 'pointer', border: lang === code ? '2px solid #0f172a' : '1px solid #cbd5e1', background: 'none', opacity: lang === code ? 1 : 0.5, flexShrink: 0 }}>
+                  <img src={flag} alt={code} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.15)', display: 'block' }} />
+                </button>
+              ))}
+            </div>
+            <button onClick={() => { sessionStorage.removeItem('bfwc_athlete_session'); router.push('/portal'); }} style={{ padding: '9px 18px', fontSize: 12, fontWeight: 800, background: 'rgba(15,23,42,.05)', border: '1px solid rgba(15,23,42,.15)', borderRadius: 10, color: 'rgba(15,23,42,.6)', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
               {t('logout', lang)}
             </button>
           </div>
@@ -706,6 +777,24 @@ export default function AtletasPortalPage() {
                       <span key={k} style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 6, background: `${GREEN}10`, color: GREEN, border: `1px solid ${GREEN}20` }}>✓ {t(k, lang)}</span>
                     ))}
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Documento com foto */}
+            <div style={glass({ padding: '22px' })}>
+              <div style={sectionHead}>{t('docSection', lang)}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+                <DocumentUpload athleteId={athlete.id} documentUrl={profile.document_url} onUpload={url => set('document_url', url)} lang={lang} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>{t('docTitle', lang)}</div>
+                  <div style={{ fontSize: 13, color: 'rgba(15,23,42,.4)', lineHeight: 1.65, marginBottom: 10 }}>{t('docDesc', lang)}</div>
+                  {profile.document_url && (
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 6, background: `${GREEN}10`, color: GREEN, border: `1px solid ${GREEN}20` }}>✓ {t('docSent', lang)}</span>
+                      <a href={profile.document_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, fontWeight: 700, color: ACCENT, textDecoration: 'none' }}>{t('docView', lang)} →</a>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -935,7 +1024,7 @@ export default function AtletasPortalPage() {
                     color: campView === ct.k ? '#fff' : 'rgba(15,23,42,.45)',
                     boxShadow: campView === ct.k ? `0 4px 14px ${YELLOW}25` : 'none',
                   }}>
-                    <span>{ct.icon}</span> {ct.label}
+                    <TabIcon name={ct.k} size={16} /> {ct.label}
                   </button>
                 ))}
               </div>
@@ -965,6 +1054,9 @@ export default function AtletasPortalPage() {
                             <div style={{ flex: 1, textAlign: 'center' }}>
                               <div style={{ fontSize: 15, fontWeight: 800 }}>{g.team1_name} <span style={{ color: 'rgba(15,23,42,.3)', fontSize: 12 }}>vs</span> {g.team2_name}</div>
                               <div style={{ fontSize: 11, color: 'rgba(15,23,42,.35)', marginTop: 4 }}>📍 {g.field||'Campo TBD'} {g.category ? `· ${g.category}` : ''}</div>
+                              {Array.isArray(g.referees) && g.referees.length > 0 && (
+                                <div style={{ fontSize: 10.5, color: 'rgba(15,23,42,.35)', marginTop: 2 }}>🧑‍⚖️ {g.referees.map(r => r.name).join(', ')}</div>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -1017,10 +1109,42 @@ export default function AtletasPortalPage() {
                         </div>
                       ))}
                     </div>
-                    <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(15,23,42,.03)', border: '1px solid rgba(15,23,42,.06)', fontSize: 12, color: 'rgba(15,23,42,.35)', lineHeight: 1.5 }}>
-                      ℹ️ Estatísticas individuais detalhadas (touchdowns, recepções, defesas) serão exibidas após o início do campeonato.
-                    </div>
                   </div>
+                  {/* Estatísticas dos atletas do time */}
+                  {(() => {
+                    let myTeamName = null;
+                    for (const g of games) {
+                      if (g.team1_id === athlete?.team_id) { myTeamName = g.team1_name; break; }
+                      if (g.team2_id === athlete?.team_id) { myTeamName = g.team2_name; break; }
+                    }
+                    const teamStats = (ranking?.scorers || []).filter(s => myTeamName && s.team_name === myTeamName);
+                    return (
+                      <div style={glass({ padding: '20px 22px' })}>
+                        <div style={sectionHead}>Estatísticas do time</div>
+                        {ranking === null ? <div style={{ fontSize: 13, color: 'rgba(15,23,42,.35)' }}>Carregando...</div>
+                          : teamStats.length === 0 ? <div style={{ fontSize: 13, color: 'rgba(15,23,42,.35)' }}>Nenhum atleta do seu time pontuou ainda. Aparece aqui após os jogos.</div>
+                          : <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                              {teamStats.map((s, i) => (
+                                <div key={(s.athlete_id || s.name) + i} style={{ padding: '12px 14px', borderRadius: 12, background: 'rgba(15,23,42,.03)', border: '1px solid rgba(15,23,42,.1)' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                                    {s.photo ? <img src={s.photo} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, background: '#e2e8f0', border: '1px solid rgba(15,23,42,.1)' }} /> : <span style={{ width: 32, height: 32, borderRadius: '50%', background: '#0f172a', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, flexShrink: 0 }}>{(s.name || '?').split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()}</span>}
+                                    <span style={{ flex: 1, fontSize: 14, fontWeight: 800, color: '#0f172a' }}>{s.jersey != null && s.jersey !== '' ? <span style={{ color: '#64748b', fontSize: 11, marginRight: 6 }}>#{s.jersey}</span> : null}{s.name}</span>
+                                    <span style={{ fontSize: 16, fontWeight: 900, color: GREEN }}>{s.points} <span style={{ fontSize: 9, color: '#64748b', fontWeight: 700 }}>PTS</span></span>
+                                  </div>
+                                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(56px, 1fr))', gap: 6 }}>
+                                    {[['TD','td'],['Conv 1','conv1'],['Conv 2','conv2'],['Int TD','int_td'],['Safety','safety'],['Conv 1 ret.','int_conv1'],['Conv 2 ret.','int_conv2']].map(([lb, k]) => (
+                                      <div key={k} style={{ textAlign: 'center', padding: '6px 4px', borderRadius: 8, background: (s[k] || 0) > 0 ? `${ACCENT}14` : '#f1f5f9', border: '1px solid rgba(15,23,42,.1)' }}>
+                                        <div style={{ fontSize: 15, fontWeight: 900, color: (s[k] || 0) > 0 ? '#0f172a' : '#94a3b8' }}>{s[k] || 0}</div>
+                                        <div style={{ fontSize: 8.5, fontWeight: 800, color: '#475569', marginTop: 2, lineHeight: 1.15 }}>{lb}</div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>}
+                      </div>
+                    );
+                  })()}
                   {/* Campeonato */}
                   <div style={glass({ padding: '20px 22px' })}>
                     <div style={sectionHead}>Campeonato — distribuição</div>
@@ -1058,25 +1182,6 @@ export default function AtletasPortalPage() {
               {/* ── VENUE ── */}
               {campView === 'venue' && (
                 <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
-                  {/* Mapa aéreo */}
-                  <div style={glass({ padding:'22px', overflow:'hidden' })}>
-                    <div style={sectionHead}>📍 Local do evento</div>
-                    <div style={{ borderRadius:14, overflow:'hidden', marginBottom:14 }}>
-                      <VenueMap />
-                    </div>
-                    <a href="https://maps.google.com/?q=Leme,SP,Brasil" target="_blank" rel="noreferrer" style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'9px 18px', borderRadius:10, background:`${ACCENT}18`, color:ACCENT, fontSize:12, fontWeight:800, textDecoration:'none', border:`1px solid ${ACCENT}30`, marginBottom:10 }}>
-                      🌍 Ver no Google Maps
-                    </a>
-                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
-                      {[['🅿️','Estacionamento','Amplo estacionamento gratuito no venue'],['🍽️','Alimentação','Praça de alimentação com opções variadas no local'],['🚿','Vestiários','Vestiários com chuveiros para todos os times']].map(([ico,titulo,txt]) => (
-                        <div key={titulo} style={{ padding:'14px', borderRadius:12, background:'rgba(15,23,42,.04)', border:'1px solid rgba(15,23,42,.07)' }}>
-                          <div style={{ fontSize:22, marginBottom:6 }}>{ico}</div>
-                          <div style={{ fontSize:12, fontWeight:800, marginBottom:4 }}>{titulo}</div>
-                          <div style={{ fontSize:11, color:'rgba(15,23,42,.4)', lineHeight:1.5 }}>{txt}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                   {/* Mapa do evento */}
                   <div style={glass({ padding:'22px' })}>
                     <div style={sectionHead}>🗺️ Mapa do evento</div>
@@ -1092,9 +1197,9 @@ export default function AtletasPortalPage() {
                   </div>
                   {/* Hospedagem */}
                   <div style={glass({ padding:'22px' })}>
-                    <div style={sectionHead}>🏨 Hospedagem & Transfer</div>
+                    <div style={sectionHead}>🏨 Hospedagem</div>
                     <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-                      {[['🏨','Hotéis & Voos','Nossa agência parceira Blue Panda Travel entrará em contato com as equipes confirmadas. Dúvidas: contato@bluepandatravel.com.br'],['🚌','Transfer oficial','Transfer gratuito no dia 30/10, partindo de Guarulhos (GRU) com parada em Viracopos (VCP): 08h00 · 15h00 · 23h00.'],['🗺️','Guia do participante','Restaurantes, farmácias, bancos e dicas locais de Leme/SP no guia digital.']].map(([ico,titulo,txt]) => (
+                      {[['🏨','Hotéis & Voos','Nossa agência parceira Blue Panda Travel entrará em contato com as equipes confirmadas. Dúvidas: contato@bluepandatravel.com.br'],['🗺️','Guia do participante','Restaurantes, farmácias, bancos e dicas locais de Leme/SP no guia digital.']].map(([ico,titulo,txt]) => (
                         <div key={titulo} style={{ display:'flex', gap:12, padding:'14px', borderRadius:12, background:'rgba(15,23,42,.03)', border:'1px solid rgba(15,23,42,.06)' }}>
                           <span style={{ fontSize:22, flexShrink:0 }}>{ico}</span>
                           <div><div style={{ fontSize:13, fontWeight:800, marginBottom:4 }}>{titulo}</div><div style={{ fontSize:12, color:'rgba(15,23,42,.4)', lineHeight:1.6 }}>{txt}</div></div>
@@ -1139,6 +1244,175 @@ export default function AtletasPortalPage() {
             </div>
           );
         })()}
+
+        {/* ════════ ESTATÍSTICAS ════════ */}
+        {tab === 'estatisticas' && (
+          <div style={{ animation: 'fadeIn .3s ease' }}>
+            {/* Resumo do atleta */}
+            <div style={glass({ padding: '22px' })}>
+              <div style={sectionHead}>{tl('Resumo do atleta', 'Athlete summary', 'Resumen del atleta')}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 10 }}>
+                {[
+                  [tl('Categoria', 'Category', 'Categoría'), athlete?.category || '—'],
+                  [tl('Posição', 'Position', 'Posición'), profile?.position || '—'],
+                  [tl('Nacionalidade', 'Nationality', 'Nacionalidad'), profile?.nationality || '—'],
+                  [tl('Nº camisa', 'Jersey', 'Nº camiseta'), profile?.shirt_size || '—'],
+                ].map(([l, v]) => (
+                  <div key={l} style={{ padding: '14px 12px', borderRadius: 12, background: 'rgba(15,23,42,.04)', border: '1px solid rgba(15,23,42,.06)' }}>
+                    <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: 1.2, textTransform: 'uppercase', color: 'rgba(15,23,42,.35)', marginBottom: 4 }}>{l}</div>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: '#0f172a' }}>{v}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Jogos / campanha */}
+            <div style={glass({ padding: '22px', marginTop: 14 })}>
+              <div style={sectionHead}>{tl('Sua campanha', 'Your campaign', 'Tu campaña')}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
+                {[[tl('Jogos', 'Games', 'Partidos'), 0], [tl('Vitórias', 'Wins', 'Victorias'), 0], [tl('Empates', 'Draws', 'Empates'), 0], [tl('Derrotas', 'Losses', 'Derrotas'), 0]].map(([l, v]) => (
+                  <div key={l} style={{ textAlign: 'center', padding: '14px 6px', borderRadius: 12, background: 'rgba(15,23,42,.04)', border: '1px solid rgba(15,23,42,.06)' }}>
+                    <div style={{ fontSize: 24, fontWeight: 900, color: 'rgba(15,23,42,.7)', lineHeight: 1 }}>{v}</div>
+                    <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: 'rgba(15,23,42,.3)', marginTop: 5 }}>{l}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: 12, fontSize: 12, color: 'rgba(15,23,42,.4)', lineHeight: 1.55 }}>
+                ℹ️ {tl('Sua campanha será preenchida automaticamente conforme os jogos do campeonato acontecerem.', 'Your campaign will be filled automatically as the championship games take place.', 'Tu campaña se completará automáticamente a medida que se disputen los partidos.')}
+              </div>
+            </div>
+
+            {(() => {
+              const list = ranking?.scorers || [];
+              const myName = (athlete?.name || '').trim().toLowerCase();
+              const cat = athlete?.category || null;
+              const catList = cat ? list.filter(s => s.category === cat) : list;
+              const myEntry = list.find(s => (s.name || '').trim().toLowerCase() === myName) || null;
+              const myRank = myEntry ? (catList.findIndex(s => (s.name || '').trim().toLowerCase() === myName) + 1) : null;
+              const top = catList.slice(0, 10);
+              return (
+                <>
+                  {/* Estatísticas individuais */}
+                  <div style={glass({ padding: '22px', marginTop: 14 })}>
+                    <div style={sectionHead}>{tl('Estatísticas individuais', 'Individual statistics', 'Estadísticas individuales')}</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
+                      {[
+                        [tl('Pontos', 'Points', 'Puntos'), myEntry?.points ?? 0, GREEN],
+                        [tl('Touchdowns', 'Touchdowns', 'Touchdowns'), myEntry?.td ?? 0, '#0f172a'],
+                        [tl('Conv. 1 pt', 'Conv. 1 pt', 'Conv. 1 pt'), myEntry?.conv1 ?? 0, '#0f172a'],
+                        [tl('Conv. 2 pts', 'Conv. 2 pts', 'Conv. 2 pts'), myEntry?.conv2 ?? 0, '#0f172a'],
+                        [tl('Int. TD', 'Int. TD', 'Int. TD'), myEntry?.int_td ?? 0, '#0f172a'],
+                        [tl('Safety', 'Safety', 'Safety'), myEntry?.safety ?? 0, '#0f172a'],
+                        [tl('Conv. 1 ret.', 'Ret. Conv 1', 'Conv. 1 ret.'), myEntry?.int_conv1 ?? 0, '#0f172a'],
+                        [tl('Conv. 2 ret.', 'Ret. Conv 2', 'Conv. 2 ret.'), myEntry?.int_conv2 ?? 0, '#0f172a'],
+                      ].map(([l, v, c]) => (
+                        <div key={l} style={{ textAlign: 'center', padding: '16px 6px', borderRadius: 12, background: 'rgba(15,23,42,.04)', border: '1px solid rgba(15,23,42,.1)' }}>
+                          <div style={{ fontSize: 26, fontWeight: 900, color: (v > 0 ? c : '#94a3b8'), lineHeight: 1 }}>{v}</div>
+                          <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: '#475569', marginTop: 5 }}>{l}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {myRank ? (
+                      <div style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 8, padding: '7px 16px', borderRadius: 20, background: `${GREEN}12`, color: GREEN, fontSize: 12, fontWeight: 800, border: `1px solid ${GREEN}25` }}>
+                        🏅 {tl(`${myRank}º no ranking`, `${myRank}${myRank === 1 ? 'st' : myRank === 2 ? 'nd' : myRank === 3 ? 'rd' : 'th'} in the ranking`, `${myRank}º en el ranking`)}{cat ? ` · ${cat}` : ''}
+                      </div>
+                    ) : (
+                      <div style={{ marginTop: 12, fontSize: 12, color: 'rgba(15,23,42,.4)' }}>{tl('Você ainda não pontuou. Aparece aqui após os jogos.', 'You have not scored yet. It shows up here after the games.', 'Aún no has anotado. Aparece aquí tras los juegos.')}</div>
+                    )}
+                  </div>
+
+                  {/* Ranking de artilheiros */}
+                  <div style={glass({ padding: '22px', marginTop: 14 })}>
+                    <div style={sectionHead}>{tl('Ranking', 'Ranking', 'Ranking')}{cat ? ` · ${cat}` : ''}</div>
+                    {ranking === null ? <div style={{ fontSize: 13, color: 'rgba(15,23,42,.4)', padding: '10px 0' }}>{tl('Carregando...', 'Loading...', 'Cargando...')}</div>
+                      : top.length === 0 ? <div style={{ fontSize: 13, color: 'rgba(15,23,42,.4)', padding: '10px 0' }}>{tl('Nenhuma pontuação registrada ainda.', 'No scoring recorded yet.', 'Sin puntuaciones registradas aún.')}</div>
+                      : <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          {top.map((s, i) => {
+                            const me = (s.name || '').trim().toLowerCase() === myName;
+                            return (
+                              <div key={(s.athlete_id || s.name) + i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 10, background: me ? `${GREEN}0f` : (i % 2 ? 'rgba(15,23,42,.03)' : 'transparent'), border: me ? `1px solid ${GREEN}30` : '1px solid transparent' }}>
+                                <span style={{ width: 22, fontSize: 13, fontWeight: 900, color: i < 3 ? '#b45309' : '#334155' }}>{['🥇', '🥈', '🥉'][i] || (i + 1)}</span>
+                                {s.photo ? <img src={s.photo} alt="" style={{ width: 26, height: 26, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, background: '#e2e8f0', border: '1px solid rgba(15,23,42,.1)' }} /> : <span style={{ width: 26, height: 26, borderRadius: '50%', background: '#0f172a', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 900, flexShrink: 0 }}>{(s.name || '?').split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()}</span>}
+                                <span style={{ flex: 1, fontSize: 13, fontWeight: me ? 900 : 700, color: '#0f172a' }}>{s.jersey != null && s.jersey !== '' ? <span style={{ color: '#64748b', fontSize: 11, marginRight: 6 }}>#{s.jersey}</span> : null}{s.name}</span>
+                                <span style={{ fontSize: 11, color: '#475569', fontWeight: 600, marginRight: 6 }}>{s.team_name}</span>
+                                <span style={{ fontSize: 15, fontWeight: 900, color: GREEN }}>{s.points}</span>
+                              </div>
+                            );
+                          })}
+                        </div>}
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        )}
+
+        {/* ════════ INFORMAÇÕES ════════ */}
+        {tab === 'informacoes' && (
+          <div style={{ animation: 'fadeIn .3s ease' }}>
+            {/* Datas-chave e local */}
+            <div style={glass({ padding: '22px' })}>
+              <div style={sectionHead}>{tl('Datas-chave e local', 'Key dates & venue', 'Fechas clave y sede')}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {[
+                  ['👥', tl('Envio da escalação (roster) pelos clubes', 'Lineup (roster) submission by clubs', 'Envío de la alineación (roster) por los clubes'), '30/09'],
+                  ['📄', tl('Aprovação de documentos dos atletas', 'Athlete document approval', 'Aprobación de documentos de los atletas'), '30/09'],
+                ].map(([ic, txt, date]) => (
+                  <div key={txt} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, background: 'rgba(15,23,42,.04)', border: '1px solid rgba(15,23,42,.06)' }}>
+                    <span style={{ fontSize: 18 }}>{ic}</span>
+                    <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'rgba(15,23,42,.7)' }}>{txt}</span>
+                    <span style={{ fontSize: 13, fontWeight: 900, color: GREEN }}>{date}</span>
+                  </div>
+                ))}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, background: `${GREEN}0a`, border: `1px solid ${GREEN}22` }}>
+                  <span style={{ fontSize: 18 }}>📍</span>
+                  <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: '#0f172a' }}>{tl('Local: Leme, São Paulo — Brasil', 'Venue: Leme, São Paulo — Brazil', 'Sede: Leme, São Paulo — Brasil')}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Regras e o que levar */}
+            <div style={glass({ padding: '22px', marginTop: 14 })}>
+              <div style={sectionHead}>{tl('Regras e o que levar', 'Rules & what to bring', 'Reglas y qué llevar')}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[
+                  ['🪪', tl('Documento oficial com foto', 'Official photo ID', 'Documento oficial con foto'), tl('Leve o mesmo documento que você anexou no portal — será usado para validar sua identidade no dia dos jogos.', 'Bring the same document you uploaded in the portal — it will be used to verify your identity on game day.', 'Lleva el mismo documento que subiste en el portal — se usará para validar tu identidad el día de los juegos.')],
+                  ['👕', tl('Uniforme do seu time', 'Your team uniform', 'Uniforme de tu equipo'), tl('Use a camisa oficial da sua equipe, com o número cadastrado no roster.', 'Wear your team\'s official jersey, with the number registered in the roster.', 'Usa la camiseta oficial de tu equipo, con el número registrado en el roster.')],
+                  ['📋', tl('Elenco por categoria', 'Roster per category', 'Plantel por categoría'), tl('Cada categoria tem de 12 a 20 atletas. A escalação é enviada pelo clube e validada pela organização.', 'Each category has 12 to 20 athletes. The lineup is submitted by the club and validated by the organization.', 'Cada categoría tiene de 12 a 20 atletas. La alineación la envía el club y la valida la organización.')],
+                ].map(([ic, title, txt]) => (
+                  <div key={title} style={{ display: 'flex', gap: 12, padding: '4px 0' }}>
+                    <span style={{ fontSize: 20, flexShrink: 0 }}>{ic}</span>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 3 }}>{title}</div>
+                      <div style={{ fontSize: 13, color: 'rgba(15,23,42,.5)', lineHeight: 1.55 }}>{txt}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Estrutura e contato */}
+            <div style={glass({ padding: '22px', marginTop: 14 })}>
+              <div style={sectionHead}>{tl('Estrutura e contato', 'Facilities & contact', 'Estructura y contacto')}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8, marginBottom: 14 }}>
+                {[
+                  ['🧑‍⚖️', tl('Arbitragem oficial', 'Official refereeing', 'Arbitraje oficial')],
+                  ['💧', tl('Água e gelo', 'Water and ice', 'Agua y hielo')],
+                  ['🏥', tl('Suporte médico', 'Medical support', 'Soporte médico')],
+                  ['🍽️', tl('Espaço para alimentação', 'Food area', 'Zona de alimentación')],
+                ].map(([ic, txt]) => (
+                  <div key={txt} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', borderRadius: 12, background: 'rgba(15,23,42,.04)', border: '1px solid rgba(15,23,42,.06)' }}>
+                    <span style={{ fontSize: 18 }}>{ic}</span>
+                    <span style={{ fontSize: 12.5, fontWeight: 700, color: 'rgba(15,23,42,.7)' }}>{txt}</span>
+                  </div>
+                ))}
+              </div>
+              <a href="https://wa.me/5516997754522" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 18px', borderRadius: 10, background: '#25D366', color: '#fff', fontSize: 13, fontWeight: 800, textDecoration: 'none' }}>
+                💬 {tl('Falar com a organização', 'Contact the organization', 'Hablar con la organización')}
+              </a>
+            </div>
+          </div>
+        )}
       </div>
       </div>{/* /zIndex wrapper */}
     </div>

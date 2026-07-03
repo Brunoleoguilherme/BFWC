@@ -11,6 +11,7 @@ const T = {
     teams:    { tag: 'Para Clubes',  title: 'BFWC', label: 'Área dos Times',    desc: 'Inscrição, tabelas e informações do clube', btn: 'Entrar',  register: 'Criar conta de clube' },
     athletes: { tag: 'Para Atletas', title: 'BFWC', label: 'Área dos Atletas',  desc: 'Estatísticas, classificações e rankings',   btn: 'Entrar',  register: 'Criar conta de atleta' },
     admin:    { tag: 'Organização',  title: 'BFWC', label: 'Administradores',   desc: 'Painel de gestão de inscrições',            btn: 'Entrar',  register: 'Solicitar acesso' },
+    delegate: { tag: 'Arbitragem',   title: 'BFWC', label: 'Delegado da Partida', desc: 'Check-in, súmula e confirmação dos seus jogos', btn: 'Entrar', note: 'Acesso fornecido pela organização' },
   },
   en: {
     badge: 'Official Portal',
@@ -19,6 +20,7 @@ const T = {
     teams:    { tag: 'For Clubs',    title: 'BFWC', label: 'Team Area',         desc: 'Registration, tables and club info',        btn: 'Enter',   register: 'Create club account' },
     athletes: { tag: 'For Athletes', title: 'BFWC', label: 'Athlete Area',      desc: 'Statistics, standings and rankings',        btn: 'Enter',   register: 'Create athlete account' },
     admin:    { tag: 'Organization', title: 'BFWC', label: 'Administrators',    desc: 'Registration management panel',             btn: 'Enter',   register: 'Request access' },
+    delegate: { tag: 'Officiating', title: 'BFWC', label: 'Match Delegate', desc: 'Check-in, score sheet and confirmation of your games', btn: 'Enter', note: 'Access provided by the organization' },
   },
   es: {
     badge: 'Portal Oficial',
@@ -27,6 +29,7 @@ const T = {
     teams:    { tag: 'Para Clubes',  title: 'BFWC', label: 'Área de Equipos',   desc: 'Inscripción, tablas e información del club',btn: 'Entrar',  register: 'Crear cuenta de club' },
     athletes: { tag: 'Para Atletas', title: 'BFWC', label: 'Área de Atletas',   desc: 'Estadísticas, clasificaciones y rankings',  btn: 'Entrar',  register: 'Crear cuenta de atleta' },
     admin:    { tag: 'Organización', title: 'BFWC', label: 'Administradores',   desc: 'Panel de gestión de inscripciones',         btn: 'Entrar',  register: 'Solicitar acceso' },
+    delegate: { tag: 'Arbitraje',   title: 'BFWC', label: 'Delegado del Partido', desc: 'Check-in, acta y confirmación de tus partidos', btn: 'Entrar', note: 'Acceso proporcionado por la organización' },
   },
 };
 
@@ -34,6 +37,7 @@ const CARDS = [
   { key: 'teams',    loginHref: '/portal/times/login',   registerHref: '/portal/times/cadastro',    accent: '#0D4BFF', glow: 'rgba(13,75,255,.12)',  btnColor: '#fff',    btnBg: '#0D4BFF' },
   { key: 'athletes', loginHref: '/portal/atletas/login',  registerHref: '/portal/atletas/cadastro',  accent: '#009c3b', glow: 'rgba(0,156,59,.1)',    btnColor: '#fff',    btnBg: '#009c3b' },
   { key: 'admin',    loginHref: '/admin/login',            registerHref: '/portal/admin/solicitar',   accent: '#f4ff00', glow: 'rgba(244,255,0,.1)',   btnColor: '#031020', btnBg: '#f4ff00' },
+  { key: 'delegate', loginHref: '/admin/login',            registerHref: null,                        accent: '#eab308', glow: 'rgba(234,179,8,.12)',  btnColor: '#031020', btnBg: '#eab308' },
 ];
 
 export default function PortalPage() {
@@ -57,8 +61,9 @@ export default function PortalPage() {
   return (
     <div className="login-root" style={{ alignItems: 'center', overflowY: 'auto', minHeight: '100vh' }}>
       <style>{`
-        .portal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: stretch; }
-        .portal-wrap { width: 100%; max-width: 900px; padding: 32px 16px 24px; animation: cardIn .55s cubic-bezier(.22,.61,.36,1) both; }
+        .portal-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; align-items: stretch; }
+        .portal-wrap { width: 100%; max-width: 1040px; padding: 32px 16px 24px; animation: cardIn .55s cubic-bezier(.22,.61,.36,1) both; }
+        @media (max-width: 900px) { .portal-grid { grid-template-columns: 1fr 1fr; } }
         @media (max-width: 768px) {
           .portal-grid { grid-template-columns: 1fr; gap: 12px; }
           .portal-wrap { padding: 20px 16px 16px; }
@@ -156,21 +161,27 @@ export default function PortalPage() {
                 {/* Divider */}
                 <div style={{ margin: '14px 0 12px', borderTop: '1px solid rgba(255,255,255,.06)' }} />
 
-                {/* Register link */}
-                <a href={card.registerHref} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  fontSize: 11, fontWeight: 700, letterSpacing: '.5px', textTransform: 'uppercase',
-                  color: card.accent, textDecoration: 'none',
-                  padding: '8px', borderRadius: 8,
-                  border: `1px solid ${card.accent}50`,
-                  background: card.accent + '18',
-                  transition: 'all .15s',
-                }}
-                  onMouseEnter={e => { e.currentTarget.style.background = card.accent + '30'; e.currentTarget.style.borderColor = card.accent + '80'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = card.accent + '18'; e.currentTarget.style.borderColor = card.accent + '50'; }}
-                >
-                  + {info.register}
-                </a>
+                {/* Register link OU nota (delegado não se cadastra) */}
+                {card.registerHref ? (
+                  <a href={card.registerHref} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                    fontSize: 11, fontWeight: 700, letterSpacing: '.5px', textTransform: 'uppercase',
+                    color: card.accent, textDecoration: 'none',
+                    padding: '8px', borderRadius: 8,
+                    border: `1px solid ${card.accent}50`,
+                    background: card.accent + '18',
+                    transition: 'all .15s',
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.background = card.accent + '30'; e.currentTarget.style.borderColor = card.accent + '80'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = card.accent + '18'; e.currentTarget.style.borderColor = card.accent + '50'; }}
+                  >
+                    + {info.register}
+                  </a>
+                ) : (
+                  <div style={{ textAlign: 'center', fontSize: 10, color: 'rgba(255,255,255,.35)', padding: '8px', lineHeight: 1.4 }}>
+                    {info.note}
+                  </div>
+                )}
               </div>
             );
           })}

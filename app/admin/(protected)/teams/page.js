@@ -46,8 +46,12 @@ const S = {
   }),
 };
 
+const BRL = (cents) => ((cents || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+// Status usados apenas na análise das PRÉ-INSCRIÇÕES (form club_interests).
+// Inscritos/Confirmados agora vêm do PAGAMENTO (portal_teams), não daqui.
 const STATUSES = [
-  { key: 'pre_inscrito',         label: 'Pré-inscritos', color: '#a855f7' },
+  { key: 'pre_inscrito',         label: 'Novos',         color: '#a855f7' },
   { key: 'pendente_analise',     label: 'Pendente',      color: '#94a3b8' },
   { key: 'em_revisao',           label: 'Em Revisão',    color: '#009c3b' },
   { key: 'aprovado',             label: 'Aprovado',      color: '#009c3b' },
@@ -55,6 +59,8 @@ const STATUSES = [
   { key: 'rejeitado',            label: 'Rejeitado',     color: '#ff4444' },
 ];
 const STATUS_MAP = Object.fromEntries(STATUSES.map(s => [s.key, s]));
+// Colunas do Kanban de pré-inscrição (sem o status manual "Confirmado")
+const KANBAN_STATUSES = STATUSES.filter(s => s.key !== 'inscricao_confirmada');
 
 function Tag({ label, color }) {
   return <span style={S.tag(color)}>{label}</span>;
@@ -226,7 +232,7 @@ function Modal({ team, onClose, onUpdate, readOnly = false }) {
             <div style={{ marginBottom: 20 }}>
               <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 10 }}>Mover para</div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {STATUSES.filter(s => s.key !== t.status).map(s => (
+                {KANBAN_STATUSES.filter(s => s.key !== t.status).map(s => (
                   <button key={s.key} style={S.mActionBtn(s.color)} onClick={() => { updateStatus(s.key); onClose(); }}>{s.label}</button>
                 ))}
                 <button style={S.mActionBtn('#ff4444')} onClick={() => { updateStatus('spam_descartado'); onClose(); }}>🗑 Spam</button>
@@ -305,9 +311,11 @@ export default function TeamsPage() {
   const [search, setSearch] = useState('');
   const [showSpam, setShowSpam] = useState(false);
   const [role, setRole] = useState('admin');
+  const [reg, setReg] = useState(null); // funil por pagamento (inscritos/confirmados)
 
   useEffect(() => {
     fetch('/api/admin/me').then(r => r.json()).then(d => setRole(d.role || 'viewer'));
+    fetch('/api/admin/registrations').then(r => r.json()).then(d => { if (d.ok) setReg(d); }).catch(() => {});
   }, []);
 
   // Drag state
@@ -354,14 +362,14 @@ export default function TeamsPage() {
     return true;
   });
 
-  const confirmed = teams.filter(t => t.status === 'inscricao_confirmada');
-  const total = teams.filter(t => t.status !== 'spam_descartado').length;
-  const totalAthletes = confirmed.reduce((s, t) => s + (parseInt(t.athletes_count) || 0), 0);
+  const preInscritos = teams.filter(t => !['spam_descartado', 'rejeitado'].includes(t.status)).length;
+  const inscritosCount   = reg?.counts?.inscritos ?? null;
+  const confirmadosCount = reg?.counts?.confirmados ?? null;
   const pendingCount = teams.filter(t => t.status === 'pendente_analise').length;
 
   const cols = showSpam
-    ? [...STATUSES, { key: 'spam_descartado', label: 'Spam', color: '#ff4444' }]
-    : STATUSES;
+    ? [...KANBAN_STATUSES, { key: 'spam_descartado', label: 'Spam', color: '#ff4444' }]
+    : KANBAN_STATUSES;
 
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", color: '#0f172a' }}>
@@ -384,7 +392,7 @@ export default function TeamsPage() {
       <div style={{ marginBottom: 28 }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: '#009c3b', marginBottom: 8 }}>CRM</div>
         <h1 className="teams-title" style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1.5, color: '#0f172a', marginBottom: 0 }}>
-          {filterStatus ? (STATUS_MAP[filterStatus]?.label || filterStatus) : 'Times Inscritos'}
+          {filterStatus ? (STATUS_MAP[filterStatus]?.label || filterStatus) : 'Pré-inscritos'}
         </h1>
         {filterStatus && (
           <a href="/admin/teams" style={{ display: 'inline-block', marginTop: 8, fontSize: 12, color: '#64748b', textDecoration: 'none' }}>
@@ -396,10 +404,10 @@ export default function TeamsPage() {
       {/* Stats */}
       <div className="teams-stats">
         {[
-          { label: 'Total',       value: total,            alert: false },
-          { label: 'Confirmados', value: confirmed.length, alert: false },
-          { label: 'Atletas',     value: totalAthletes,    alert: false },
-          { label: 'Pendentes',   value: pendingCount,     alert: pendingCount > 0 },
+          { label: 'Pré-inscritos', value: preInscritos,                          alert: false },
+          { label: 'Inscritos',     value: inscritosCount   == null ? '—' : inscritosCount,   alert: false },
+          { label: 'Confirmados',   value: confirmadosCount == null ? '—' : confirmadosCount, alert: false },
+          { label: 'Pendentes',     value: pendingCount,                          alert: pendingCount > 0 },
         ].map(s => (
           <div key={s.label} style={{
             flex: 1, minWidth: 130, padding: '18px 22px',
@@ -530,8 +538,76 @@ export default function TeamsPage() {
         </div>
       )}
 
+      {/* ── Seções por pagamento (só na visão geral) ─────────────────────── */}
+      {!filterStatus && (
+        <div style={{ marginTop: 40 }}>
+          <div id="inscritos" style={{ scrollMarginTop: 80 }}>
+            <PaymentSection
+              title="Inscritos" subtitle="Pagaram ao menos a 1ª parcela · falta quitar"
+              color="#ea580c" teams={reg?.inscritos} loading={!reg} search={search} />
+          </div>
+          <div style={{ height: 28 }} />
+          <div id="confirmados" style={{ scrollMarginTop: 80 }}>
+            <PaymentSection
+              title="Confirmados" subtitle="Pagamento completo · inscrição garantida"
+              color="#009c3b" teams={reg?.confirmados} loading={!reg} search={search} />
+          </div>
+        </div>
+      )}
+
       {selected && (
         <Modal team={selected} onClose={() => setSelected(null)} onUpdate={() => { fetchTeams(); setSelected(null); }} readOnly={role === 'viewer'} />
+      )}
+    </div>
+  );
+}
+
+// ── Seção de times por pagamento (inscritos / confirmados) ──────────────────
+function PaymentSection({ title, subtitle, color, teams, loading, search }) {
+  const list = (teams || []).filter(t => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return t.club_name?.toLowerCase().includes(q) || t.city?.toLowerCase().includes(q) || t.country?.toLowerCase().includes(q);
+  });
+  return (
+    <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 20, padding: '24px 26px', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+        <span style={{ width: 9, height: 9, borderRadius: '50%', background: color, flexShrink: 0 }} />
+        <h2 style={{ fontSize: 20, fontWeight: 900, letterSpacing: -.8, color: '#0f172a', margin: 0 }}>{title}</h2>
+        <span style={{ fontSize: 12, fontWeight: 800, padding: '2px 11px', borderRadius: 20, background: color + '18', color, border: `1px solid ${color}30` }}>{loading ? '—' : list.length}</span>
+      </div>
+      <p style={{ fontSize: 12, color: '#64748b', margin: '0 0 18px' }}>{subtitle}</p>
+
+      {loading ? (
+        <div style={{ color: '#94a3b8', fontSize: 13, padding: '20px 0' }}>Carregando...</div>
+      ) : list.length === 0 ? (
+        <div style={{ border: '1px dashed #e2e8f0', borderRadius: 14, padding: 32, textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>Nenhum time nesta etapa</div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+          {list.map(t => {
+            const pct = t.total_cents > 0 ? Math.min(100, Math.round((t.paid_cents / t.total_cents) * 100)) : 0;
+            return (
+              <div key={t.id} style={{ padding: '16px 18px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                  <span style={{ fontSize: 13.5, fontWeight: 800, color: '#0f172a' }}>{t.club_name}</span>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: t.option === '2' ? '#a855f7' : '#0D4BFF', flexShrink: 0 }}>Opção {t.option}</span>
+                </div>
+                <div style={{ fontSize: 11, color: '#64748b', margin: '3px 0 10px' }}>{[t.city, t.country].filter(Boolean).join(' · ')}</div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+                  {t.category && <span style={S.tag('#0D4BFF')}>{t.category.split(',')[0].trim()}</span>}
+                  <span style={S.tag('#64748b')}>{t.athletes} atletas</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 5 }}>
+                  <span style={{ color: '#64748b', fontWeight: 600 }}>{BRL(t.paid_cents)} <span style={{ color: '#cbd5e1' }}>/ {BRL(t.total_cents)}</span></span>
+                  <span style={{ fontWeight: 800, color }}>{t.plan_size ? `${t.paid_count}/${t.plan_size} parc.` : `${pct}%`}</span>
+                </div>
+                <div style={{ height: 6, borderRadius: 5, background: '#e2e8f0', overflow: 'hidden' }}>
+                  <div style={{ width: `${pct}%`, height: '100%', background: color }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
       )}
     </div>
   );

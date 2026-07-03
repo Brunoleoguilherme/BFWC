@@ -67,6 +67,8 @@ export async function POST(req) {
   if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
 
   // Send invite email to athlete if they have an email
+  let emailSent = false;
+  let emailError = null;
   if (email) {
     try {
       const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://brasilflagworldchampionship.com';
@@ -74,17 +76,31 @@ export async function POST(req) {
       const clubName = team?.club_name || 'seu clube';
 
       const resend = getResend();
-      await resend.emails.send({
+      const { data: sendData, error: sendError } = await resend.emails.send({
         from: fromEmail,
         to: email,
         subject: `${clubName} te convocou para o BFWC 2026! 🏈`,
         html: athleteInviteHtml({ athlete_name: name, club_name: clubName, register_url: registerUrl }),
       });
+      // Resend returns { data, error } — error is non-null on failure (e.g. domain not verified)
+      if (sendError) {
+        emailError = sendError.message || String(sendError);
+        console.error('[athlete-invite] resend error:', emailError);
+      } else {
+        emailSent = true;
+      }
     } catch (emailErr) {
-      // Don't fail the request if email sending fails — athlete was added successfully
-      console.error('[athlete-invite] email error:', emailErr.message);
+      // Don't fail the request if email sending throws — athlete was added successfully
+      emailError = emailErr.message || String(emailErr);
+      console.error('[athlete-invite] email error:', emailError);
     }
   }
 
-  return NextResponse.json({ ok: true, athlete: { ...data, portal_registered: false, portal_email_verified: false, portal_status: null } });
+  return NextResponse.json({
+    ok: true,
+    athlete: { ...data, portal_registered: false, portal_email_verified: false, portal_status: null },
+    email_requested: !!email,
+    email_sent: emailSent,
+    email_error: emailError,
+  });
 }

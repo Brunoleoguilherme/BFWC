@@ -106,7 +106,7 @@ export async function POST(req) {
 
     const supabase = getSupabaseAdmin();
 
-    // Janela 07/07 23:59 → 12/07 23:59 (Brasília): só times já pré-inscritos podem se cadastrar
+    // Janela 07/07 00:00 → 12/07 23:59 (Brasília): só times já pré-inscritos podem se cadastrar
     if (isCadastroRestricted()) {
       const { data: pre } = await supabase
         .from('club_interests')

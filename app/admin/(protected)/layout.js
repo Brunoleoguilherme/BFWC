@@ -32,6 +32,18 @@ export default async function ProtectedLayout({ children }) {
     }
   }
 
+  // Arbitragem só acessa /admin/arbitragem
+  if (profile.role === 'arbitragem') {
+    const pathname = (await headers()).get('x-pathname') || '';
+    if (pathname && !pathname.startsWith('/admin/arbitragem')) redirect('/admin/arbitragem');
+  }
+
+  // Delegado da partida só acessa /admin/delegado
+  if (profile.role === 'delegado_partida') {
+    const pathname = (await headers()).get('x-pathname') || '';
+    if (pathname && !pathname.startsWith('/admin/delegado')) redirect('/admin/delegado');
+  }
+
   const initials = profile.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'A';
 
   return (
