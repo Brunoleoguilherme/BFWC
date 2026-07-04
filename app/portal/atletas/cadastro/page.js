@@ -18,6 +18,9 @@ const TR = {
     birthdate: 'Data de nascimento *', nationality: 'Nacionalidade / País *',
     whatsapp: 'WhatsApp *', instagram: 'Instagram *',
     instagramPlaceholder: '@seuinstagram',
+    phName: 'Seu nome completo', phEmail: 'email@seuclube.com',
+    phNationality: 'Ex: Brasil, EUA...', phWhatsapp: '+55 11 99999-0000',
+    phPassword: 'Mínimo 8 caracteres', phConfirm: 'Repita a senha',
     position: 'Posição *', positionDefault: 'Selecione sua posição',
     photoLabel: 'Foto do atleta *', photoHint: 'PNG ou JPG · Máx. 2 MB · Foto de rosto nítida',
     photoBtn: 'Escolher foto', photoChange: 'Trocar foto',
@@ -56,6 +59,9 @@ const TR = {
     birthdate: 'Date of birth *', nationality: 'Nationality / Country *',
     whatsapp: 'WhatsApp *', instagram: 'Instagram *',
     instagramPlaceholder: '@yourinstagram',
+    phName: 'Your full name', phEmail: 'email@yourclub.com',
+    phNationality: 'e.g. Brazil, USA...', phWhatsapp: 'e.g. +1 202 555-0123',
+    phPassword: 'Minimum 8 characters', phConfirm: 'Repeat the password',
     position: 'Position *', positionDefault: 'Select your position',
     photoLabel: 'Athlete photo *', photoHint: 'PNG or JPG · Max 2 MB · Clear face photo',
     photoBtn: 'Choose photo', photoChange: 'Change photo',
@@ -94,6 +100,9 @@ const TR = {
     birthdate: 'Fecha de nacimiento *', nationality: 'Nacionalidad / País *',
     whatsapp: 'WhatsApp *', instagram: 'Instagram *',
     instagramPlaceholder: '@tuinstagram',
+    phName: 'Tu nombre completo', phEmail: 'email@tuclub.com',
+    phNationality: 'Ej: Brasil, EE. UU...', phWhatsapp: 'Ej: +34 612 345 678',
+    phPassword: 'Mínimo 8 caracteres', phConfirm: 'Repite la contraseña',
     position: 'Posición *', positionDefault: 'Selecciona tu posición',
     photoLabel: 'Foto del atleta *', photoHint: 'PNG o JPG · Máx. 2 MB · Foto de rostro nítida',
     photoBtn: 'Elegir foto', photoChange: 'Cambiar foto',
@@ -457,14 +466,14 @@ export default function AtletasCadastroPage() {
                 <div style={{ gridColumn: '1/-1' }}>
                   <label className="login-label">{t.name}</label>
                   <input className="login-input" style={iStyle} value={form.name}
-                    onChange={e => set('name', e.target.value)} placeholder="Seu nome completo" />
+                    onChange={e => set('name', e.target.value)} placeholder={t.phName} />
                   {errors.name && <div className="login-error" style={{ marginTop: 4 }}>{errors.name}</div>}
                 </div>
 
                 <div style={{ gridColumn: '1/-1' }}>
                   <label className="login-label">{t.email}</label>
                   <input className="login-input" style={iStyle} type="email" value={form.email}
-                    onChange={e => set('email', e.target.value)} placeholder="email@seuclube.com" autoComplete="email" />
+                    onChange={e => set('email', e.target.value)} placeholder={t.phEmail} autoComplete="email" />
                   <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }}>ℹ️ {t.emailHint}</div>
                   {errors.email && <div className="login-error" style={{ marginTop: 4 }}>{errors.email}</div>}
                 </div>
@@ -479,14 +488,14 @@ export default function AtletasCadastroPage() {
                 <div>
                   <label className="login-label">{t.nationality}</label>
                   <input className="login-input" style={iStyle} value={form.nationality}
-                    onChange={e => set('nationality', e.target.value)} placeholder="Ex: Brasil, EUA..." />
+                    onChange={e => set('nationality', e.target.value)} placeholder={t.phNationality} />
                   {errors.nationality && <div className="login-error" style={{ marginTop: 4 }}>{errors.nationality}</div>}
                 </div>
 
                 <div>
                   <label className="login-label">{t.whatsapp}</label>
                   <input className="login-input" style={iStyle} value={form.whatsapp}
-                    onChange={e => set('whatsapp', e.target.value)} placeholder="+55 11 99999-0000" />
+                    onChange={e => set('whatsapp', e.target.value)} placeholder={t.phWhatsapp} />
                   {errors.whatsapp && <div className="login-error" style={{ marginTop: 4 }}>{errors.whatsapp}</div>}
                 </div>
 
@@ -605,12 +614,12 @@ export default function AtletasCadastroPage() {
               {/* Password */}
               <label className="login-label">{t.password}</label>
               <input className="login-input" style={iStyle} type="password" value={form.password}
-                onChange={e => set('password', e.target.value)} placeholder="Mínimo 8 caracteres" autoComplete="new-password" />
+                onChange={e => set('password', e.target.value)} placeholder={t.phPassword} autoComplete="new-password" />
               {errors.password && <div className="login-error" style={{ marginTop: 4 }}>{errors.password}</div>}
 
               <label className="login-label" style={{ marginTop: 14 }}>{t.confirmPassword}</label>
               <input className="login-input" style={iStyle} type="password" value={form.confirm}
-                onChange={e => set('confirm', e.target.value)} placeholder="Repita a senha" autoComplete="new-password" />
+                onChange={e => set('confirm', e.target.value)} placeholder={t.phConfirm} autoComplete="new-password" />
               {errors.confirm && <div className="login-error" style={{ marginTop: 4 }}>{errors.confirm}</div>}
 
               {serverError && <div className="login-error" style={{ marginTop: 12 }}>{serverError}</div>}

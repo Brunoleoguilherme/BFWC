@@ -10,6 +10,13 @@ const CATEGORIES = [
   { value: 'Sub-12',     label: 'Sub-12' },
 ];
 
+// Rótulos de exibição das categorias por idioma (o value salvo não muda)
+const CATEGORY_LABELS = {
+  pt: { 'Masculino': 'Masculino', 'Feminino': 'Feminino', 'Sub-15': 'Sub-15', 'Sub-12': 'Sub-12' },
+  en: { 'Masculino': "Men's",     'Feminino': "Women's",  'Sub-15': 'U-15',   'Sub-12': 'U-12' },
+  es: { 'Masculino': 'Masculino', 'Feminino': 'Femenino', 'Sub-15': 'Sub-15', 'Sub-12': 'Sub-12' },
+};
+
 const COUNTRIES = [
   'Brasil',
   'Afeganistão', 'África do Sul', 'Albânia', 'Alemanha', 'Andorra', 'Angola', 'Antígua e Barbuda', 'Arábia Saudita', 'Argélia', 'Argentina', 'Armênia', 'Austrália', 'Áustria', 'Azerbaijão',
@@ -38,6 +45,166 @@ const COUNTRIES = [
   'Outro',
 ];
 
+// Nome de exibição dos países em EN/ES: [en, es].
+// O value salvo continua sendo o nome em PT; países ausentes usam o nome PT.
+const COUNTRY_NAMES = {
+  'Afeganistão': ['Afghanistan', 'Afganistán'],
+  'África do Sul': ['South Africa', 'Sudáfrica'],
+  'Albânia': ['Albania', 'Albania'],
+  'Alemanha': ['Germany', 'Alemania'],
+  'Antígua e Barbuda': ['Antigua and Barbuda', 'Antigua y Barbuda'],
+  'Arábia Saudita': ['Saudi Arabia', 'Arabia Saudita'],
+  'Argélia': ['Algeria', 'Argelia'],
+  'Armênia': ['Armenia', 'Armenia'],
+  'Austrália': ['Australia', 'Australia'],
+  'Áustria': ['Austria', 'Austria'],
+  'Azerbaijão': ['Azerbaijan', 'Azerbaiyán'],
+  'Bangladesh': ['Bangladesh', 'Bangladés'],
+  'Barein': ['Bahrain', 'Baréin'],
+  'Bélgica': ['Belgium', 'Bélgica'],
+  'Benin': ['Benin', 'Benín'],
+  'Bielorrússia': ['Belarus', 'Bielorrusia'],
+  'Bolívia': ['Bolivia', 'Bolivia'],
+  'Bósnia e Herzegovina': ['Bosnia and Herzegovina', 'Bosnia y Herzegovina'],
+  'Botsuana': ['Botswana', 'Botsuana'],
+  'Brasil': ['Brazil', 'Brasil'],
+  'Bulgária': ['Bulgaria', 'Bulgaria'],
+  'Burquina Faso': ['Burkina Faso', 'Burkina Faso'],
+  'Butão': ['Bhutan', 'Bután'],
+  'Cabo Verde': ['Cape Verde', 'Cabo Verde'],
+  'Camarões': ['Cameroon', 'Camerún'],
+  'Camboja': ['Cambodia', 'Camboya'],
+  'Canadá': ['Canada', 'Canadá'],
+  'Catar': ['Qatar', 'Catar'],
+  'Cazaquistão': ['Kazakhstan', 'Kazajistán'],
+  'Chade': ['Chad', 'Chad'],
+  'Chipre': ['Cyprus', 'Chipre'],
+  'Cingapura': ['Singapore', 'Singapur'],
+  'Colômbia': ['Colombia', 'Colombia'],
+  'Comores': ['Comoros', 'Comoras'],
+  'Coreia do Norte': ['North Korea', 'Corea del Norte'],
+  'Coreia do Sul': ['South Korea', 'Corea del Sur'],
+  'Costa do Marfim': ['Ivory Coast', 'Costa de Marfil'],
+  'Croácia': ['Croatia', 'Croacia'],
+  'Dinamarca': ['Denmark', 'Dinamarca'],
+  'Djibuti': ['Djibouti', 'Yibuti'],
+  'Egito': ['Egypt', 'Egipto'],
+  'Emirados Árabes Unidos': ['United Arab Emirates', 'Emiratos Árabes Unidos'],
+  'Equador': ['Ecuador', 'Ecuador'],
+  'Eritreia': ['Eritrea', 'Eritrea'],
+  'Eslováquia': ['Slovakia', 'Eslovaquia'],
+  'Eslovênia': ['Slovenia', 'Eslovenia'],
+  'Espanha': ['Spain', 'España'],
+  'Estados Unidos': ['United States', 'Estados Unidos'],
+  'Estônia': ['Estonia', 'Estonia'],
+  'Etiópia': ['Ethiopia', 'Etiopía'],
+  'Fiji': ['Fiji', 'Fiyi'],
+  'Filipinas': ['Philippines', 'Filipinas'],
+  'Finlândia': ['Finland', 'Finlandia'],
+  'França': ['France', 'Francia'],
+  'Gabão': ['Gabon', 'Gabón'],
+  'Gâmbia': ['Gambia', 'Gambia'],
+  'Gana': ['Ghana', 'Ghana'],
+  'Geórgia': ['Georgia', 'Georgia'],
+  'Granada': ['Grenada', 'Granada'],
+  'Grécia': ['Greece', 'Grecia'],
+  'Guiana': ['Guyana', 'Guyana'],
+  'Guiné': ['Guinea', 'Guinea'],
+  'Guiné Equatorial': ['Equatorial Guinea', 'Guinea Ecuatorial'],
+  'Guiné-Bissau': ['Guinea-Bissau', 'Guinea-Bisáu'],
+  'Haiti': ['Haiti', 'Haití'],
+  'Holanda': ['Netherlands', 'Países Bajos'],
+  'Hungria': ['Hungary', 'Hungría'],
+  'Iêmen': ['Yemen', 'Yemen'],
+  'Ilhas Marshall': ['Marshall Islands', 'Islas Marshall'],
+  'Ilhas Salomão': ['Solomon Islands', 'Islas Salomón'],
+  'Índia': ['India', 'India'],
+  'Indonésia': ['Indonesia', 'Indonesia'],
+  'Irã': ['Iran', 'Irán'],
+  'Iraque': ['Iraq', 'Irak'],
+  'Irlanda': ['Ireland', 'Irlanda'],
+  'Islândia': ['Iceland', 'Islandia'],
+  'Itália': ['Italy', 'Italia'],
+  'Japão': ['Japan', 'Japón'],
+  'Jordânia': ['Jordan', 'Jordania'],
+  'Lesoto': ['Lesotho', 'Lesoto'],
+  'Letônia': ['Latvia', 'Letonia'],
+  'Líbano': ['Lebanon', 'Líbano'],
+  'Libéria': ['Liberia', 'Liberia'],
+  'Líbia': ['Libya', 'Libia'],
+  'Lituânia': ['Lithuania', 'Lituania'],
+  'Luxemburgo': ['Luxembourg', 'Luxemburgo'],
+  'Macedônia do Norte': ['North Macedonia', 'Macedonia del Norte'],
+  'Malásia': ['Malaysia', 'Malasia'],
+  'Malaui': ['Malawi', 'Malaui'],
+  'Maldivas': ['Maldives', 'Maldivas'],
+  'Mali': ['Mali', 'Malí'],
+  'Marrocos': ['Morocco', 'Marruecos'],
+  'Maurício': ['Mauritius', 'Mauricio'],
+  'Mauritânia': ['Mauritania', 'Mauritania'],
+  'México': ['Mexico', 'México'],
+  'Mianmar': ['Myanmar', 'Myanmar'],
+  'Micronésia': ['Micronesia', 'Micronesia'],
+  'Moçambique': ['Mozambique', 'Mozambique'],
+  'Moldávia': ['Moldova', 'Moldavia'],
+  'Mônaco': ['Monaco', 'Mónaco'],
+  'Mongólia': ['Mongolia', 'Mongolia'],
+  'Namíbia': ['Namibia', 'Namibia'],
+  'Nicarágua': ['Nicaragua', 'Nicaragua'],
+  'Níger': ['Niger', 'Níger'],
+  'Nigéria': ['Nigeria', 'Nigeria'],
+  'Noruega': ['Norway', 'Noruega'],
+  'Nova Zelândia': ['New Zealand', 'Nueva Zelanda'],
+  'Omã': ['Oman', 'Omán'],
+  'Palau': ['Palau', 'Palaos'],
+  'Panamá': ['Panama', 'Panamá'],
+  'Papua-Nova Guiné': ['Papua New Guinea', 'Papúa Nueva Guinea'],
+  'Paquistão': ['Pakistan', 'Pakistán'],
+  'Paraguai': ['Paraguay', 'Paraguay'],
+  'Peru': ['Peru', 'Perú'],
+  'Polônia': ['Poland', 'Polonia'],
+  'Quênia': ['Kenya', 'Kenia'],
+  'Quirguistão': ['Kyrgyzstan', 'Kirguistán'],
+  'Reino Unido': ['United Kingdom', 'Reino Unido'],
+  'República Centro-Africana': ['Central African Republic', 'República Centroafricana'],
+  'República Dominicana': ['Dominican Republic', 'República Dominicana'],
+  'República Tcheca': ['Czech Republic', 'República Checa'],
+  'Romênia': ['Romania', 'Rumania'],
+  'Ruanda': ['Rwanda', 'Ruanda'],
+  'Rússia': ['Russia', 'Rusia'],
+  'Santa Lúcia': ['Saint Lucia', 'Santa Lucía'],
+  'São Cristóvão e Névis': ['Saint Kitts and Nevis', 'San Cristóbal y Nieves'],
+  'São Tomé e Príncipe': ['São Tomé and Príncipe', 'Santo Tomé y Príncipe'],
+  'São Vicente e Granadinas': ['Saint Vincent and the Grenadines', 'San Vicente y las Granadinas'],
+  'Seicheles': ['Seychelles', 'Seychelles'],
+  'Serra Leoa': ['Sierra Leone', 'Sierra Leona'],
+  'Sérvia': ['Serbia', 'Serbia'],
+  'Síria': ['Syria', 'Siria'],
+  'Somália': ['Somalia', 'Somalia'],
+  'Sudão': ['Sudan', 'Sudán'],
+  'Sudão do Sul': ['South Sudan', 'Sudán del Sur'],
+  'Suécia': ['Sweden', 'Suecia'],
+  'Suíça': ['Switzerland', 'Suiza'],
+  'Suriname': ['Suriname', 'Surinam'],
+  'Tailândia': ['Thailand', 'Tailandia'],
+  'Taiwan': ['Taiwan', 'Taiwán'],
+  'Tajiquistão': ['Tajikistan', 'Tayikistán'],
+  'Tanzânia': ['Tanzania', 'Tanzania'],
+  'Timor-Leste': ['Timor-Leste', 'Timor Oriental'],
+  'Trinidad e Tobago': ['Trinidad and Tobago', 'Trinidad y Tobago'],
+  'Tunísia': ['Tunisia', 'Túnez'],
+  'Turcomenistão': ['Turkmenistan', 'Turkmenistán'],
+  'Turquia': ['Turkey', 'Turquía'],
+  'Ucrânia': ['Ukraine', 'Ucrania'],
+  'Uruguai': ['Uruguay', 'Uruguay'],
+  'Uzbequistão': ['Uzbekistan', 'Uzbekistán'],
+  'Vaticano': ['Vatican City', 'Ciudad del Vaticano'],
+  'Vietnã': ['Vietnam', 'Vietnam'],
+  'Zâmbia': ['Zambia', 'Zambia'],
+  'Zimbábue': ['Zimbabwe', 'Zimbabue'],
+  'Outro': ['Other', 'Otro'],
+};
+
 const TERMS_PT = `1. DADOS DO CLUBE
 As informações fornecidas neste cadastro devem ser verdadeiras e corresponder ao clube/organização representada.
 
@@ -52,6 +219,38 @@ Os dados serão utilizados exclusivamente para comunicações relacionadas ao BF
 
 5. CONDUTA
 O clube compromete-se a manter conduta esportiva e respeito durante todos os eventos do campeonato.`;
+
+const TERMS_EN = `1. CLUB DATA
+The information provided in this registration must be true and correspond to the club/organization represented.
+
+2. APPROVAL
+Portal registration is subject to approval by the BFWC 2026 organization. Registration does not guarantee an automatic spot in the championship.
+
+3. RESPONSIBILITY
+The person responsible for the registration vouches for the accuracy of the information and compliance with the championship rules.
+
+4. PRIVACY
+Data will be used exclusively for communications related to BFWC 2026 and registration management.
+
+5. CONDUCT
+The club commits to maintaining sporting conduct and respect throughout all championship events.`;
+
+const TERMS_ES = `1. DATOS DEL CLUB
+La información proporcionada en este registro debe ser verdadera y corresponder al club/organización representada.
+
+2. APROBACIÓN
+El registro en el portal está sujeto a la aprobación de la organización del BFWC 2026. La inscripción no garantiza un cupo automático en el campeonato.
+
+3. RESPONSABILIDAD
+El responsable del registro asume la veracidad de la información y el cumplimiento de las reglas del campeonato.
+
+4. PRIVACIDAD
+Los datos se utilizarán exclusivamente para comunicaciones relacionadas con el BFWC 2026 y la gestión de las inscripciones.
+
+5. CONDUCTA
+El club se compromete a mantener una conducta deportiva y respeto durante todos los eventos del campeonato.`;
+
+const TERMS = { pt: TERMS_PT, en: TERMS_EN, es: TERMS_ES };
 
 const T = {
   pt: {
@@ -100,6 +299,16 @@ const T = {
     sameEmail: '⚠️ Use o <strong>mesmo e-mail</strong> cadastrado na pré-inscrição para concluir o cadastro.',
     contactLabel: 'Dúvidas? E-mail',
     selectCountry: 'Selecione o país',
+    phClubName: 'Ex: Clube Bandeirante',
+    phCity: 'Ex: São Paulo',
+    phContactName: 'Nome completo',
+    phRole: 'Ex: Presidente, Técnico',
+    phEmail: 'email@clube.com',
+    phWhatsapp: '+55 11 99999-0000',
+    phPassword: 'Mínimo 8 caracteres',
+    phConfirm: 'Repita a senha',
+    phAthletes: 'Nº de atletas',
+    noImage: 'Nenhuma imagem selecionada',
   },
   en: {
     badge: 'Club Registration',
@@ -147,6 +356,16 @@ const T = {
     sameEmail: '⚠️ Use the <strong>same email</strong> from your pre-registration to complete sign-up.',
     contactLabel: 'Questions? Email',
     selectCountry: 'Select country',
+    phClubName: 'e.g. Bandeirante Club',
+    phCity: 'e.g. São Paulo',
+    phContactName: 'Full name',
+    phRole: 'e.g. President, Coach',
+    phEmail: 'email@yourclub.com',
+    phWhatsapp: 'e.g. +1 202 555-0123',
+    phPassword: 'Minimum 8 characters',
+    phConfirm: 'Repeat the password',
+    phAthletes: 'No. of athletes',
+    noImage: 'No image selected',
   },
   es: {
     badge: 'Registro de Club',
@@ -194,6 +413,16 @@ const T = {
     sameEmail: '⚠️ Usa el <strong>mismo correo</strong> registrado en la pre-inscripción para completar el registro.',
     contactLabel: '¿Dudas? Correo',
     selectCountry: 'Selecciona el país',
+    phClubName: 'Ej: Club Bandeirante',
+    phCity: 'Ej: São Paulo',
+    phContactName: 'Nombre completo',
+    phRole: 'Ej: Presidente, Entrenador',
+    phEmail: 'email@tuclub.com',
+    phWhatsapp: 'Ej: +34 612 345 678',
+    phPassword: 'Mínimo 8 caracteres',
+    phConfirm: 'Repite la contraseña',
+    phAthletes: 'N.º de atletas',
+    noImage: 'Ninguna imagen seleccionada',
   },
 };
 
@@ -234,6 +463,18 @@ export default function CadastroPage() {
   }
 
   const t = T[lang];
+  const catLabel = (value) => CATEGORY_LABELS[lang]?.[value] || value;
+  const countryLabel = (c) => {
+    if (lang === 'pt') return c;
+    const names = COUNTRY_NAMES[c];
+    return names ? names[lang === 'en' ? 0 : 1] : c;
+  };
+  // Ordena pelo nome exibido no idioma atual (Brasil primeiro, "Outro" por último)
+  const countryOptions = [
+    COUNTRIES[0],
+    ...COUNTRIES.slice(1, -1).sort((a, b) => countryLabel(a).localeCompare(countryLabel(b), lang)),
+    COUNTRIES[COUNTRIES.length - 1],
+  ];
 
   function set(field, value) {
     setForm(f => ({ ...f, [field]: value }));
@@ -446,38 +687,38 @@ export default function CadastroPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div style={{ gridColumn: '1 / -1' }}>
                   <label className="login-label">{t.clubName}</label>
-                  <input className="login-input" style={inputStyle} value={form.club_name} onChange={e => set('club_name', e.target.value)} placeholder="Ex: Clube Bandeirante" />
+                  <input className="login-input" style={inputStyle} value={form.club_name} onChange={e => set('club_name', e.target.value)} placeholder={t.phClubName} />
                   {errors.club_name && <div className="login-error" style={{ marginTop: 4 }}>{errors.club_name}</div>}
                 </div>
                 <div>
                   <label className="login-label">{t.country}</label>
                   <select className="login-input" style={{ ...inputStyle, cursor: 'pointer' }} value={form.country} onChange={e => set('country', e.target.value)}>
                     <option value="">{t.selectCountry}</option>
-                    {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    {countryOptions.map(c => <option key={c} value={c}>{countryLabel(c)}</option>)}
                   </select>
                   {errors.country && <div className="login-error" style={{ marginTop: 4 }}>{errors.country}</div>}
                 </div>
                 <div>
                   <label className="login-label">{t.city}</label>
-                  <input className="login-input" style={inputStyle} value={form.city} onChange={e => set('city', e.target.value)} placeholder="Ex: São Paulo" />
+                  <input className="login-input" style={inputStyle} value={form.city} onChange={e => set('city', e.target.value)} placeholder={t.phCity} />
                 </div>
                 <div>
                   <label className="login-label">{t.contactName}</label>
-                  <input className="login-input" style={inputStyle} value={form.contact_name} onChange={e => set('contact_name', e.target.value)} placeholder="Nome completo" />
+                  <input className="login-input" style={inputStyle} value={form.contact_name} onChange={e => set('contact_name', e.target.value)} placeholder={t.phContactName} />
                   {errors.contact_name && <div className="login-error" style={{ marginTop: 4 }}>{errors.contact_name}</div>}
                 </div>
                 <div>
                   <label className="login-label">{t.contactRole}</label>
-                  <input className="login-input" style={inputStyle} value={form.contact_role} onChange={e => set('contact_role', e.target.value)} placeholder="Ex: Presidente, Técnico" />
+                  <input className="login-input" style={inputStyle} value={form.contact_role} onChange={e => set('contact_role', e.target.value)} placeholder={t.phRole} />
                 </div>
                 <div>
                   <label className="login-label">{t.email}</label>
-                  <input className="login-input" style={inputStyle} type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="email@clube.com" />
+                  <input className="login-input" style={inputStyle} type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder={t.phEmail} />
                   {errors.email && <div className="login-error" style={{ marginTop: 4 }}>{errors.email}</div>}
                 </div>
                 <div>
                   <label className="login-label">{t.whatsapp}</label>
-                  <input className="login-input" style={inputStyle} value={form.whatsapp} onChange={e => set('whatsapp', e.target.value)} placeholder="+55 11 99999-0000" />
+                  <input className="login-input" style={inputStyle} value={form.whatsapp} onChange={e => set('whatsapp', e.target.value)} placeholder={t.phWhatsapp} />
                 </div>
 
                 {/* Logo upload */}
@@ -509,7 +750,7 @@ export default function CadastroPage() {
                     )}
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 12, fontWeight: 700, color: logoPreview ? '#0f172a' : '#94a3b8', marginBottom: 2 }}>
-                        {logoPreview ? logoFile?.name : 'Nenhuma imagem selecionada'}
+                        {logoPreview ? logoFile?.name : t.noImage}
                       </div>
                       <div style={{ fontSize: 10, color: '#94a3b8', letterSpacing: '.5px' }}>{t.logoHint}</div>
                     </div>
@@ -563,7 +804,7 @@ export default function CadastroPage() {
                       }}>
                         {checked ? '✓' : ''}
                       </div>
-                      {cat.label}
+                      {catLabel(cat.value)}
                     </button>
                   );
                 })}
@@ -576,14 +817,14 @@ export default function CadastroPage() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 8 }}>
                     {form.categories.map(cat => (
                       <div key={cat}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>{cat}</div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>{catLabel(cat)}</div>
                         <input
                           className="login-input"
                           style={{ width: '100%', boxSizing: 'border-box' }}
                           type="number" min={1} max={500}
                           value={form.athletes_per_category[cat] || ''}
                           onChange={e => setAthleteCount(cat, e.target.value)}
-                          placeholder="Nº de atletas"
+                          placeholder={t.phAthletes}
                         />
                       </div>
                     ))}
@@ -606,11 +847,11 @@ export default function CadastroPage() {
           {step === 3 && (
             <form onSubmit={handleSubmit}>
               <label className="login-label">{t.password}</label>
-              <input className="login-input" style={inputStyle} type="password" value={form.password} onChange={e => set('password', e.target.value)} placeholder="Mínimo 8 caracteres" autoComplete="new-password" />
+              <input className="login-input" style={inputStyle} type="password" value={form.password} onChange={e => set('password', e.target.value)} placeholder={t.phPassword} autoComplete="new-password" />
               {errors.password && <div className="login-error" style={{ marginTop: 4 }}>{errors.password}</div>}
 
               <label className="login-label" style={{ marginTop: 14 }}>{t.confirmPassword}</label>
-              <input className="login-input" style={inputStyle} type="password" value={form.confirmPassword} onChange={e => set('confirmPassword', e.target.value)} placeholder="Repita a senha" autoComplete="new-password" />
+              <input className="login-input" style={inputStyle} type="password" value={form.confirmPassword} onChange={e => set('confirmPassword', e.target.value)} placeholder={t.phConfirm} autoComplete="new-password" />
               {errors.confirmPassword && <div className="login-error" style={{ marginTop: 4 }}>{errors.confirmPassword}</div>}
 
               <div style={{ marginTop: 20 }}>
@@ -620,7 +861,7 @@ export default function CadastroPage() {
                   background: '#f8fafc', border: '1px solid #e2e8f0',
                   fontSize: 11, color: '#64748b', lineHeight: 1.7, whiteSpace: 'pre-line',
                 }}>
-                  {TERMS_PT}
+                  {TERMS[lang] || TERMS_PT}
                 </div>
               </div>
 
