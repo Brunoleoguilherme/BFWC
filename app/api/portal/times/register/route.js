@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { getResend, fromEmail, adminEmails } from '@/lib/email';
+import { getResend, fromEmail, adminEmails, emailLogoImg } from '@/lib/email';
 import { randomUUID } from 'crypto';
 import { pbkdf2Sync, randomBytes } from 'crypto';
 import { isCadastroRestricted } from '@/lib/registrationWindow';
@@ -14,7 +14,7 @@ function hashPassword(password) {
 function verifyEmailHtml({ club_name, contact_name, verifyUrl }) {
   return `
   <div style="font-family:Inter,sans-serif;background:#031020;color:#fff;padding:40px 24px;max-width:560px;margin:0 auto;border-radius:16px">
-    <h1 style="font-size:28px;font-weight:900;margin:0 0 6px">BFWC <span style="color:#f4ff00">2026</span></h1>
+    ${emailLogoImg(110, 'margin:0 0 10px')}
     <p style="color:rgba(255,255,255,.4);font-size:13px;margin:0 0 28px">Brasil Flag World Championship</p>
     <h2 style="font-size:20px;font-weight:800;margin:0 0 12px">Confirme seu e-mail</h2>
     <p style="color:#c8d8f5;font-size:14px;line-height:1.6;margin:0 0 24px">
@@ -30,7 +30,7 @@ function verifyEmailHtml({ club_name, contact_name, verifyUrl }) {
 function adminNewTeamHtml({ club_name, contact_name, email, country, city, category, logo_url, approveUrl }) {
   return `
   <div style="font-family:Inter,sans-serif;background:#031020;color:#fff;padding:40px 24px;max-width:560px;margin:0 auto;border-radius:16px">
-    <h1 style="font-size:28px;font-weight:900;margin:0 0 6px">BFWC <span style="color:#f4ff00">2026</span></h1>
+    ${emailLogoImg(110, 'margin:0 0 10px')}
     <p style="color:rgba(255,255,255,.4);font-size:13px;margin:0 0 28px">Novo cadastro no Portal</p>
     <h2 style="font-size:18px;font-weight:800;margin:0 0 16px">✅ Novo clube aguardando aprovação</h2>
     ${logo_url ? `<img src="${logo_url}" alt="Logo do clube" style="width:64px;height:64px;object-fit:contain;border-radius:8px;background:rgba(255,255,255,.05);margin-bottom:16px;display:block">` : ''}

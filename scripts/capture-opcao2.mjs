@@ -69,7 +69,8 @@ for (const [lang, L] of Object.entries(LANGS)) {
         try {
           const data = await res.clone().json();
           data.payment_option = null;
-          if (data.team) data.team.payment_option = null;
+          data.payment_selection = null;
+          if (data.team) { data.team.payment_option = null; data.team.payment_selection = null; }
           return new Response(JSON.stringify(data), { status: res.status, headers: { 'Content-Type': 'application/json' } });
         } catch { return res; }
       }

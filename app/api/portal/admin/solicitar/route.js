@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getResend, fromEmail, adminEmails } from '@/lib/email';
+import { getResend, fromEmail, adminEmails, emailLogoImg } from '@/lib/email';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
 export async function POST(req) {
@@ -51,7 +51,7 @@ export async function POST(req) {
         subject: `[BFWC Portal] Solicitação de acesso admin: ${name}`,
         html: `
         <div style="font-family:Inter,sans-serif;background:#031020;color:#fff;padding:40px 24px;max-width:560px;margin:0 auto;border-radius:16px">
-          <h1 style="font-size:28px;font-weight:900;margin:0 0 6px">BFWC <span style="color:#f4ff00">2026</span></h1>
+          ${emailLogoImg(110, 'margin:0 0 10px')}
           <p style="color:rgba(255,255,255,.4);font-size:13px;margin:0 0 28px">Solicitação de Acesso Admin</p>
           <h2 style="font-size:18px;font-weight:800;margin:0 0 16px">🔐 Nova solicitação de acesso administrativo</h2>
           <table style="width:100%;border-collapse:collapse;margin-bottom:20px">

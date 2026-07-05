@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { fromEmail, adminEmails } from '@/lib/email';
+import { fromEmail, adminEmails, emailLogoImg } from '@/lib/email';
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -55,6 +55,7 @@ export async function POST(req) {
     html: `
       <div style="background:#020814;padding:32px 24px;font-family:Inter,sans-serif;max-width:560px;margin:0 auto;border-radius:16px">
         <div style="text-align:center;margin-bottom:24px">
+          ${emailLogoImg(96, 'margin:0 auto 12px')}
           <span style="background:#0D4BFF18;color:#0D4BFF;font-size:10px;font-weight:800;letter-spacing:3px;text-transform:uppercase;padding:4px 14px;border-radius:20px;border:1px solid #0D4BFF30">BFWC 2026 — Admin</span>
         </div>
         <h2 style="color:#fff;font-size:20px;font-weight:900;margin:0 0 8px">🏈 Nova escalação recebida</h2>
@@ -87,6 +88,7 @@ export async function POST(req) {
     html: `
       <div style="background:#020814;padding:32px 24px;font-family:Inter,sans-serif;max-width:560px;margin:0 auto;border-radius:16px">
         <div style="text-align:center;margin-bottom:24px">
+          ${emailLogoImg(96, 'margin:0 auto 12px')}
           <span style="background:#f4ff0008;color:#f4ff00;font-size:10px;font-weight:800;letter-spacing:3px;text-transform:uppercase;padding:4px 14px;border-radius:20px;border:1px solid #f4ff0025">BFWC 2026</span>
         </div>
         <h2 style="color:#fff;font-size:22px;font-weight:900;margin:0 0 8px">✅ Escalação recebida!</h2>

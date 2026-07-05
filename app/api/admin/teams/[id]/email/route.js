@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { getResend, fromEmail } from '@/lib/email';
+import { getResend, fromEmail, emailLogoImg } from '@/lib/email';
 import { requireWriter } from '@/lib/authAdmin';
 
 const templates = {
@@ -9,6 +9,7 @@ const templates = {
     html: `
       <div style="font-family:Arial,sans-serif;background:#06184f;color:#fff;padding:28px">
         <div style="max-width:640px;margin:auto;background:#082574;border:1px solid #1b62ff;border-radius:24px;padding:36px">
+          ${emailLogoImg(100, 'margin:0 0 16px')}
           <h1 style="color:#68ff5b;margin-top:0">🎉 Parabéns! Inscrição aprovada!</h1>
           <p style="font-size:16px">Olá, <strong>${team.contact_name}</strong>! A equipe <strong>${team.club_name}</strong> foi aprovada para o Brasil Flag World Championship 2026.</p>
           <p style="font-size:15px;color:#c8d8f5">Em breve entraremos em contato com os próximos passos e informações sobre o evento em Leme, SP.</p>
@@ -22,6 +23,7 @@ const templates = {
     html: `
       <div style="font-family:Arial,sans-serif;background:#06184f;color:#fff;padding:28px">
         <div style="max-width:640px;margin:auto;background:#082574;border:1px solid #1b62ff;border-radius:24px;padding:36px">
+          ${emailLogoImg(100, 'margin:0 0 16px')}
           <h1 style="color:#eaff00;margin-top:0">Informações adicionais necessárias</h1>
           <p style="font-size:16px">Olá, <strong>${team.contact_name}</strong>! Estamos analisando a inscrição da equipe <strong>${team.club_name}</strong>.</p>
           <p style="font-size:15px;color:#c8d8f5">Para prosseguir, precisamos de algumas informações adicionais. Por favor, responda este e-mail ou entre em contato pelo WhatsApp.</p>
@@ -35,6 +37,7 @@ const templates = {
     html: `
       <div style="font-family:Arial,sans-serif;background:#06184f;color:#fff;padding:28px">
         <div style="max-width:640px;margin:auto;background:#082574;border:1px solid #1b62ff;border-radius:24px;padding:36px">
+          ${emailLogoImg(100, 'margin:0 0 16px')}
           <h1 style="color:#eaff00;margin-top:0">Atualização da sua inscrição</h1>
           <p style="font-size:16px">Olá, <strong>${team.contact_name}</strong>. Obrigado pelo interesse da equipe <strong>${team.club_name}</strong> no Brasil Flag World Championship 2026.</p>
           <p style="font-size:15px;color:#c8d8f5">Infelizmente não será possível confirmar a participação de vocês nesta edição. Agradecemos o interesse e esperamos contar com vocês em edições futuras.</p>

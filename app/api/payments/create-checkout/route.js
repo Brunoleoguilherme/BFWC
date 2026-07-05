@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { createCheckout, createLegacyCheckout } from '@/lib/pagbank';
 import { createCheckoutSession } from '@/lib/stripe';
-import { countCategories, optionTotalReais, activePlanSize, fullCategoryFor, computeInstallments } from '@/lib/installments';
+import { countCategories, optionTotalReais, activePlanSize, fullCategoryFor, computeInstallments, normalizeSelection, selectionTotalReais, selectionSummary } from '@/lib/installments';
 
 // Cartão de crédito via checkout hospedado.
 // Provedor escolhido pela env CARD_PROVIDER: 'stripe' (padrão) ou 'pagbank'.
@@ -13,7 +13,7 @@ export async function POST(req) {
     if (process.env.NEXT_PUBLIC_CARD_ENABLED === '0') {
       return NextResponse.json({ ok: false, code: 'CARD_SOON', message: 'Pagamento por cartão estará disponível em breve. Por enquanto, use o Pix.' }, { status: 503 });
     }
-    const { team_id, option, athletes_qty, installment_number, lang } = await req.json();
+    const { team_id, option, athletes_qty, installment_number, lang, selection } = await req.json();
     if (!team_id) {
       return NextResponse.json({ ok: false, message: 'team_id obrigatório.' }, { status: 400 });
     }
@@ -21,7 +21,7 @@ export async function POST(req) {
     const supabase = getSupabaseAdmin();
     const { data: team, error } = await supabase
       .from('portal_teams')
-      .select('id, club_name, email, category, status, amount_paid_cents, payment_plan, payment_option, athletes_paid_qty')
+      .select('id, club_name, email, category, status, amount_paid_cents, payment_plan, payment_option, athletes_paid_qty, payment_selection')
       .eq('id', team_id)
       .single();
 
@@ -43,20 +43,27 @@ export async function POST(req) {
       }
     }
 
-    // Opção: trava na primeira cobrança
-    const chosenOption = team.payment_option || (String(option) === '2' ? '2' : '1');
-    if (team.payment_option && String(option) && team.payment_option !== String(option)) {
-      return NextResponse.json({
-        ok: false, code: 'OPTION_LOCKED',
-        message: `A forma de pagamento já foi definida (Opção ${team.payment_option}). Continue por ela.`,
-      }, { status: 409 });
+    // Seleção por categoria: travada na primeira cobrança (retrocompatível com o modelo antigo)
+    let sel = normalizeSelection(team.payment_selection, team.category);
+    let legacy = null; // { option, qty } — modelo antigo de opção única
+    if (!sel) {
+      if (team.payment_option) {
+        legacy = { option: String(team.payment_option), qty: team.athletes_paid_qty || 0 };
+      } else {
+        sel = normalizeSelection(selection, team.category);
+        if (!sel && option) {
+          const opt = String(option) === '2' ? '2' : '1';
+          legacy = { option: opt, qty: opt === '2' ? Math.max(parseInt(athletes_qty, 10) || 0, 0) : 0 };
+        }
+        if (!sel && !legacy) {
+          return NextResponse.json({ ok: false, message: 'Escolha a forma de inscrição para cada categoria.' }, { status: 400 });
+        }
+      }
     }
-    const athQty = chosenOption === '2'
-      ? (team.payment_option ? (team.athletes_paid_qty || 0) : Math.max(parseInt(athletes_qty, 10) || 0, 0))
-      : 0;
 
-    const numCats = countCategories(team.category);
-    const totalCents = optionTotalReais(chosenOption, numCats, athQty) * 100;
+    const totalCents = (sel
+      ? selectionTotalReais(sel)
+      : optionTotalReais(legacy.option, countCategories(team.category), legacy.qty)) * 100;
     const paidCents = team.amount_paid_cents || 0;
     const remaining = totalCents - paidCents;
     if (remaining <= 0) {
@@ -177,8 +184,9 @@ export async function POST(req) {
       .from('portal_teams')
       .update({
         ...(provider === 'stripe' ? { stripe_session_id: checkout.id } : { pagbank_checkout_id: checkout.id }),
-        payment_option: chosenOption,
-        athletes_paid_qty: athQty,
+        ...(sel
+          ? { payment_selection: sel, payment_option: selectionSummary(sel).option, athletes_paid_qty: selectionSummary(sel).qty }
+          : { payment_option: legacy.option, athletes_paid_qty: legacy.qty }),
         payment_plan: planSize,
       })
       .eq('id', team.id);

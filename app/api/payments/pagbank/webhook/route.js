@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getOrder, getLegacyNotification } from '@/lib/pagbank';
-import { getResend, fromEmail } from '@/lib/email';
+import { getResend, fromEmail, emailLogoImg } from '@/lib/email';
 
 // Webhook de pagamento do PagBank (cartão).
 // O PagBank envia o pedido (order) com as cobranças (charges). Por segurança,
@@ -51,6 +51,7 @@ async function markPaid({ teamId, chargeId, chargedCents }) {
       subject: '✅ Pagamento confirmado — BFWC 2026',
       html: `
         <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#0a1628">
+          ${emailLogoImg(96, 'margin:0 0 14px')}
           <h2 style="color:#0a7d28">Pagamento confirmado!</h2>
           <p>Olá, <strong>${current.club_name}</strong>.</p>
           <p>Recebemos o pagamento da taxa de inscrição no valor de <strong>${valor}</strong>.

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getInvoice } from '@/lib/cora';
-import { getResend, fromEmail } from '@/lib/email';
+import { getResend, fromEmail, emailLogoImg } from '@/lib/email';
 
 export const runtime = 'nodejs';
 
@@ -59,7 +59,7 @@ export async function GET(req) {
         from: fromEmail,
         to: team.email,
         subject: '✅ Pagamento confirmado (Pix) — BFWC 2026',
-        html: `<div style="font-family:Arial,sans-serif"><h2 style="color:#0a7d28">Pagamento confirmado!</h2><p>Olá, <strong>${team.club_name}</strong>. Recebemos seu Pix de <strong>${valor}</strong>. Seu clube está confirmado no BFWC 2026.</p></div>`,
+        html: `<div style="font-family:Arial,sans-serif">${emailLogoImg(96, 'margin:0 0 14px')}<h2 style="color:#0a7d28">Pagamento confirmado!</h2><p>Olá, <strong>${team.club_name}</strong>. Recebemos seu Pix de <strong>${valor}</strong>. Seu clube está confirmado no BFWC 2026.</p></div>`,
       });
     } catch (e) {
       console.error('reconcile email error', e.message);

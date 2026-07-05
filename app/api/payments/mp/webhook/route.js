@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getPayment } from '@/lib/mercadopago';
-import { getResend, fromEmail } from '@/lib/email';
+import { getResend, fromEmail, emailLogoImg } from '@/lib/email';
 
 // Webhook do Mercado Pago (cartão).
 // O MP manda uma notificação com o id do pagamento; consultamos a API
@@ -57,6 +57,7 @@ async function markPaid(payment) {
       subject: '✅ Pagamento confirmado — BFWC 2026',
       html: `
         <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#0a1628">
+          ${emailLogoImg(96, 'margin:0 0 14px')}
           <h2 style="color:#0a7d28">Pagamento confirmado!</h2>
           <p>Olá, <strong>${current.club_name}</strong>.</p>
           <p>Recebemos o pagamento da taxa de inscrição no valor de <strong>${valor}</strong>.

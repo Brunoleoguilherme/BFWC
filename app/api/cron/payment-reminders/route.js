@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { getResend, fromEmail } from '@/lib/email';
+import { getResend, fromEmail, emailLogoImg } from '@/lib/email';
 import { computeInstallments, totalCentsForTeam } from '@/lib/installments';
 
 // Cron diário (Vercel): lembra os times de parcelas que vencem em 7 dias,
@@ -100,6 +100,7 @@ export async function GET(req) {
           subject: t.subject(parcela.number, d),
           html: `
             <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#0a1628">
+              ${emailLogoImg(96, 'margin:0 0 14px')}
               <h2 style="color:#0D4BFF">${t.title}</h2>
               <p style="font-size:14px;line-height:1.6">${t.body(team.club_name, parcela.number, team.payment_plan, valor, dateFmt, d)}</p>
               <p style="margin:24px 0">

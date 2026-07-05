@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { getResend, fromEmail } from '@/lib/email';
+import { getResend, fromEmail, emailLogoImg } from '@/lib/email';
 import { randomUUID, pbkdf2Sync, randomBytes } from 'crypto';
 
 function hashPassword(password) {
@@ -142,7 +142,7 @@ export async function POST(req) {
         subject: 'BFWC 2026 — Confirme seu e-mail (Atleta)',
         html: `
         <div style="font-family:Inter,sans-serif;background:#031020;color:#fff;padding:40px 24px;max-width:560px;margin:0 auto;border-radius:16px">
-          <h1 style="font-size:28px;font-weight:900;margin:0 0 6px">BFWC <span style="color:#009c3b">2026</span></h1>
+          ${emailLogoImg(110, 'margin:0 0 10px')}
           <p style="color:rgba(255,255,255,.4);font-size:13px;margin:0 0 28px">Área dos Atletas</p>
           <h2 style="font-size:20px;font-weight:800;margin:0 0 12px">Confirme seu e-mail</h2>
           <p style="color:#c8d8f5;font-size:14px;line-height:1.6;margin:0 0 24px">

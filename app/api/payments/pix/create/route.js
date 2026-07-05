@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { createPixCharge } from '@/lib/cora';
-import { countCategories, computeInstallments, optionTotalReais, activePlanSize, fullCategoryFor } from '@/lib/installments';
+import { countCategories, computeInstallments, optionTotalReais, activePlanSize, fullCategoryFor, normalizeSelection, selectionTotalReais, selectionSummary } from '@/lib/installments';
 
 export const runtime = 'nodejs';
 
@@ -14,13 +14,13 @@ function classifyDocument(raw) {
 
 export async function POST(req) {
   try {
-    const { team_id, number, document, option, athletes_qty } = await req.json();
+    const { team_id, number, document, option, athletes_qty, selection } = await req.json();
     if (!team_id) return NextResponse.json({ ok: false, message: 'team_id obrigatório.' }, { status: 400 });
 
     const supabase = getSupabaseAdmin();
     const { data: team, error } = await supabase
       .from('portal_teams')
-      .select('id, club_name, email, category, status, payer_document, payment_plan, payment_option, athletes_paid_qty, payment_confirmed')
+      .select('id, club_name, email, category, status, payer_document, payment_plan, payment_option, athletes_paid_qty, payment_selection, payment_confirmed')
       .eq('id', team_id)
       .single();
 
@@ -40,19 +40,23 @@ export async function POST(req) {
       }
     }
 
-    // Opção: trava na primeira parcela
-    const chosenOption = team.payment_option || (String(option) === '2' ? '2' : '1');
-    if (team.payment_option && String(option) && team.payment_option !== String(option)) {
-      return NextResponse.json({
-        ok: false, code: 'OPTION_LOCKED',
-        message: `A forma de pagamento já foi definida (Opção ${team.payment_option}). Continue por ela.`,
-      }, { status: 409 });
+    // Seleção por categoria: travada na primeira parcela (retrocompatível com o modelo antigo)
+    let sel = normalizeSelection(team.payment_selection, team.category);
+    let legacy = null; // { option, qty } — modelo antigo de opção única
+    if (!sel) {
+      if (team.payment_option) {
+        legacy = { option: String(team.payment_option), qty: team.athletes_paid_qty || 0 };
+      } else {
+        sel = normalizeSelection(selection, team.category);
+        if (!sel && option) {
+          const opt = String(option) === '2' ? '2' : '1';
+          legacy = { option: opt, qty: opt === '2' ? Math.max(parseInt(athletes_qty, 10) || 0, 0) : 0 };
+        }
+        if (!sel && !legacy) {
+          return NextResponse.json({ ok: false, message: 'Escolha a forma de inscrição para cada categoria.' }, { status: 400 });
+        }
+      }
     }
-
-    // Quantidade de atletas (opção 2): trava na primeira parcela
-    const athQty = chosenOption === '2'
-      ? (team.payment_option ? (team.athletes_paid_qty || 0) : Math.max(parseInt(athletes_qty, 10) || 0, 0))
-      : 0;
 
     // Plano: automático por data, travado na primeira parcela
     const planSize = team.payment_plan || activePlanSize(new Date());
@@ -63,8 +67,9 @@ export async function POST(req) {
       return NextResponse.json({ ok: false, code: 'NEED_DOCUMENT', message: 'Informe um CPF ou CNPJ válido para gerar o Pix.' }, { status: 422 });
     }
 
-    const numCats = countCategories(team.category);
-    const totalReais = optionTotalReais(chosenOption, numCats, athQty);
+    const totalReais = sel
+      ? selectionTotalReais(sel)
+      : optionTotalReais(legacy.option, countCategories(team.category), legacy.qty);
     const plan = computeInstallments(totalReais, planSize);
     const parcela = plan.find((p) => p.number === num);
     if (!parcela) return NextResponse.json({ ok: false, message: 'Parcela inválida.' }, { status: 400 });
@@ -84,7 +89,7 @@ export async function POST(req) {
     // Valor: override de teste (R$5 por parcela) para o e-mail de teste
     let amountCents = parcela.amount_cents;
     if (process.env.PAYMENT_TEST_MODE === '1') {
-      amountCents = 100; // preview de teste: R$ 1 por parcela
+      amountCents = 500; // preview de teste: R$ 5 por parcela (minimo aceito pela Cora)
     } else if (process.env.PIX_TEST_EMAIL && team.email?.toLowerCase() === process.env.PIX_TEST_EMAIL.toLowerCase()) {
       amountCents = 500;
     }
@@ -102,8 +107,9 @@ export async function POST(req) {
       .from('portal_teams')
       .update({
         payment_plan: planSize,
-        payment_option: chosenOption,
-        athletes_paid_qty: athQty,
+        ...(sel
+          ? { payment_selection: sel, payment_option: selectionSummary(sel).option, athletes_paid_qty: selectionSummary(sel).qty }
+          : { payment_option: legacy.option, athletes_paid_qty: legacy.qty }),
         payer_document: doc.identity,
       })
       .eq('id', team.id);
