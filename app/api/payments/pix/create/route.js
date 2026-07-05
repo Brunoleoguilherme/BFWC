@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { createPixCharge } from '@/lib/cora';
+import { createBtgPixCharge, btgEnabled } from '@/lib/btg';
 import { countCategories, computeInstallments, optionTotalReais, activePlanSize, fullCategoryFor, normalizeSelection, selectionTotalReais, selectionSummary } from '@/lib/installments';
 
 export const runtime = 'nodejs';
@@ -94,13 +95,16 @@ export async function POST(req) {
       amountCents = 500;
     }
 
-    const charge = await createPixCharge({
+    const chargeInput = {
       code: `${team.id}-p${num}`,
       customer: { name: team.club_name, email: team.email, document: doc },
       amountCents,
       serviceName: `Inscrição BFWC 2026 — parcela ${num}/${planSize}`,
       dueDate: parcela.due_date,
-    });
+    };
+    const charge = btgEnabled()
+      ? await createBtgPixCharge(chargeInput)
+      : await createPixCharge(chargeInput);
 
     // Trava opção/atletas/plano no time + salva documento
     await supabase

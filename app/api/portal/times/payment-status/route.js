@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getInvoice } from '@/lib/cora';
+import { getBtgCollection, isBtgCollectionPaid } from '@/lib/btg';
 import { getResend, fromEmail, emailLogoImg } from '@/lib/email';
 import { totalCentsForTeam } from '@/lib/installments';
 
@@ -8,6 +9,9 @@ export const runtime = 'nodejs';
 
 async function isInvoicePaid(invoiceId) {
   try {
+    if (String(invoiceId).startsWith('btg:')) {
+      return isBtgCollectionPaid(await getBtgCollection(invoiceId));
+    }
     const inv = await getInvoice(invoiceId);
     return (
       inv?.status === 'PAID' ||

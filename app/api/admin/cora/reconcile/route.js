@@ -27,6 +27,9 @@ export async function GET(req) {
   if (!team.cora_invoice_id) {
     return NextResponse.json({ ok: false, message: 'Time sem cora_invoice_id (gere o Pix primeiro)' }, { status: 400 });
   }
+  if (String(team.cora_invoice_id).startsWith('btg:')) {
+    return NextResponse.json({ ok: false, message: 'Cobrança emitida pelo BTG — a reconciliação é automática (webhook BTG / status do portal).' }, { status: 400 });
+  }
 
   let invoice;
   try {
