@@ -96,6 +96,7 @@ function Card({ team, onClick, isDragging, onDragStart, onDragEnd }) {
       <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>
         {team.category && <Tag label={team.category.split(',')[0].trim()} color="#0D4BFF" />}
         {team.athletes_count && <Tag label={`${team.athletes_count} atletas`} color="#64748b" />}
+        {team.status === 'aprovado' && <Tag label="✓ Aprovado" color="#009c3b" />}
         {team.flagged_suspect && <Tag label="⚠ Suspeito" color="#ff4444" />}
       </div>
       <div style={{ fontSize: 10, color: '#94a3b8' }}>
@@ -368,9 +369,16 @@ export default function TeamsPage() {
   const pendingCount = teams.filter(t => t.status === 'pendente_analise').length;
   const revisaoCount = teams.filter(t => t.status === 'em_revisao').length;
 
-  const cols = showSpam
-    ? [...KANBAN_STATUSES, { key: 'spam_descartado', label: 'Spam', color: '#ff4444' }]
-    : KANBAN_STATUSES;
+  // Colunas do quadro, alinhadas com os cards de cima.
+  // 'crm' = status da pré-inscrição (arrastável) · 'pay' = etapa de pagamento (portal, somente leitura)
+  const board = [
+    { key: 'pre_inscritos', label: 'Pré-inscritos', color: '#a855f7', type: 'crm', statuses: ['pre_inscrito', 'aprovado'], drop: 'pre_inscrito' },
+    { key: 'inscritos', label: 'Inscritos', color: '#ea580c', type: 'pay', teams: reg?.inscritos },
+    { key: 'pendentes', label: 'Pendentes', color: '#94a3b8', type: 'crm', statuses: ['pendente_analise'], drop: 'pendente_analise' },
+    { key: 'em_revisao', label: 'Em Revisão', color: '#eab308', type: 'crm', statuses: ['em_revisao'], drop: 'em_revisao' },
+    { key: 'confirmados', label: 'Confirmados', color: '#009c3b', type: 'pay', teams: reg?.confirmados },
+    ...(showSpam ? [{ key: 'spam', label: 'Spam', color: '#ff4444', type: 'crm', statuses: ['spam_descartado'], drop: 'spam_descartado' }] : []),
+  ];
 
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", color: '#0f172a' }}>
@@ -467,14 +475,28 @@ export default function TeamsPage() {
           )}
         </div>
       ) : (
-        /* Kanban with drag-and-drop */
+        /* Quadro: colunas alinhadas com os cards de cima */
         <div className="teams-board">
-          {cols.map((col, idx) => {
-            const items = filtered.filter(t => t.status === col.key);
-            const isOver = dragOver === col.key;
+          {board.map((col, idx) => {
+            const isCrm = col.type === 'crm';
+            const items = isCrm
+              ? filtered.filter(t => col.statuses.includes(t.status))
+              : (col.teams || []).filter(t => {
+                  if (!search) return true;
+                  const q = search.toLowerCase();
+                  return t.club_name?.toLowerCase().includes(q) || t.city?.toLowerCase().includes(q) || t.country?.toLowerCase().includes(q);
+                });
+            const isOver = isCrm && dragOver === col.drop;
+
+            const dragProps = isCrm ? {
+              onDragOver: e => { e.preventDefault(); if (dragOver !== col.drop) setDragOver(col.drop); },
+              onDragEnter: e => { e.preventDefault(); setDragOver(col.drop); },
+              onDragLeave: e => { if (!e.currentTarget.contains(e.relatedTarget)) setDragOver(null); },
+              onDrop: e => { e.preventDefault(); handleDrop(col.drop); },
+            } : {};
 
             return (
-              <div key={col.key} style={{ display: 'flex', flexShrink: 0, width: '100%' }}>
+              <div key={col.key} id={col.key} style={{ display: 'flex', flexShrink: 0, width: '100%', scrollMarginTop: 80 }}>
                 {/* Divider between columns */}
                 {idx > 0 && (
                   <div className="teams-col-divider" style={{
@@ -487,24 +509,15 @@ export default function TeamsPage() {
                 )}
 
                 {/* Column */}
-                <div
-                  className="teams-col"
-                  style={{ width: 252 }}
-                  onDragOver={e => { e.preventDefault(); if (dragOver !== col.key) setDragOver(col.key); }}
-                  onDragEnter={e => { e.preventDefault(); setDragOver(col.key); }}
-                  onDragLeave={e => {
-                    if (!e.currentTarget.contains(e.relatedTarget)) setDragOver(null);
-                  }}
-                  onDrop={e => { e.preventDefault(); handleDrop(col.key); }}
-                >
+                <div className="teams-col" style={{ width: 252 }} {...dragProps}>
                   {/* Column header */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, padding: '0 2px' }}>
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: col.color, flexShrink: 0 }} />
                     <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: '#475569' }}>{col.label}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 9px', borderRadius: 20, background: '#e2e8f0', color: '#64748b' }}>{items.length}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 9px', borderRadius: 20, background: '#e2e8f0', color: '#64748b' }}>{!isCrm && !reg ? '—' : items.length}</span>
                   </div>
 
-                  {/* Drop zone */}
+                  {/* Drop zone / lista */}
                   <div style={{
                     minHeight: 80,
                     borderRadius: 14,
@@ -513,7 +526,7 @@ export default function TeamsPage() {
                     padding: isOver ? 6 : 0,
                     transition: 'all .15s',
                   }}>
-                    {items.map(t => (
+                    {isCrm ? items.map(t => (
                       <Card
                         key={t.id}
                         team={t}
@@ -525,8 +538,13 @@ export default function TeamsPage() {
                         }}
                         onDragEnd={() => { setDragId(null); setDragOver(null); }}
                       />
+                    )) : items.map(t => (
+                      <PayCard key={t.id} t={t} color={col.color} />
                     ))}
-                    {items.length === 0 && !isOver && (
+                    {!isCrm && !reg && (
+                      <div style={{ color: '#94a3b8', fontSize: 12, padding: '20px 0', textAlign: 'center' }}>Carregando...</div>
+                    )}
+                    {items.length === 0 && !isOver && (isCrm || reg) && (
                       <div style={{
                         border: '1px dashed #e2e8f0', borderRadius: 14,
                         padding: 28, textAlign: 'center', color: '#94a3b8', fontSize: 12,
@@ -542,23 +560,6 @@ export default function TeamsPage() {
         </div>
       )}
 
-      {/* ── Seções por pagamento (só na visão geral) ─────────────────────── */}
-      {!filterStatus && (
-        <div style={{ marginTop: 40 }}>
-          <div id="inscritos" style={{ scrollMarginTop: 80 }}>
-            <PaymentSection
-              title="Inscritos" subtitle="Pagaram ao menos a 1ª parcela · falta quitar"
-              color="#ea580c" teams={reg?.inscritos} loading={!reg} search={search} />
-          </div>
-          <div style={{ height: 28 }} />
-          <div id="confirmados" style={{ scrollMarginTop: 80 }}>
-            <PaymentSection
-              title="Confirmados" subtitle="Pagamento completo · inscrição garantida"
-              color="#009c3b" teams={reg?.confirmados} loading={!reg} search={search} />
-          </div>
-        </div>
-      )}
-
       {selected && (
         <Modal team={selected} onClose={() => setSelected(null)} onUpdate={() => { fetchTeams(); setSelected(null); }} readOnly={role === 'viewer'} />
       )}
@@ -566,53 +567,27 @@ export default function TeamsPage() {
   );
 }
 
-// ── Seção de times por pagamento (inscritos / confirmados) ──────────────────
-function PaymentSection({ title, subtitle, color, teams, loading, search }) {
-  const list = (teams || []).filter(t => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return t.club_name?.toLowerCase().includes(q) || t.city?.toLowerCase().includes(q) || t.country?.toLowerCase().includes(q);
-  });
+// ── Card compacto de time por pagamento (colunas Inscritos / Confirmados) ───
+function PayCard({ t, color }) {
+  const pct = t.total_cents > 0 ? Math.min(100, Math.round((t.paid_cents / t.total_cents) * 100)) : 0;
   return (
-    <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 20, padding: '24px 26px', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-        <span style={{ width: 9, height: 9, borderRadius: '50%', background: color, flexShrink: 0 }} />
-        <h2 style={{ fontSize: 20, fontWeight: 900, letterSpacing: -.8, color: '#0f172a', margin: 0 }}>{title}</h2>
-        <span style={{ fontSize: 12, fontWeight: 800, padding: '2px 11px', borderRadius: 20, background: color + '18', color, border: `1px solid ${color}30` }}>{loading ? '—' : list.length}</span>
+    <div style={{ padding: '14px 15px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 14, marginBottom: 10, boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+        <span style={{ fontSize: 13, fontWeight: 800, color: '#0f172a' }}>{t.club_name}</span>
+        <span style={{ fontSize: 10, fontWeight: 800, color: t.option === '2' ? '#a855f7' : t.option === 'mix' ? '#ea580c' : '#0D4BFF', flexShrink: 0 }}>{t.option === 'mix' ? 'Mista' : `Opção ${t.option}`}</span>
       </div>
-      <p style={{ fontSize: 12, color: '#64748b', margin: '0 0 18px' }}>{subtitle}</p>
-
-      {loading ? (
-        <div style={{ color: '#94a3b8', fontSize: 13, padding: '20px 0' }}>Carregando...</div>
-      ) : list.length === 0 ? (
-        <div style={{ border: '1px dashed #e2e8f0', borderRadius: 14, padding: 32, textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>Nenhum time nesta etapa</div>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
-          {list.map(t => {
-            const pct = t.total_cents > 0 ? Math.min(100, Math.round((t.paid_cents / t.total_cents) * 100)) : 0;
-            return (
-              <div key={t.id} style={{ padding: '16px 18px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 16 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                  <span style={{ fontSize: 13.5, fontWeight: 800, color: '#0f172a' }}>{t.club_name}</span>
-                  <span style={{ fontSize: 10, fontWeight: 800, color: t.option === '2' ? '#a855f7' : '#0D4BFF', flexShrink: 0 }}>Opção {t.option}</span>
-                </div>
-                <div style={{ fontSize: 11, color: '#64748b', margin: '3px 0 10px' }}>{[t.city, t.country].filter(Boolean).join(' · ')}</div>
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-                  {t.category && <span style={S.tag('#0D4BFF')}>{t.category.split(',')[0].trim()}</span>}
-                  <span style={S.tag('#64748b')}>{t.athletes} atletas</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 5 }}>
-                  <span style={{ color: '#64748b', fontWeight: 600 }}>{BRL(t.paid_cents)} <span style={{ color: '#cbd5e1' }}>/ {BRL(t.total_cents)}</span></span>
-                  <span style={{ fontWeight: 800, color }}>{t.plan_size ? `${t.paid_count}/${t.plan_size} parc.` : `${pct}%`}</span>
-                </div>
-                <div style={{ height: 6, borderRadius: 5, background: '#e2e8f0', overflow: 'hidden' }}>
-                  <div style={{ width: `${pct}%`, height: '100%', background: color }} />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+      <div style={{ fontSize: 11, color: '#64748b', margin: '3px 0 8px' }}>{[t.city, t.country].filter(Boolean).join(' · ')}</div>
+      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 10 }}>
+        {t.category && <span style={S.tag('#0D4BFF')}>{t.category.split(',')[0].trim()}</span>}
+        <span style={S.tag('#64748b')}>{t.athletes} atletas</span>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10.5, marginBottom: 5 }}>
+        <span style={{ color: '#64748b', fontWeight: 600 }}>{BRL(t.paid_cents)} <span style={{ color: '#cbd5e1' }}>/ {BRL(t.total_cents)}</span></span>
+        <span style={{ fontWeight: 800, color }}>{t.plan_size ? `${t.paid_count}/${t.plan_size} parc.` : `${pct}%`}</span>
+      </div>
+      <div style={{ height: 6, borderRadius: 5, background: '#e2e8f0', overflow: 'hidden' }}>
+        <div style={{ width: `${pct}%`, height: '100%', background: color }} />
+      </div>
     </div>
   );
 }
