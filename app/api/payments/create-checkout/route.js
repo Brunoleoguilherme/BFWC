@@ -13,7 +13,7 @@ export async function POST(req) {
     if (process.env.NEXT_PUBLIC_CARD_ENABLED === '0') {
       return NextResponse.json({ ok: false, code: 'CARD_SOON', message: 'Pagamento por cartão estará disponível em breve. Por enquanto, use o Pix.' }, { status: 503 });
     }
-    const { team_id, option, athletes_qty, installment_number } = await req.json();
+    const { team_id, option, athletes_qty, installment_number, lang } = await req.json();
     if (!team_id) {
       return NextResponse.json({ ok: false, message: 'team_id obrigatório.' }, { status: 400 });
     }
@@ -89,7 +89,7 @@ export async function POST(req) {
 
     // Override de teste: cobra R$ 1 só do time deste e-mail (igual ao PIX_TEST_EMAIL)
     const testEmail = (process.env.CARD_TEST_EMAIL || '').trim().toLowerCase();
-    const chargeCents = testEmail && (team.email || '').toLowerCase() === testEmail ? 100 : baseCents;
+    const chargeCents = process.env.PAYMENT_TEST_MODE === '1' || (testEmail && (team.email || '').toLowerCase() === testEmail) ? 100 : baseCents;
 
     const notifUrl = `${(process.env.PAGBANK_NOTIFICATION_BASE || siteUrl).replace(/\/$/, '')}/api/payments/pagbank/webhook`;
 
@@ -101,7 +101,7 @@ export async function POST(req) {
         mode: 'payment',
         client_reference_id: team.id,
         customer_email: team.email,
-        locale: 'pt-BR',
+        locale: lang === 'en' ? 'en' : lang === 'es' ? 'es' : 'pt-BR',
         metadata: { team_id: team.id, club_name: team.club_name, ...(parcela ? { installment_number: String(num), plan_size: String(planSize) } : {}) },
         payment_intent_data: { metadata: { team_id: team.id, ...(parcela ? { installment_number: String(num) } : {}) } },
         // Parcelamento no cartão na própria tela da Stripe

@@ -568,6 +568,7 @@ export default function TimesPortalPage() {
   const [payInfo, setPayInfo]                 = useState(null);   // resposta de /payment-status
   const [paidBanner, setPaidBanner]           = useState(false);  // banner "pagamento aprovado" (?paid=1)
   const [activePix, setActivePix]             = useState(null);   // { number, emv, qrcode_url }
+  useEffect(() => { if (lang !== 'pt' && payMethod === 'pix') setPayMethod('card'); }, [lang, payMethod]); // EN/ES: Pix indisponível
   const [pixLoadingNum, setPixLoadingNum]     = useState(0);      // nº da parcela gerando (0 = nenhuma)
   const [pixErr, setPixErr]                   = useState('');
   const [needDoc, setNeedDoc]                 = useState(false);
@@ -727,7 +728,7 @@ export default function TimesPortalPage() {
       const r = await fetch('/api/payments/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ team_id: team.id, option: effOption, athletes_qty: effAth, installment_number: installmentNumber || undefined }),
+        body: JSON.stringify({ team_id: team.id, option: effOption, athletes_qty: effAth, installment_number: installmentNumber || undefined, lang }),
       });
       const d = await r.json();
       if (!d.ok || !d.url) throw new Error(d.message || 'Não foi possível iniciar o pagamento.');
@@ -1352,7 +1353,7 @@ export default function TimesPortalPage() {
                     <div>
                       <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 6 }}>
                         {L('Opção', 'Option', 'Opción')} {effOption} {effOption === '2' ? L('· por atleta', '· per athlete', '· por atleta') : L('· pacote', '· package', '· paquete')}
-                        {!lockedOption && <button onClick={() => { setPayOption(null); setPayMethod('pix'); }} style={{ marginLeft: 10, padding: '4px 12px', borderRadius: 8, border: `1px solid ${ACCENT}45`, background: ACCENT + '12', color: ACCENT, cursor: 'pointer', fontWeight: 800, fontSize: 11, textTransform: 'none', letterSpacing: 0, fontFamily: 'inherit' }}>↩ {L('Trocar opção', 'Change option', 'Cambiar opción')}</button>}
+                        {!lockedOption && <button onClick={() => { setPayOption(null); setPayMethod(lang === 'pt' ? 'pix' : 'card'); }} style={{ marginLeft: 10, padding: '4px 12px', borderRadius: 8, border: `1px solid ${ACCENT}45`, background: ACCENT + '12', color: ACCENT, cursor: 'pointer', fontWeight: 800, fontSize: 11, textTransform: 'none', letterSpacing: 0, fontFamily: 'inherit' }}>↩ {L('Trocar opção', 'Change option', 'Cambiar opción')}</button>}
                       </div>
                       <div style={{ fontSize: 13, color: 'rgba(15,23,42,.5)', marginBottom: 4 }}>
                         {effOption === '2' ? `R$ 800 × ${numCats} cat. + R$ 90 × ${effAthletes} atletas` : `${numCats} categoria${numCats !== 1 ? 's' : ''} × R$ 2.000`}
@@ -1391,9 +1392,9 @@ export default function TimesPortalPage() {
                             return (
                               <div key={c} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                 <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: '#0f172a' }}>{c}</span>
-                                <button type="button" onClick={() => setAthQtys(p => ({ ...p, [c]: Math.max(0, q - 1) }))} style={{ width: 34, height: 34, borderRadius: 9, border: '1px solid #cbd5e1', background: '#fff', fontSize: 17, fontWeight: 900, cursor: 'pointer', color: '#0f172a' }}>−</button>
-                                <input type="number" min={0} value={q} onChange={e => setAthQtys(p => ({ ...p, [c]: Math.max(0, parseInt(e.target.value, 10) || 0) }))} style={{ ...inputSt, width: 70, textAlign: 'center', fontWeight: 800 }} />
-                                <button type="button" onClick={() => setAthQtys(p => ({ ...p, [c]: q + 1 }))} style={{ width: 34, height: 34, borderRadius: 9, border: '1px solid #cbd5e1', background: '#fff', fontSize: 17, fontWeight: 900, cursor: 'pointer', color: '#0f172a' }}>+</button>
+                                <button type="button" onClick={() => setAthQtys(p => ({ ...p, [c]: Math.max(12, q - 1) }))} style={{ width: 34, height: 34, borderRadius: 9, border: '1px solid #cbd5e1', background: '#fff', fontSize: 17, fontWeight: 900, cursor: 'pointer', color: '#0f172a' }}>−</button>
+                                <input type="number" min={12} max={20} value={q} onChange={e => setAthQtys(p => ({ ...p, [c]: Math.max(0, parseInt(e.target.value, 10) || 0) }))} onBlur={e => setAthQtys(p => ({ ...p, [c]: Math.min(20, Math.max(12, parseInt(e.target.value, 10) || 12)) }))} style={{ ...inputSt, width: 70, textAlign: 'center', fontWeight: 800 }} />
+                                <button type="button" onClick={() => setAthQtys(p => ({ ...p, [c]: Math.min(20, q + 1) }))} style={{ width: 34, height: 34, borderRadius: 9, border: '1px solid #cbd5e1', background: '#fff', fontSize: 17, fontWeight: 900, cursor: 'pointer', color: '#0f172a' }}>+</button>
                                 <span style={{ width: 90, textAlign: 'right', fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.55)' }}>R$ {(90 * q).toLocaleString('pt-BR')}</span>
                               </div>
                             );
@@ -1413,7 +1414,7 @@ export default function TimesPortalPage() {
 
                   {/* Seletor de método */}
                   <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-                    {[['pix','🏦','PIX'],['card','💳', L('Cartão de crédito','Credit card','Tarjeta de crédito')]].map(([k,ic,lb]) => {
+                    {[['pix','🏦','PIX'],['card','💳', L('Cartão de crédito','Credit card','Tarjeta de crédito')]].filter(([k]) => lang === 'pt' || k !== 'pix').map(([k,ic,lb]) => {
                       const cardOff = k === 'card' && process.env.NEXT_PUBLIC_CARD_ENABLED === '0';
                       if (cardOff) return (
                         <div key={k} style={{ flex: 1, padding: '14px 12px', borderRadius: 14, border: '2px dashed rgba(15,23,42,.12)', background: 'rgba(15,23,42,.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, opacity: .65 }}>
@@ -1435,6 +1436,12 @@ export default function TimesPortalPage() {
                       );
                     })}
                   </div>
+
+                  {lang !== 'pt' && (
+                    <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(16,185,129,.07)', border: '1px solid rgba(16,185,129,.28)', fontSize: 12, color: 'rgba(15,23,42,.68)', lineHeight: 1.6, marginBottom: 14 }}>
+                      🌍 {L('', 'Prefer to pay by international bank transfer (Wise)? Contact Leonardo — email contato@brasilflag.com · WhatsApp +55 81 99565-8710.', '¿Prefieres pagar por transferencia internacional (Wise)? Contacta a Leonardo — correo contato@brasilflag.com · WhatsApp +55 81 99565-8710.')}
+                    </div>
+                  )}
 
                   {/* ── PIX parcelado ── */}
                   {payMethod === 'pix' && (
@@ -2056,7 +2063,7 @@ export default function TimesPortalPage() {
                   <div style={{ marginTop: 10, fontSize: 12, fontWeight: 800, color: ACCENT }}>{L('Inscrever com esta opção →', 'Register with this option →', 'Inscribirse con esta opción →')}</div>
                 </button>
               </div>
-              <div style={{ marginTop: 12, fontSize: 12, color: 'rgba(15,23,42,.5)', lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: L('Os valores são <strong>por categoria inscrita</strong>. O pagamento pode ser parcelado em até 3x (Pix ou cartão).', 'Prices are <strong>per registered category</strong>. Payment can be split into up to 3 installments (Pix or card).', 'Los valores son <strong>por categoría inscrita</strong>. El pago puede dividirse en hasta 3 cuotas (Pix o tarjeta).') }} />
+              <div style={{ marginTop: 12, fontSize: 12, color: 'rgba(15,23,42,.5)', lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: L('Os valores são <strong>por categoria inscrita</strong>. O pagamento pode ser parcelado em até 3x (Pix ou cartão).', 'Prices are <strong>per registered category</strong>. Payment can be split into up to 3 installments (credit card or Wise transfer).', 'Los valores son <strong>por categoría inscrita</strong>. El pago puede dividirse en hasta 3 cuotas (tarjeta de crédito o transferencia Wise).') }} />
               <button onClick={() => setTab('pagamento')} style={{ ...btnPrimary(ACCENT, '#fff'), width: '100%', justifyContent: 'center', marginTop: 14 }}>
                 🏈 {L('Inscrever minha equipe', 'Register my team', 'Inscribir mi equipo')}
               </button>

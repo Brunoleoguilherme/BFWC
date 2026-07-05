@@ -77,6 +77,8 @@ export default function AthletesPage() {
       rows = rows.filter(a =>
         a.name?.toLowerCase().includes(q) ||
         a.club_name?.toLowerCase().includes(q) ||
+        a.email?.toLowerCase().includes(q) ||
+        a.document?.toLowerCase().includes(q) ||
         a.category?.toLowerCase().includes(q));
     }
     return rows;
@@ -123,7 +125,7 @@ export default function AthletesPage() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
         <input
           value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="Buscar por atleta, clube ou categoria..."
+          placeholder="Buscar por atleta, e-mail, documento, clube ou categoria..."
           style={{ width: '100%', padding: '12px 16px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
         />
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -143,11 +145,11 @@ export default function AthletesPage() {
       {/* Tabela por atleta */}
       <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 20, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
         <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 1fr 140px 130px 44px',
+          display: 'grid', gridTemplateColumns: '1fr 1.2fr 0.9fr 110px 92px 110px 44px',
           padding: '12px 22px', borderBottom: '1px solid #e2e8f0',
           fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#94a3b8',
         }}>
-          <span>Atleta</span><span>Time</span><span>Categoria</span><span style={{ textAlign: 'right' }}>Status</span><span></span>
+          <span>Atleta</span><span>E-mail / Documento</span><span>Time</span><span>Categoria</span><span>Nascimento</span><span style={{ textAlign: 'right' }}>Status</span><span></span>
         </div>
 
         {loading ? (
@@ -162,7 +164,7 @@ export default function AthletesPage() {
               const st = STAGE_INFO[a.stage] || STAGE_INFO.pendente;
               return (
                 <div key={a.id} style={{
-                  display: 'grid', gridTemplateColumns: '1fr 1fr 140px 130px 44px',
+                  display: 'grid', gridTemplateColumns: '1fr 1.2fr 0.9fr 110px 92px 110px 44px',
                   padding: '14px 22px', alignItems: 'center',
                   borderBottom: i < list.length - 1 ? '1px solid #f1f5f9' : 'none',
                   background: i % 2 === 0 ? 'transparent' : '#f8fafc',
@@ -173,11 +175,18 @@ export default function AthletesPage() {
                     )}
                     {a.name || '—'}
                   </span>
+                  <span style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 12, color: '#475569', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={a.email || ''}>{a.email || <span style={{ color: '#cbd5e1' }}>sem e-mail</span>}</div>
+                    {a.document && <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{a.document}</div>}
+                  </span>
                   <span style={{ fontSize: 12.5, color: '#475569', fontWeight: 600 }}>{a.club_name || '—'}</span>
                   <span>
                     {a.category ? (
                       <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 6, background: 'rgba(13,75,255,.1)', color: '#0D4BFF', border: '1px solid rgba(13,75,255,.2)' }}>{a.category}</span>
                     ) : <span style={{ color: '#cbd5e1' }}>—</span>}
+                  </span>
+                  <span style={{ fontSize: 12, color: '#475569', fontWeight: 600 }}>
+                    {a.birth_date ? new Date(a.birth_date + 'T12:00:00').toLocaleDateString('pt-BR') : <span style={{ color: '#cbd5e1' }}>—</span>}
                   </span>
                   <span style={{ textAlign: 'right' }}>
                     <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: .5, textTransform: 'uppercase', padding: '3px 9px', borderRadius: 6, background: st.color + '18', color: st.color, border: `1px solid ${st.color}30` }}>{st.label}</span>

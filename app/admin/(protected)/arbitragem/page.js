@@ -6,7 +6,8 @@ export default function ArbitragemPage() {
   const [refs, setRefs] = useState(null);
   const [games, setGames] = useState(null);
   const [view, setView] = useState('escalacao'); // escalacao | arbitros
-  const [form, setForm] = useState({ name: '', role: 'Referee' });
+  const [form, setForm] = useState({ name: '' });
+  const GAME_ROLES = ['Principal', 'Auxiliar', 'Referee', 'Umpire', 'Line Judge', 'Field Judge', 'Back Judge', 'Mesa'];
   const [msg, setMsg] = useState('');
   const [assignFor, setAssignFor] = useState(null); // jogo sendo escalado
 
@@ -28,7 +29,7 @@ export default function ArbitragemPage() {
       const res = await fetch('/api/admin/referees', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
       const d = await res.json().catch(() => ({}));
       if (!res.ok) { setMsg('Erro ao cadastrar: ' + (d.error || res.status)); return; }
-      setForm({ name: '', role: 'Referee' });
+      setForm({ name: '' });
       loadRefs();
     } catch (err) {
       setMsg('Falha de conexão: ' + err.message);
@@ -48,7 +49,11 @@ export default function ArbitragemPage() {
   function toggleRefOnGame(game, ref) {
     const cur = game.referees || [];
     const has = cur.some(r => r.id === ref.id);
-    const next = has ? cur.filter(r => r.id !== ref.id) : [...cur, { id: ref.id, name: ref.name, role: ref.role || '' }];
+    const next = has ? cur.filter(r => r.id !== ref.id) : [...cur, { id: ref.id, name: ref.name, role: 'Principal' }];
+    saveAssignment(game, next);
+  }
+  function setRefRoleOnGame(game, refId, role) {
+    const next = (game.referees || []).map(r => r.id === refId ? { ...r, role } : r);
     saveAssignment(game, next);
   }
 
@@ -75,9 +80,6 @@ export default function ArbitragemPage() {
         <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 18, padding: 22, boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
           <form onSubmit={addRef} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 18 }}>
             <input style={{ ...inp, flex: 1, minWidth: 180 }} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Nome do árbitro" />
-            <select style={inp} value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}>
-              {['Referee', 'Umpire', 'Line Judge', 'Field Judge', 'Back Judge', 'Mesa'].map(r => <option key={r}>{r}</option>)}
-            </select>
             <button type="submit" style={{ padding: '10px 18px', borderRadius: 10, border: 'none', background: '#a855f7', color: '#fff', fontSize: 12.5, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>+ Cadastrar</button>
           </form>
           {msg ? <div style={{ fontSize: 12.5, color: '#dc2626', marginBottom: 12 }}>{msg}</div> : null}
@@ -89,7 +91,7 @@ export default function ArbitragemPage() {
                     <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(168,85,247,.12)', color: '#a855f7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 900, flexShrink: 0 }}>{r.name.slice(0, 2).toUpperCase()}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name}</div>
-                      {r.role ? <div style={{ fontSize: 11, color: '#94a3b8' }}>{r.role}</div> : null}
+                      <div style={{ fontSize: 11, color: '#94a3b8' }}>Função definida a cada jogo</div>
                     </div>
                     <button onClick={() => delRef(r.id)} style={{ background: 'none', border: 'none', color: '#ff4444', cursor: 'pointer', fontSize: 14 }}>✕</button>
                   </div>
@@ -134,12 +136,19 @@ export default function ArbitragemPage() {
                 {refs.map(r => {
                   const g = games.find(x => x.id === assignFor.id) || assignFor;
                   const on = (g.referees || []).some(x => x.id === r.id);
+                  const assignedRef = (g.referees || []).find(x => x.id === r.id);
                   return (
-                    <button key={r.id} onClick={() => toggleRefOnGame(g, r)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', background: on ? 'rgba(168,85,247,.08)' : '#f8fafc', border: `1px solid ${on ? 'rgba(168,85,247,.3)' : '#e2e8f0'}` }}>
-                      <span style={{ width: 20, height: 20, borderRadius: 6, flexShrink: 0, background: on ? '#a855f7' : '#fff', border: `1px solid ${on ? '#a855f7' : '#cbd5e1'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12, fontWeight: 900 }}>{on ? '✓' : ''}</span>
-                      <span style={{ flex: 1, fontSize: 13, fontWeight: 700 }}>{r.name}</span>
-                      {r.role ? <span style={{ fontSize: 11, color: '#94a3b8' }}>{r.role}</span> : null}
-                    </button>
+                    <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, background: on ? 'rgba(168,85,247,.08)' : '#f8fafc', border: `1px solid ${on ? 'rgba(168,85,247,.3)' : '#e2e8f0'}` }}>
+                      <button onClick={() => toggleRefOnGame(g, r)} style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', padding: 0 }}>
+                        <span style={{ width: 20, height: 20, borderRadius: 6, flexShrink: 0, background: on ? '#a855f7' : '#fff', border: `1px solid ${on ? '#a855f7' : '#cbd5e1'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12, fontWeight: 900 }}>{on ? '✓' : ''}</span>
+                        <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: '#0f172a' }}>{r.name}</span>
+                      </button>
+                      {on && (
+                        <select value={assignedRef?.role || 'Principal'} onChange={e => setRefRoleOnGame(g, r.id, e.target.value)} style={{ padding: '6px 8px', borderRadius: 8, fontSize: 11.5, fontWeight: 700, background: '#fff', border: '1px solid rgba(168,85,247,.35)', color: '#a855f7', outline: 'none', fontFamily: 'inherit', cursor: 'pointer' }}>
+                          {GAME_ROLES.map(role => <option key={role} value={role}>{role}</option>)}
+                        </select>
+                      )}
+                    </div>
                   );
                 })}
               </div>

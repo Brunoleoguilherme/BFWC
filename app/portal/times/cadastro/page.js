@@ -291,6 +291,7 @@ const T = {
     passwordMin: 'Senha deve ter no mínimo 8 caracteres',
     passwordMatch: 'As senhas não coincidem',
     categoryMin: 'Selecione ao menos uma categoria',
+    athMin: 'Informe pelo menos 12 atletas por categoria (mínimo do roster)',
     termsRequired: 'Você deve aceitar os termos',
     logoInvalidType: 'Formato inválido. Use PNG, JPG ou JPEG.',
     logoTooLarge: 'Arquivo muito grande. Máximo 2 MB.',
@@ -307,7 +308,7 @@ const T = {
     phWhatsapp: '+55 11 99999-0000',
     phPassword: 'Mínimo 8 caracteres',
     phConfirm: 'Repita a senha',
-    phAthletes: 'Nº de atletas',
+    phAthletes: 'Nº de atletas (mín. 12)',
     noImage: 'Nenhuma imagem selecionada',
   },
   en: {
@@ -348,6 +349,7 @@ const T = {
     passwordMin: 'Password must be at least 8 characters',
     passwordMatch: 'Passwords do not match',
     categoryMin: 'Select at least one category',
+    athMin: 'Enter at least 12 athletes per category (roster minimum)',
     termsRequired: 'You must accept the terms',
     logoInvalidType: 'Invalid format. Use PNG, JPG or JPEG.',
     logoTooLarge: 'File too large. Maximum 2 MB.',
@@ -364,7 +366,7 @@ const T = {
     phWhatsapp: 'e.g. +1 202 555-0123',
     phPassword: 'Minimum 8 characters',
     phConfirm: 'Repeat the password',
-    phAthletes: 'No. of athletes',
+    phAthletes: 'No. of athletes (min. 12)',
     noImage: 'No image selected',
   },
   es: {
@@ -405,6 +407,7 @@ const T = {
     passwordMin: 'La contraseña debe tener al menos 8 caracteres',
     passwordMatch: 'Las contraseñas no coinciden',
     categoryMin: 'Selecciona al menos una categoría',
+    athMin: 'Informa al menos 12 atletas por categoría (mínimo del roster)',
     termsRequired: 'Debes aceptar los términos',
     logoInvalidType: 'Formato inválido. Usa PNG, JPG o JPEG.',
     logoTooLarge: 'Archivo demasiado grande. Máximo 2 MB.',
@@ -421,7 +424,7 @@ const T = {
     phWhatsapp: 'Ej: +34 612 345 678',
     phPassword: 'Mínimo 8 caracteres',
     phConfirm: 'Repite la contraseña',
-    phAthletes: 'N.º de atletas',
+    phAthletes: 'N.º de atletas (mín. 12)',
     noImage: 'Ninguna imagen seleccionada',
   },
 };
@@ -526,6 +529,7 @@ export default function CadastroPage() {
     }
     if (n === 2) {
       if (!form.categories.length) errs.categories = t.categoryMin;
+      else if (form.categories.some(c => (parseInt(form.athletes_per_category[c], 10) || 0) < 12)) errs.categories = t.athMin;
     }
     if (n === 3) {
       if (!form.password) errs.password = t.required;
@@ -821,7 +825,7 @@ export default function CadastroPage() {
                         <input
                           className="login-input"
                           style={{ width: '100%', boxSizing: 'border-box' }}
-                          type="number" min={1} max={500}
+                          type="number" min={12} max={500}
                           value={form.athletes_per_category[cat] || ''}
                           onChange={e => setAthleteCount(cat, e.target.value)}
                           placeholder={t.phAthletes}

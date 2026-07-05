@@ -83,7 +83,9 @@ export async function POST(req) {
 
     // Valor: override de teste (R$5 por parcela) para o e-mail de teste
     let amountCents = parcela.amount_cents;
-    if (process.env.PIX_TEST_EMAIL && team.email?.toLowerCase() === process.env.PIX_TEST_EMAIL.toLowerCase()) {
+    if (process.env.PAYMENT_TEST_MODE === '1') {
+      amountCents = 100; // preview de teste: R$ 1 por parcela
+    } else if (process.env.PIX_TEST_EMAIL && team.email?.toLowerCase() === process.env.PIX_TEST_EMAIL.toLowerCase()) {
       amountCents = 500;
     }
 

@@ -36,7 +36,7 @@ export async function GET() {
 
   const { data: roster } = await supabase
     .from('team_athletes')
-    .select('id, team_id, name, category, jersey_number');
+    .select('id, team_id, name, category, jersey_number, email, birth_date, document');
 
   // contagem real de atletas por time
   const athCount = {};
@@ -102,6 +102,7 @@ export async function GET() {
     return {
       id: a.id, team_id: a.team_id,
       name: a.name || '', category: a.category || '', jersey_number: a.jersey_number ?? null,
+      email: a.email || '', birth_date: a.birth_date || null, document: a.document || '',
       club_name: tm.club_name || '', city: tm.city || '', country: tm.country || '',
       stage: tm.stage || 'pendente',
     };

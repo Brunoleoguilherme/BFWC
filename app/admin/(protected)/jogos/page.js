@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 
 const CATS = ['Masculino', 'Feminino', 'Sub-15', 'Sub-12'];
+const FIELDS = ['Campo 1', 'Campo 2', 'Campo 3', 'Campo 4', 'Campo 5', 'Campo 6', 'Campo 7', 'Campo 8'];
 const PHASES = [
   { v: 'group', l: 'Grupos' }, { v: 'quarterfinal', l: 'Quartas' },
   { v: 'semifinal', l: 'Semifinal' }, { v: 'final', l: 'Final' }, { v: '3rd_place', l: '3º lugar' },
@@ -22,6 +23,8 @@ export default function JogosPage() {
   const [teams, setTeams] = useState([]);
   const [delegates, setDelegates] = useState([]);
   const [editing, setEditing] = useState(null);
+  const [fieldMap, setFieldMap] = useState({});          // { 'Campo 1': delegate_id }
+  const [showFieldCfg, setShowFieldCfg] = useState(false); // modal delegados por campo
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState('');
   const [toast, setToast] = useState('');
@@ -34,7 +37,27 @@ export default function JogosPage() {
     load();
     fetch('/api/admin/portal-teams').then(r => r.json()).then(d => setTeams((d.teams || []).filter(t => t.status === 'approved')));
     fetch('/api/admin/users').then(r => r.json()).then(d => setDelegates((d.users || []).filter(u => u.role === 'delegado_partida')));
+    loadFieldMap();
   }, []);
+
+  async function loadFieldMap() {
+    const d = await fetch('/api/admin/field-delegates').then(r => r.json()).catch(() => ({}));
+    const m = {};
+    (d.mapping || []).forEach(x => { if (x.delegate_id) m[x.field] = x.delegate_id; });
+    setFieldMap(m);
+  }
+  async function setFieldDelegate(fieldName, delegateId) {
+    setFieldMap(m => ({ ...m, [fieldName]: delegateId || undefined }));
+    await fetch('/api/admin/field-delegates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ field: fieldName, delegate_id: delegateId || null }),
+    });
+  }
+  // Ao escolher o campo, herda o delegado responsável (continua editável)
+  function pickField(v) {
+    setEditing(x => ({ ...x, field: v, delegate_id: fieldMap[v] || x.delegate_id || '' }));
+  }
 
   function showToast(m) { setToast(m); setTimeout(() => setToast(''), 2500); }
   function field(k, v) { setEditing(x => ({ ...x, [k]: v })); }
@@ -88,7 +111,10 @@ export default function JogosPage() {
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: '#009c3b', marginBottom: 8 }}>Campeonato</div>
           <h1 style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1.5, margin: 0 }}>Gestão de Jogos</h1>
         </div>
-        <button onClick={() => { setEditing({ ...blank }); setErr(''); }} style={{ padding: '11px 20px', borderRadius: 12, border: 'none', background: '#009c3b', color: '#031020', fontSize: 12, fontWeight: 900, letterSpacing: 1, textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit' }}>+ Novo Jogo</button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={() => setShowFieldCfg(true)} style={{ padding: '11px 16px', borderRadius: 12, border: '1px solid #e2e8f0', background: '#fff', color: '#475569', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>⚑ Delegados por campo</button>
+          <button onClick={() => { setEditing({ ...blank }); setErr(''); }} style={{ padding: '11px 20px', borderRadius: 12, border: 'none', background: '#009c3b', color: '#031020', fontSize: 12, fontWeight: 900, letterSpacing: 1, textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit' }}>+ Novo Jogo</button>
+        </div>
       </div>
 
       {games === null ? (
@@ -122,7 +148,7 @@ export default function JogosPage() {
                       Delegado: {delegateName(g.delegate_id)}
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
-                      <button onClick={() => { setEditing({ ...g, game_date: g.game_date || '', game_time: g.game_time || '', warmup_time: g.warmup_time || '', delegate_id: g.delegate_id || '' }); setErr(''); }} style={{ flex: 1, padding: '8px', borderRadius: 9, border: '1px solid #e2e8f0', background: '#f8fafc', color: '#475569', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Editar</button>
+                      <button onClick={() => { setEditing({ ...g, game_date: g.game_date || '', game_time: g.game_time || '', warmup_time: g.warmup_time || '', delegate_id: g.delegate_id || '', notes: g.notes || '', group_name: g.group_name || '', field: g.field || '' }); setErr(''); }} style={{ flex: 1, padding: '8px', borderRadius: 9, border: '1px solid #e2e8f0', background: '#f8fafc', color: '#475569', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Editar</button>
                       <button onClick={() => del(g)} style={{ padding: '8px 12px', borderRadius: 9, border: '1px solid rgba(255,68,68,.2)', background: 'rgba(255,68,68,.07)', color: '#ff4444', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>Excluir</button>
                     </div>
                   </div>
@@ -134,8 +160,8 @@ export default function JogosPage() {
       )}
 
       {editing ? (
-        <div onClick={(e) => { if (e.target === e.currentTarget) setEditing(null); }} style={{ position: 'fixed', inset: 0, background: 'rgba(2,8,20,.6)', backdropFilter: 'blur(4px)', zIndex: 1000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 24, overflowY: 'auto' }}>
-          <div style={{ width: '100%', maxWidth: 520, background: '#fff', borderRadius: 20, padding: 26, boxShadow: '0 30px 80px rgba(0,0,0,.3)' }}>
+        <div onClick={(e) => { if (e.target === e.currentTarget) setEditing(null); }} style={{ position: 'fixed', inset: 0, background: 'rgba(2,8,20,.6)', backdropFilter: 'blur(4px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <div style={{ width: '100%', maxWidth: 520, background: '#fff', borderRadius: 20, padding: 26, boxShadow: '0 30px 80px rgba(0,0,0,.3)', maxHeight: 'calc(100vh - 48px)', overflowY: 'auto' }}>
             <div style={{ fontSize: 18, fontWeight: 900, marginBottom: 18 }}>{editing.id ? 'Editar jogo' : 'Novo jogo'}</div>
             <datalist id="teamlist">
               {teams.map(t => <option key={t.id} value={t.club_name} />)}
@@ -149,21 +175,47 @@ export default function JogosPage() {
               <div><span style={lbl}>Status</span><select style={inp} value={editing.status} onChange={(e) => field('status', e.target.value)}>{STATUSES.map(x => <option key={x.v} value={x.v}>{x.l}</option>)}</select></div>
               <div><span style={lbl}>Data</span><input type="date" style={inp} value={editing.game_date} onChange={(e) => field('game_date', e.target.value)} /></div>
               <div><span style={lbl}>Horário</span><input type="time" style={inp} value={editing.game_time} onChange={(e) => field('game_time', e.target.value)} /></div>
-              <div><span style={lbl}>Campo</span><input style={inp} value={editing.field} onChange={(e) => field('field', e.target.value)} placeholder="Campo 1" /></div>
+              <div><span style={lbl}>Campo</span><select style={inp} value={editing.field} onChange={(e) => pickField(e.target.value)}><option value="">Selecionar...</option>{FIELDS.map(fd => <option key={fd} value={fd}>{fd}</option>)}</select></div>
               <div><span style={lbl}>Aquecimento</span><input type="time" style={inp} value={editing.warmup_time} onChange={(e) => field('warmup_time', e.target.value)} /></div>
             </div>
-            <span style={lbl}>Delegado da partida</span>
+            <span style={lbl}>Delegado da partida {editing.field && fieldMap[editing.field] ? '· herdado do ' + editing.field.toLowerCase() : ''}</span>
             <select style={{ ...inp, marginBottom: 12 }} value={editing.delegate_id || ''} onChange={(e) => field('delegate_id', e.target.value)}>
               <option value="">Nao designado</option>
               {delegates.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
             </select>
             <span style={lbl}>Observações</span>
-            <textarea style={{ ...inp, minHeight: 60, resize: 'vertical', marginBottom: 12 }} value={editing.notes} onChange={(e) => field('notes', e.target.value)} />
+            <textarea style={{ ...inp, minHeight: 60, resize: 'vertical', marginBottom: 12 }} value={editing.notes || ''} onChange={(e) => field('notes', e.target.value)} />
             {err ? <div style={{ fontSize: 12.5, color: '#dc2626', fontWeight: 600, marginBottom: 12 }}>{err}</div> : null}
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setEditing(null)} style={{ flex: 1, padding: '12px', borderRadius: 10, border: '1px solid #e2e8f0', background: '#f1f5f9', color: '#475569', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
               <button onClick={save} disabled={saving || !editing.team1_name || !editing.team2_name} style={{ flex: 1.4, padding: '12px', borderRadius: 10, border: 'none', background: (saving || !editing.team1_name || !editing.team2_name) ? '#a7f3c4' : '#009c3b', color: '#031020', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{saving ? 'Salvando...' : 'Salvar'}</button>
             </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Modal: delegados por campo */}
+      {showFieldCfg ? (
+        <div onClick={(e) => { if (e.target === e.currentTarget) setShowFieldCfg(false); }} style={{ position: 'fixed', inset: 0, background: 'rgba(2,8,20,.6)', backdropFilter: 'blur(4px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <div style={{ width: '100%', maxWidth: 460, background: '#fff', borderRadius: 20, padding: 26, boxShadow: '0 30px 80px rgba(0,0,0,.3)', maxHeight: 'calc(100vh - 48px)', overflowY: 'auto' }}>
+            <div style={{ fontSize: 18, fontWeight: 900 }}>Delegados por campo</div>
+            <div style={{ fontSize: 12.5, color: '#64748b', marginBottom: 16 }}>Cada delegado fica responsável por um campo. Ao criar um jogo, o delegado do campo é preenchido automaticamente (e pode ser trocado).</div>
+            {delegates.length === 0 ? (
+              <div style={{ fontSize: 13, color: '#94a3b8', padding: '10px 0' }}>Nenhum usuário com papel de delegado. Cadastre em Usuários.</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {FIELDS.map(fd => (
+                  <div key={fd} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ width: 78, fontSize: 12.5, fontWeight: 800, color: '#0f172a', flexShrink: 0 }}>{fd}</span>
+                    <select value={fieldMap[fd] || ''} onChange={(e) => setFieldDelegate(fd, e.target.value)} style={{ ...inp, flex: 1 }}>
+                      <option value="">— Sem delegado —</option>
+                      {delegates.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                    </select>
+                  </div>
+                ))}
+              </div>
+            )}
+            <button onClick={() => setShowFieldCfg(false)} style={{ marginTop: 16, width: '100%', padding: '12px', borderRadius: 10, border: 'none', background: '#0f172a', color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Concluir</button>
           </div>
         </div>
       ) : null}
