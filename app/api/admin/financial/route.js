@@ -108,7 +108,7 @@ export async function GET() {
         plan_size: planSize, paid_count: paidCount,
         method, status: team.status,
         payment_confirmed: committed,
-        fully_paid: paid >= total && total > 0,
+        fully_paid: (paid >= total && total > 0) || (!!planSize && paidCount >= planSize),
       });
     }
   });

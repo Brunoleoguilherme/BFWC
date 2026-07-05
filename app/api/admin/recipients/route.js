@@ -60,7 +60,10 @@ export async function GET() {
     if (!t.payment_confirmed || !t.email) return;
     const paid = t.amount_paid_cents || 0;
     const total = totalCentsForTeam(t);
-    const fully = total > 0 && paid >= total;
+    const its = instBy[t.id] || [];
+    const planSize = its[0]?.plan_size || 0;
+    const paidCount = its.filter(i => i.status === 'paid').length;
+    const fully = (total > 0 && paid >= total) || (!!planSize && paidCount >= planSize);
     if (fully) confirmados.push(mk(t));
     else inscritos.push(mk(t));
 

@@ -375,12 +375,13 @@ export default function TeamsPage() {
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", color: '#0f172a' }}>
       <style>{`
-        .teams-stats { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
+        .teams-stats { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: nowrap; }
         .teams-stat-card { flex: 1; min-width: 100px; padding: 18px 20px; border-radius: 16px; }
         .teams-board { display: flex; overflow-x: auto; align-items: flex-start; padding-bottom: 32px; gap: 0; }
         .teams-col { width: 252px; flex-shrink: 0; }
         @media (max-width: 640px) {
-          .teams-stats { gap: 8px; }
+          .teams-stats { gap: 8px; flex-wrap: wrap; }
+          .teams-stats > div { min-width: 45% !important; }
           .teams-stat-card { padding: 14px 16px !important; min-width: 80px; }
           .teams-stat-num { font-size: 28px !important; }
           .teams-board { flex-direction: column; overflow-x: visible; padding-bottom: 16px; }
@@ -412,7 +413,7 @@ export default function TeamsPage() {
           { label: 'Confirmados', value: confirmadosCount == null ? '—' : confirmadosCount, sub: 'pagaram todas as parcelas', alert: false },
         ].map(s => (
           <div key={s.label} style={{
-            flex: 1, minWidth: 130, padding: '18px 22px',
+            flex: 1, minWidth: 0, padding: '16px 18px',
             background: s.alert ? '#fffde7' : '#ffffff',
             border: `1px solid ${s.alert ? 'rgba(244,255,0,.4)' : '#e2e8f0'}`,
             borderRadius: 16,

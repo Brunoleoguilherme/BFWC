@@ -51,7 +51,7 @@ export async function GET() {
     const its = instBy[team.id] || [];
     const planSize = team.payment_plan || its[0]?.plan_size || null;
     const paidCount = its.filter(i => i.status === 'paid').length;
-    const fully = total > 0 && paid >= total;
+    const fully = (total > 0 && paid >= total) || (!!planSize && paidCount >= planSize);
     return {
       id: team.id, club_name: team.club_name, country: team.country || '', city: team.city || '',
       category: team.category || '', option: String(team.payment_option || '1') === '2' ? '2' : '1',
