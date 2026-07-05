@@ -385,7 +385,7 @@ export default function TeamsPage() {
       <style>{`
         .teams-stats { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: nowrap; }
         .teams-stat-card { flex: 1; min-width: 100px; padding: 18px 20px; border-radius: 16px; }
-        .teams-board { display: flex; overflow-x: auto; align-items: flex-start; padding-bottom: 32px; gap: 0; }
+        .teams-board { display: flex; overflow-x: auto; align-items: flex-start; padding-bottom: 32px; gap: 14px; }
         .teams-col { width: 252px; flex-shrink: 0; }
         @media (max-width: 640px) {
           .teams-stats { gap: 8px; flex-wrap: wrap; }
@@ -496,22 +496,11 @@ export default function TeamsPage() {
             } : {};
 
             return (
-              <div key={col.key} id={col.key} style={{ display: 'flex', flexShrink: 0, width: '100%', scrollMarginTop: 80 }}>
-                {/* Divider between columns */}
-                {idx > 0 && (
-                  <div className="teams-col-divider" style={{
-                    width: 1,
-                    alignSelf: 'stretch',
-                    background: '#e2e8f0',
-                    margin: '0 10px',
-                    flexShrink: 0,
-                  }} />
-                )}
-
-                {/* Column */}
-                <div className="teams-col" style={{ width: 252 }} {...dragProps}>
+              <div key={col.key} id={col.key} style={{ display: 'flex', flexShrink: 0, scrollMarginTop: 80 }}>
+                {/* Column (estilo Trello: coluna cinza com cards dentro) */}
+                <div className="teams-col" style={{ width: 258, background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 16, padding: '12px 10px', alignSelf: 'flex-start' }} {...dragProps}>
                   {/* Column header */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, padding: '0 2px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '2px 6px' }}>
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: col.color, flexShrink: 0 }} />
                     <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: '#475569' }}>{col.label}</span>
                     <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 9px', borderRadius: 20, background: '#e2e8f0', color: '#64748b' }}>{!isCrm && !reg ? '—' : items.length}</span>
