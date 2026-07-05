@@ -366,6 +366,7 @@ export default function TeamsPage() {
   const inscritosCount   = reg?.counts?.inscritos ?? null;
   const confirmadosCount = reg?.counts?.confirmados ?? null;
   const pendingCount = teams.filter(t => t.status === 'pendente_analise').length;
+  const revisaoCount = teams.filter(t => t.status === 'em_revisao').length;
 
   const cols = showSpam
     ? [...KANBAN_STATUSES, { key: 'spam_descartado', label: 'Spam', color: '#ff4444' }]
@@ -404,10 +405,11 @@ export default function TeamsPage() {
       {/* Stats */}
       <div className="teams-stats">
         {[
-          { label: 'Pré-inscritos', value: preInscritos,                          alert: false },
-          { label: 'Inscritos',     value: inscritosCount   == null ? '—' : inscritosCount,   alert: false },
-          { label: 'Confirmados',   value: confirmadosCount == null ? '—' : confirmadosCount, alert: false },
-          { label: 'Pendentes',     value: pendingCount,                          alert: pendingCount > 0 },
+          { label: 'Pré-inscritos', value: preInscritos, sub: 'cadastros recebidos', alert: false },
+          { label: 'Inscritos', value: inscritosCount == null ? '—' : inscritosCount, sub: 'pagaram a 1ª parcela', alert: false },
+          { label: 'Pendentes', value: pendingCount, sub: 'aguardando análise', alert: pendingCount > 0 },
+          { label: 'Em Revisão', value: revisaoCount, sub: 'em análise pela equipe', alert: false },
+          { label: 'Confirmados', value: confirmadosCount == null ? '—' : confirmadosCount, sub: 'pagaram todas as parcelas', alert: false },
         ].map(s => (
           <div key={s.label} style={{
             flex: 1, minWidth: 130, padding: '18px 22px',
@@ -418,6 +420,7 @@ export default function TeamsPage() {
           }}>
             <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: s.alert ? '#009c3b' : '#64748b', marginBottom: 8 }}>{s.label}</div>
             <div style={{ fontSize: 38, fontWeight: 900, letterSpacing: -2, lineHeight: 1, color: '#0f172a' }}>{s.value}</div>
+            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 7, letterSpacing: .2 }}>{s.sub}</div>
           </div>
         ))}
       </div>
