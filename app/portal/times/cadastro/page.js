@@ -231,7 +231,7 @@ Estes Termos regulam a inscrição e a participação do clube/equipe identifica
 5.1. Cada categoria exige roster de no mínimo 12 e no máximo 20 atletas, além de até 7 membros de comissão técnica/staff, cadastrados no portal nos prazos divulgados.
 5.2. Limites de idade: Sub-15 — nascidos a partir de 2011; Sub-12 — nascidos a partir de 2014; demais categorias conforme Regulamento Oficial.
 5.3. O CLUBE responde pela elegibilidade, documentação e veracidade dos dados de seus atletas e staff. Atleta inelegível ou dados falsos sujeitam o CLUBE às sanções do Regulamento, inclusive desclassificação, sem reembolso.
-5.4. Atletas menores de 18 anos somente participarão mediante autorização assinada pelo responsável legal (participação, uso de imagem e tratamento de dados), enviada no portal. Sem a autorização, o atleta não será credenciado.
+5.4. Atletas menores de 18 anos somente participarão mediante autorização assinada pelo responsável legal (participação, uso de imagem e tratamento de dados), enviada no portal até 30/09/2026. Sem a autorização, o atleta não será credenciado.
 
 6. SAÚDE, SEGURO E RESPONSABILIDADE
 6.1. O CLUBE declara que seus atletas estão aptos à prática esportiva, responsabilizando-se pela verificação das condições de saúde (recomenda-se avaliação médica prévia).
@@ -283,7 +283,7 @@ These Terms govern the registration and participation of the club/team identifie
 5.1. Each category requires a roster of at least 12 and at most 20 athletes, plus up to 7 coaching staff members, registered in the portal within the published deadlines.
 5.2. Age limits: U-15 — born 2011 or later; U-12 — born 2014 or later; other categories as per the Official Rulebook.
 5.3. The CLUB is responsible for the eligibility, documentation and accuracy of its athletes' and staff's data. Ineligible athletes or false data subject the CLUB to the Rulebook sanctions, including disqualification, without refund.
-5.4. Athletes under 18 may only participate upon a signed authorization by their legal guardian (participation, image use and data processing), uploaded in the portal. Without it, the athlete will not be accredited.
+5.4. Athletes under 18 may only participate upon a signed authorization by their legal guardian (participation, image use and data processing), uploaded in the portal by Sep 30, 2026. Without it, the athlete will not be accredited.
 
 6. HEALTH, INSURANCE AND LIABILITY
 6.1. The CLUB declares its athletes are fit for sports practice and is responsible for verifying their health condition (prior medical evaluation is recommended).
@@ -335,7 +335,7 @@ Estos Términos regulan la inscripción y participación del club/equipo identif
 5.1. Cada categoría exige roster de mínimo 12 y máximo 20 atletas, además de hasta 7 miembros del cuerpo técnico/staff, registrados en el portal dentro de los plazos divulgados.
 5.2. Límites de edad: Sub-15 — nacidos desde 2011; Sub-12 — nacidos desde 2014; demás categorías según el Reglamento Oficial.
 5.3. El CLUB responde por la elegibilidad, documentación y veracidad de los datos de sus atletas y staff. Atleta inelegible o datos falsos sujetan al CLUB a las sanciones del Reglamento, incluida la descalificación, sin reembolso.
-5.4. Atletas menores de 18 años solo participarán mediante autorización firmada por el responsable legal (participación, uso de imagen y tratamiento de datos), enviada en el portal. Sin la autorización, el atleta no será acreditado.
+5.4. Atletas menores de 18 años solo participarán mediante autorización firmada por el responsable legal (participación, uso de imagen y tratamiento de datos), enviada en el portal hasta el 30/09/2026. Sin la autorización, el atleta no será acreditado.
 
 6. SALUD, SEGURO Y RESPONSABILIDAD
 6.1. El CLUB declara que sus atletas están aptos para la práctica deportiva, responsabilizándose por verificar sus condiciones de salud (se recomienda evaluación médica previa).

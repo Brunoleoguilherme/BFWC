@@ -48,7 +48,7 @@ const TR = {
     photoRequired: 'Foto é obrigatória', historyRequired: 'Histórico é obrigatório',
     allTermsRequired: 'Você deve aceitar todos os termos',
     minorTitle: 'Atleta menor de 18 anos — Autorização do Responsável',
-    minorText: 'Baixe o modelo, peça ao responsável legal para assinar (participação, uso de imagem e dados) e envie aqui a autorização assinada (PDF ou foto legível). Sem ela o cadastro não é validado.',
+    minorText: 'Você pode concluir o cadastro normalmente. Depois, dentro do portal do atleta, envie a autorização assinada pelo responsável legal (participação, uso de imagem e dados) até 30/09/2026. Baixe o modelo abaixo e já adiante a assinatura.',
     minorDownload: 'Baixar modelo da autorização',
     minorBtn: 'Enviar autorização assinada', minorHint: 'PDF, JPG ou PNG · Máx. 5 MB',
     minorRequired: 'A autorização do responsável é obrigatória para menores de 18 anos',
@@ -96,7 +96,7 @@ const TR = {
     photoRequired: 'Photo is required', historyRequired: 'Sports history is required',
     allTermsRequired: 'You must accept all terms',
     minorTitle: 'Athlete under 18 — Legal Guardian Authorization',
-    minorText: 'Download the template, have the legal guardian sign it (participation, image use and data) and upload the signed authorization here (PDF or a readable photo). Without it, the registration is not validated.',
+    minorText: 'You can complete your registration normally. Later, inside the athlete portal, upload the authorization signed by your legal guardian (participation, image use and data) by Sep 30, 2026. Download the template below to get the signature in advance.',
     minorDownload: 'Download authorization template',
     minorBtn: 'Upload signed authorization', minorHint: 'PDF, JPG or PNG · Max 5 MB',
     minorRequired: 'Guardian authorization is required for athletes under 18',
@@ -144,7 +144,7 @@ const TR = {
     photoRequired: 'La foto es obligatoria', historyRequired: 'El historial es obligatorio',
     allTermsRequired: 'Debes aceptar todos los términos',
     minorTitle: 'Atleta menor de 18 años — Autorización del Responsable',
-    minorText: 'Descarga el modelo, pide al responsable legal que lo firme (participación, uso de imagen y datos) y sube aquí la autorización firmada (PDF o foto legible). Sin ella el registro no se valida.',
+    minorText: 'Puedes completar tu registro normalmente. Luego, dentro del portal del atleta, sube la autorización firmada por el responsable legal (participación, uso de imagen y datos) hasta el 30/09/2026. Descarga el modelo abajo y adelanta la firma.',
     minorDownload: 'Descargar modelo de autorización',
     minorBtn: 'Subir autorización firmada', minorHint: 'PDF, JPG o PNG · Máx. 5 MB',
     minorRequired: 'La autorización del responsable es obligatoria para menores de 18 años',
@@ -226,7 +226,7 @@ export default function AtletasCadastroPage() {
   const [step, setStep]             = useState(1);
   const [photoFile, setPhotoFile]   = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
-  const [guardianFile, setGuardianFile] = useState(null);
+
   const [termsAccepted, setTermsAccepted] = useState({});
   const [form, setForm]             = useState({
     name: '', email: '', birthdate: '', nationality: '', whatsapp: '',
@@ -324,19 +324,6 @@ export default function AtletasCadastroPage() {
     return errs;
   }
 
-  function handleGuardian(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'].includes(file.type)) {
-      setErrors(er => ({ ...er, guardian: t.minorInvalidType })); return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      setErrors(er => ({ ...er, guardian: t.minorTooLarge })); return;
-    }
-    setGuardianFile(file);
-    setErrors(er => ({ ...er, guardian: '' }));
-  }
-
   function validateStep2() {
     const errs = {};
     if (!photoFile)               errs.photo   = t.photoRequired;
@@ -347,7 +334,6 @@ export default function AtletasCadastroPage() {
   function validateStep3() {
     const errs = {};
     if (!allTermsOk)              errs.terms    = t.allTermsRequired;
-    if (isMinor && !guardianFile) errs.guardian = t.minorRequired;
     if (!form.password)           errs.password = t.required;
     else if (form.password.length < 8) errs.password = t.passwordMin;
     if (form.password !== form.confirm) errs.confirm = t.passwordMatch;
@@ -383,7 +369,6 @@ export default function AtletasCadastroPage() {
       fd.append('terms_privacy',  'true');
       fd.append('terms_conduct',  'true');
       if (photoFile) fd.append('photo', photoFile);
-      if (guardianFile) fd.append('guardian_auth', guardianFile);
 
       const res = await fetch('/api/portal/atletas/register', { method: 'POST', body: fd });
       const data = await res.json();
@@ -659,20 +644,12 @@ export default function AtletasCadastroPage() {
                 ))}
               </div>
 
-              {/* Menor de idade: autorização do responsável */}
+              {/* Menor de idade: aviso — a autorização é enviada depois, no portal */}
               {isMinor && (
-                <div style={{ padding: '16px', borderRadius: 14, border: errors.guardian ? '1px solid #fca5a5' : '1px solid #f4c76a', background: '#fffaf0', marginBottom: 20 }}>
+                <div style={{ padding: '16px', borderRadius: 14, border: '1px solid #f4c76a', background: '#fffaf0', marginBottom: 20 }}>
                   <div style={{ fontSize: 13, fontWeight: 800, color: '#8a5a0a', marginBottom: 6 }}>🛡️ {t.minorTitle}</div>
                   <div style={{ fontSize: 12, color: '#7a6238', lineHeight: 1.55, marginBottom: 10 }}>{t.minorText}</div>
-                  <a href={`/downloads/${t.minorFile}`} download style={{ display: 'inline-block', fontSize: 12, fontWeight: 800, color: '#0D4BFF', marginBottom: 12, textDecoration: 'none' }}>⬇ {t.minorDownload}</a>
-                  <div>
-                    <label style={{ display: 'inline-block', padding: '10px 16px', borderRadius: 10, border: '1px solid #d9b96a', background: '#fff', fontSize: 12, fontWeight: 800, color: '#8a5a0a', cursor: 'pointer' }}>
-                      {guardianFile ? `✓ ${guardianFile.name}` : t.minorBtn}
-                      <input type="file" accept=".pdf,.jpg,.jpeg,.png" style={{ display: 'none' }} onChange={handleGuardian} />
-                    </label>
-                    <div style={{ fontSize: 10.5, color: '#a08a5c', marginTop: 6 }}>{t.minorHint}</div>
-                  </div>
-                  {errors.guardian && <div className="login-error" style={{ marginTop: 8 }}>{errors.guardian}</div>}
+                  <a href={`/downloads/${t.minorFile}`} download style={{ display: 'inline-block', fontSize: 12, fontWeight: 800, color: '#0D4BFF', textDecoration: 'none' }}>⬇ {t.minorDownload}</a>
                 </div>
               )}
 

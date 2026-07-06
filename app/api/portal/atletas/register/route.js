@@ -114,13 +114,7 @@ export async function POST(req) {
         message: 'O clube ao qual você pertence ainda não foi aprovado no portal. Aguarde a aprovação.',
       }, { status: 403 });
 
-    // 3. Menor de idade precisa da autorização do responsável legal
-    if (isMinorAtEvent(birthdate) && !guardianFile) {
-      return NextResponse.json({
-        ok: false, code: 'GUARDIAN_AUTH_REQUIRED',
-        message: 'Atletas menores de 18 anos devem enviar a autorização assinada pelo responsável legal.',
-      }, { status: 422 });
-    }
+    // Menores: a autorização do responsável é enviada depois, no portal (prazo 30/09/2026)
 
     // 3. Create account
     const password_hash        = hashPassword(password);

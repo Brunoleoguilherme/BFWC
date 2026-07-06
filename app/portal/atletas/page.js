@@ -197,6 +197,47 @@ function DocumentUpload({ athleteId, documentUrl, onUpload, lang }) {
 }
 
 /* ── term card ───────────────────────────────────────────────── */
+/* ── autorização do responsável (menores de 18) ──────────────── */
+function GuardianAuthUpload({ athleteId, url, onUpload, lang }) {
+  const fileRef = useRef();
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState('');
+
+  async function handleFile(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLoading(true); setError('');
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('athlete_id', athleteId);
+    const r = await fetch('/api/portal/atletas/upload-guardian-auth', { method: 'POST', body: fd });
+    const d = await r.json();
+    setLoading(false);
+    if (d.ok) onUpload(d.url);
+    else setError(d.message || 'Erro no upload.');
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+        <a href={`/downloads/${t('guardianModelFile', lang)}`} download style={{ padding: '10px 16px', borderRadius: 10, border: `1px solid ${ACCENT}35`, background: `${ACCENT}0d`, color: ACCENT, fontSize: 12, fontWeight: 800, textDecoration: 'none' }}>⬇ {t('guardianDownload', lang)}</a>
+        <button type="button" onClick={() => !loading && fileRef.current?.click()} style={{ padding: '10px 16px', borderRadius: 10, border: `1px solid ${GREEN}40`, background: `${GREEN}0d`, color: GREEN, fontSize: 12, fontWeight: 800, cursor: loading ? 'wait' : 'pointer', fontFamily: 'inherit' }}>
+          {loading ? '...' : `📎 ${url ? t('guardianChange', lang) : t('guardianAdd', lang)}`}
+        </button>
+        <span style={{ fontSize: 10.5, color: 'rgba(15,23,42,.35)' }}>{t('guardianHint', lang)}</span>
+      </div>
+      {url && (
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 6, background: `${GREEN}10`, color: GREEN, border: `1px solid ${GREEN}20` }}>✓ {t('guardianSent', lang)}</span>
+          <a href={url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, fontWeight: 700, color: ACCENT, textDecoration: 'none' }}>{t('guardianView', lang)} →</a>
+        </div>
+      )}
+      {error && <div style={{ fontSize: 12, color: '#dc2626' }}>{error}</div>}
+      <input ref={fileRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" style={{ display: 'none' }} onChange={handleFile} />
+    </div>
+  );
+}
+
 function TermCard({ term, checked, onToggle, lang }) {
   const [open, setOpen] = useState(false);
   return (
@@ -495,7 +536,7 @@ export default function AtletasPortalPage() {
     nationality: '', phone: '', whatsapp: '', document: '',
     emergency_name: '', emergency_phone: '', emergency_relation: '',
     position: '', shirt_size: '',
-    photo_url: '', document_url: '', instagram: '', tiktok: '',
+    photo_url: '', document_url: '', guardian_auth_url: '', instagram: '', tiktok: '',
     birthdate: '', history: '',
     terms_health: false, terms_image: false, terms_rules: false,
     terms_privacy: false, terms_conduct: false,
@@ -547,7 +588,7 @@ export default function AtletasPortalPage() {
             emergency_name: p.emergency_name || '', emergency_phone: p.emergency_phone || '',
             emergency_relation: p.emergency_relation || '',
             position: p.position || '', shirt_size: p.shirt_size || '',
-            photo_url: p.photo_url || '', document_url: p.document_url || '', instagram: p.instagram || '', tiktok: p.tiktok || '',
+            photo_url: p.photo_url || '', document_url: p.document_url || '', guardian_auth_url: p.guardian_auth_url || '', instagram: p.instagram || '', tiktok: p.tiktok || '',
             birthdate: p.birthdate || '', history: p.history || '',
             terms_health: !!p.terms_health, terms_image: !!p.terms_image,
             terms_rules: !!p.terms_rules, terms_privacy: !!p.terms_privacy, terms_conduct: !!p.terms_conduct,
@@ -799,6 +840,29 @@ export default function AtletasPortalPage() {
                 </div>
               </div>
             </div>
+
+            {/* Autorização do responsável — só para menores de 18 na data do evento */}
+            {(() => {
+              if (!profile.birthdate) return null;
+              const b = new Date(profile.birthdate + 'T00:00:00');
+              const ev = new Date('2026-10-31T00:00:00');
+              let age = ev.getFullYear() - b.getFullYear();
+              const m = ev.getMonth() - b.getMonth();
+              if (m < 0 || (m === 0 && ev.getDate() < b.getDate())) age--;
+              if (age >= 18) return null;
+              const sent = !!profile.guardian_auth_url;
+              return (
+                <div style={glass({ padding: '22px', border: sent ? `1px solid ${GREEN}35` : '1px solid rgba(249,115,22,.45)', background: sent ? undefined : '#fffaf3' })}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 }}>
+                    <div style={sectionHead}>🛡️ {t('guardianSection', lang)}</div>
+                    {!sent && <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: 1, padding: '3px 10px', borderRadius: 6, background: 'rgba(249,115,22,.14)', color: '#c2620f' }}>{t('guardianPending', lang)}</span>}
+                  </div>
+                  <div style={{ fontSize: 13, color: 'rgba(15,23,42,.5)', lineHeight: 1.6, marginBottom: 4 }}>{t('guardianDesc', lang)}</div>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: sent ? GREEN : '#c2620f', marginBottom: 12 }}>📅 {t('guardianDeadline', lang)}</div>
+                  <GuardianAuthUpload athleteId={athlete.id} url={profile.guardian_auth_url} onUpload={url => set('guardian_auth_url', url)} lang={lang} />
+                </div>
+              );
+            })()}
 
             {/* Dados pessoais */}
             <div style={glass({ padding: '22px' })}>
