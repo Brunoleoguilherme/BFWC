@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { CalendarDays, MapPin, ArrowRight } from 'lucide-react';
 import './site.css';
-import { TopBanner, SiteHeader, NewsletterBar, SiteFooter, useSiteLang } from './SiteChrome';
+import { TopBanner, SiteHeader, NewsletterBar, SiteFooter, useSiteLang, REG_OPENS_AT } from './SiteChrome';
 import {
   RegistrationSection,
   AboutSection,
@@ -24,6 +24,14 @@ export default function SitePage() {
     minutes: 0,
     seconds: 0
   });
+  const [regOpen, setRegOpen] = useState(false);
+
+  useEffect(() => {
+    const check = () => setRegOpen(Date.now() >= REG_OPENS_AT);
+    check();
+    const iv = setInterval(check, 1000);
+    return () => clearInterval(iv);
+  }, []);
 
   useEffect(() => {
     const targetDate = new Date('2026-10-31T00:00:00-03:00');
@@ -103,10 +111,16 @@ export default function SitePage() {
               </span>
             </div>
 
-            <Link href="/portal/times/cadastro" className="yellowBtn">
-              {t.regButton}
-              <ArrowRight size={18} />
-            </Link>
+            {regOpen ? (
+              <Link href="/portal/times/cadastro" className="yellowBtn">
+                {t.regButton}
+                <ArrowRight size={18} />
+              </Link>
+            ) : (
+              <div className="yellowBtn" style={{ cursor: 'default' }}>
+                {lang === 'en' ? 'Registration opens July 7 at 10 AM (BRT)' : lang === 'es' ? 'Inscripciones abren el 07/07 a las 10h' : 'Inscrições abrem amanhã, 07/07 às 10h'}
+              </div>
+            )}
 
             <div className="countdown">
               <p>{t.countdown}</p>

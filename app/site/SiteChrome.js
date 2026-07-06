@@ -48,8 +48,38 @@ export function navItems(t) {
   ];
 }
 
-/* Faixa amarela: inscrições abertas */
+/* Inscrições abrem em 07/07/2026 às 10:00 (Brasília) */
+export const REG_OPENS_AT = new Date('2026-07-07T10:00:00-03:00').getTime();
+
+/* Faixa amarela: countdown até a abertura; vira "inscrições abertas" sozinha às 10h */
 export function TopBanner({ lang }) {
+  const [left, setLeft] = useState(null); // null até montar (evita mismatch SSR)
+
+  useEffect(() => {
+    const tick = () => setLeft(Math.max(0, REG_OPENS_AT - Date.now()));
+    tick();
+    const iv = setInterval(tick, 1000);
+    return () => clearInterval(iv);
+  }, []);
+
+  const open = left !== null && left <= 0;
+
+  if (!open) {
+    const h = left == null ? '--' : String(Math.floor(left / 3600000)).padStart(2, '0');
+    const m = left == null ? '--' : String(Math.floor(left / 60000) % 60).padStart(2, '0');
+    const s = left == null ? '--' : String(Math.floor(left / 1000) % 60).padStart(2, '0');
+    return (
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 12, background: '#f4ff00', color: '#031020', textAlign: 'center', padding: '13px 16px', lineHeight: 1.3 }}>
+        <span style={{ fontWeight: 950, fontStyle: 'italic', textTransform: 'uppercase', fontSize: 'clamp(14px, 1.6vw, 19px)', letterSpacing: '.2px' }}>
+          {lang === 'en' ? 'Registration opens July 7 at 10 AM (BRT)' : lang === 'es' ? 'Inscripciones abren el 07/07 a las 10h (Brasilia)' : 'Inscrições abrem amanhã, 07/07 às 10h'}
+        </span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#031020', color: '#f4ff00', fontWeight: 900, padding: '8px 18px', borderRadius: 8, textTransform: 'uppercase', fontSize: 'clamp(12px, 1.3vw, 15px)', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
+          ⏳ {h}:{m}:{s}
+        </span>
+      </div>
+    );
+  }
+
   return (
     <a href="/portal/times/cadastro" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 12, background: '#f4ff00', color: '#031020', textAlign: 'center', padding: '13px 16px', textDecoration: 'none', lineHeight: 1.3 }}>
       <span style={{ fontWeight: 950, fontStyle: 'italic', textTransform: 'uppercase', fontSize: 'clamp(14px, 1.6vw, 19px)', letterSpacing: '.2px' }}>
