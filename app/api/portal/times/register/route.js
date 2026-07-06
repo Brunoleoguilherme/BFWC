@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { isPortalTimesOpen, PORTAL_NOT_OPEN_MESSAGE } from '@/lib/registrationWindow';
+import { isPortalTimesOpen, isCadastroRestricted, PORTAL_NOT_OPEN_MESSAGE } from '@/lib/registrationWindow';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getResend, fromEmail, adminEmails } from '@/lib/email';
 import { randomUUID } from 'crypto';
@@ -110,6 +110,21 @@ export async function POST(req) {
     if (password.length < 8) return NextResponse.json({ ok: false, message: 'Senha deve ter pelo menos 8 caracteres' }, { status: 400 });
 
     const supabase = getSupabaseAdmin();
+
+    // Janela 07/07 -> 12/07 (Brasília): só times já pré-inscritos podem se cadastrar
+    if (isCadastroRestricted()) {
+      const { data: pre } = await supabase
+        .from('club_interests')
+        .select('id')
+        .ilike('email', email)
+        .maybeSingle();
+      if (!pre) {
+        return NextResponse.json({
+          ok: false, code: 'NEEDS_PRE',
+          message: 'Neste período, o cadastro está liberado apenas para times já pré-inscritos. Verifique se usou o mesmo e-mail da pré-inscrição.',
+        }, { status: 403 });
+      }
+    }
 
     // Check if email already exists
     const { data: existing } = await supabase.from('portal_teams').select('id').ilike('email', email).single();
