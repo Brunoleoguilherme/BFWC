@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getResend, fromEmail } from '@/lib/email';
 import { randomUUID, pbkdf2Sync, randomBytes } from 'crypto';
+import { isPortalTimesOpen, PORTAL_NOT_OPEN_MESSAGE } from '@/lib/registrationWindow';
 
 function hashPassword(password) {
   const salt = randomBytes(16).toString('hex');
@@ -31,6 +32,11 @@ async function uploadPhoto(supabase, file, athleteId) {
 
 export async function POST(req) {
   try {
+    // Portal fechado até 07/07/2026 10:00 (Brasília)
+    if (!isPortalTimesOpen()) {
+      return NextResponse.json({ ok: false, code: 'NOT_OPEN', message: PORTAL_NOT_OPEN_MESSAGE }, { status: 403 });
+    }
+
     // Accept FormData (new) or JSON (legacy)
     const ct = req.headers.get('content-type') || '';
     let name, email, password, language, birthdate, nationality, whatsapp,
