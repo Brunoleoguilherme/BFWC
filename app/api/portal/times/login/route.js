@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { pbkdf2Sync } from 'crypto';
+import { isPortalTimesOpen, PORTAL_NOT_OPEN_MESSAGE } from '@/lib/registrationWindow';
 
 function verifyPassword(password, stored) {
   const [salt, hash] = stored.split(':');
@@ -10,6 +11,11 @@ function verifyPassword(password, stored) {
 
 export async function POST(req) {
   try {
+    // Portal fechado até 07/07/2026 10:00 (Brasília)
+    if (!isPortalTimesOpen()) {
+      return NextResponse.json({ ok: false, code: 'NOT_OPEN', message: PORTAL_NOT_OPEN_MESSAGE }, { status: 403 });
+    }
+
     const { email, password } = await req.json();
     if (!email || !password) return NextResponse.json({ ok: false, message: 'E-mail e senha obrigatórios.' }, { status: 400 });
 

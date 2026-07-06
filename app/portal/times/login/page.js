@@ -53,8 +53,12 @@ const T = {
   },
 };
 
+// Portal abre em 07/07/2026 às 10:00 (Brasília)
+const OPENS_AT = new Date('2026-07-07T10:00:00-03:00').getTime();
+
 export default function TimesLoginPage() {
   const router = useRouter();
+  const [locked, setLocked] = useState(true);
   const [lang, setLang] = useState('pt');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -69,6 +73,11 @@ export default function TimesLoginPage() {
     if (typeof window !== 'undefined' && window.location.search.includes('verified=1')) {
       setJustVerified(true);
     }
+    // Trava até 07/07 10h (Brasília); libera sozinha quando chegar a hora
+    const check = () => setLocked(Date.now() < OPENS_AT);
+    check();
+    const iv = setInterval(check, 15000);
+    return () => clearInterval(iv);
   }, []);
 
   const t = T[lang];
@@ -98,6 +107,23 @@ export default function TimesLoginPage() {
   }
 
   const ACCENT = '#0D4BFF';
+
+  // Portal ainda não abriu: aviso trilíngue, sem acesso
+  if (locked) return (
+    <div style={{ minHeight: '100vh', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: "'Inter', sans-serif", overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: "url('/assets/hero-rio-athletes.png')", backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(3,13,31,.80), rgba(3,13,31,.93))', zIndex: 1 }} />
+      <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 480, background: 'rgba(10,20,40,.72)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,.14)', borderRadius: 28, padding: '44px 34px', textAlign: 'center', boxShadow: '0 40px 120px rgba(0,0,0,.7)' }}>
+        <img src="/assets/bfwc-logo.jpg" alt="BFWC" width={92} height={92} style={{ borderRadius: 18, marginBottom: 20, objectFit: 'cover' }} />
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 9, fontWeight: 900, letterSpacing: 2.5, textTransform: 'uppercase', color: '#f4ff00', marginBottom: 14, padding: '5px 14px', borderRadius: 20, background: 'rgba(244,255,0,.08)', border: '1px solid rgba(244,255,0,.25)' }}>🔒 Em breve · Coming soon · Próximamente</div>
+        <h1 style={{ fontSize: 24, fontWeight: 900, color: '#fff', letterSpacing: -0.8, margin: '0 0 18px', lineHeight: 1.25 }}>Inscrições abrem dia 07/07 às 10h</h1>
+        <p style={{ fontSize: 14, color: 'rgba(255,255,255,.75)', margin: '0 0 10px', lineHeight: 1.6 }}>🇧🇷 O acesso ao portal dos times estará disponível <strong style={{ color: '#f4ff00' }}>dia 07/07 às 10h</strong> (horário de Brasília).</p>
+        <p style={{ fontSize: 14, color: 'rgba(255,255,255,.75)', margin: '0 0 10px', lineHeight: 1.6 }}>🇺🇸 Team portal access will be available on <strong style={{ color: '#f4ff00' }}>July 7 at 10 AM</strong> (Brasília time, GMT-3).</p>
+        <p style={{ fontSize: 14, color: 'rgba(255,255,255,.75)', margin: '0 0 24px', lineHeight: 1.6 }}>🇪🇸 El acceso al portal de equipos estará disponible el <strong style={{ color: '#f4ff00' }}>07/07 a las 10h</strong> (hora de Brasilia).</p>
+        <a href="/portal" style={{ fontSize: 13, color: 'rgba(255,255,255,.5)', textDecoration: 'none', fontWeight: 600 }}>← Voltar · Back · Volver</a>
+      </div>
+    </div>
+  );
 
   return (
     <div className="login-root">
