@@ -40,7 +40,7 @@ export function AboutSection({ t, lang }) {
         <h2>{t.aboutTitle}</h2>
         <p>{t.aboutText}</p>
 
-        <Link href={`/clubes?lang=${lang}`} className="outlineBtn">
+        <Link href="/site/sobre" className="outlineBtn">
           {t.learnMore}
         </Link>
       </div>

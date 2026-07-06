@@ -347,6 +347,30 @@ export default function ClubInterestPage() {
     }
   }, []);
 
+  // ── Pré-inscrições encerradas em 01/07/2026 ──
+  const closedCopy = {
+    pt: { badge: 'Pré-inscrições encerradas', title: 'As pré-inscrições foram encerradas em 01/07.', text: 'As inscrições oficiais dos times abrem dia 07/07 às 10h (horário de Brasília) e vão até 20/07 ou enquanto houver vagas. De 07 a 12/07 a prioridade é dos times pré-inscritos; a partir de 13/07, abertas a todas as equipes.', cta: 'Ir para o cadastro oficial →', back: '← Voltar ao site' },
+    en: { badge: 'Pre-registration closed', title: 'Pre-registration closed on July 1st.', text: 'Official team registration opens July 7 at 10 AM (Brasília time, GMT-3) and runs until July 20 or while spots last. July 7–12 is priority for pre-registered teams; from July 13 it is open to all teams.', cta: 'Go to official registration →', back: '← Back to site' },
+    es: { badge: 'Preinscripciones cerradas', title: 'Las preinscripciones cerraron el 01/07.', text: 'Las inscripciones oficiales abren el 07/07 a las 10h (hora de Brasilia) y van hasta el 20/07 o mientras haya cupos. Del 07 al 12/07 la prioridad es de los equipos preinscritos; desde el 13/07, abiertas a todos los equipos.', cta: 'Ir a la inscripción oficial →', back: '← Volver al sitio' },
+  };
+  const cc = closedCopy[lang] || closedCopy.pt;
+
+  return (
+    <main style={{ minHeight: '100vh', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: "'Inter', sans-serif", overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: "url('/assets/hero-rio-athletes.png')", backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(3,13,31,.80), rgba(3,13,31,.93))', zIndex: 1 }} />
+      <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 520, background: 'rgba(10,20,40,.72)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,.14)', borderRadius: 28, padding: '44px 34px', textAlign: 'center', boxShadow: '0 40px 120px rgba(0,0,0,.7)' }}>
+        <img src="/assets/bfwc-logo.jpg" alt="BFWC" width={92} height={92} style={{ borderRadius: 18, marginBottom: 20, objectFit: 'cover' }} />
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 9, fontWeight: 900, letterSpacing: 2.5, textTransform: 'uppercase', color: '#f4ff00', marginBottom: 14, padding: '5px 14px', borderRadius: 20, background: 'rgba(244,255,0,.08)', border: '1px solid rgba(244,255,0,.25)' }}>{cc.badge}</div>
+        <h1 style={{ fontSize: 24, fontWeight: 900, color: '#fff', letterSpacing: -0.8, margin: '0 0 14px', lineHeight: 1.25 }}>{cc.title}</h1>
+        <p style={{ fontSize: 14, color: 'rgba(255,255,255,.78)', margin: '0 0 24px', lineHeight: 1.65 }}>{cc.text}</p>
+        <a href="/portal/times/cadastro" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '13px 24px', borderRadius: 10, background: '#f4ff00', color: '#031020', fontSize: 14, fontWeight: 900, textDecoration: 'none', textTransform: 'uppercase', marginBottom: 18 }}>{cc.cta}</a>
+        <div><a href={`/site?lang=${lang}`} style={{ fontSize: 13, color: 'rgba(255,255,255,.5)', textDecoration: 'none', fontWeight: 600 }}>{cc.back}</a></div>
+      </div>
+    </main>
+  );
+
+  // eslint-disable-next-line no-unreachable
   return (
     <main className="premiumClubPage">
       <div className="clubBackgroundImage" />

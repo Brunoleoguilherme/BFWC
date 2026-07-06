@@ -268,7 +268,7 @@ export function SiteFooter({ lang, t }) {
         <a href="/site/local">{t.venue}</a>
         <a href="/site/sobre">{t.about}</a>
         <a href="/site/noticias">{t.news}</a>
-        <Link href={`/clubes?lang=${lang}`}>{t.register}</Link>
+        <Link href="/portal/times/cadastro">{t.regButton}</Link>
       </div>
 
       <div>
