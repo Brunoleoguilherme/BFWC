@@ -205,50 +205,161 @@ const COUNTRY_NAMES = {
   'Outro': ['Other', 'Otro'],
 };
 
-const TERMS_PT = `1. DADOS DO CLUBE
-As informações fornecidas neste cadastro devem ser verdadeiras e corresponder ao clube/organização representada.
+const TERMS_PT = `TERMO DE INSCRIÇÃO E PARTICIPAÇÃO — BRASIL FLAG WORLD CHAMPIONSHIP 2026
 
-2. APROVAÇÃO
-O cadastro no portal está sujeito à aprovação pela organização do BFWC 2026. A inscrição não garante vaga automática no campeonato.
+1. PARTES E OBJETO
+Estes Termos regulam a inscrição e a participação do clube/equipe identificado neste cadastro ("CLUBE") no Brasil Flag World Championship 2026 ("EVENTO"), a realizar-se em Leme/SP, Brasil, em 31/10/2026, organizado por BRASIL SPORTS BUSINESS, CNPJ 27.517.868/0001-10 ("ORGANIZAÇÃO"). O aceite eletrônico destes Termos pelo responsável indicado no cadastro constitui contrato válido entre as partes (art. 425 do Código Civil), dispensando assinatura física.
 
-3. RESPONSABILIDADE
-O responsável pelo cadastro assume a veracidade das informações e o cumprimento das regras do campeonato.
+2. CADASTRO E APROVAÇÃO
+2.1. As informações fornecidas devem ser verdadeiras, completas e atualizadas; o responsável declara ter poderes para representar o CLUBE.
+2.2. O cadastro está sujeito à análise e aprovação pela ORGANIZAÇÃO e não garante vaga.
+2.3. A vaga em cada categoria somente é reservada com a confirmação do pagamento da 1ª parcela, respeitada a ordem cronológica de pagamento e o limite de vagas por categoria.
 
-4. PRIVACIDADE
-Os dados serão utilizados exclusivamente para comunicações relacionadas ao BFWC 2026 e gestão das inscrições.
+3. VALORES E PAGAMENTO
+3.1. A taxa de inscrição é definida por categoria, à escolha do CLUBE no portal: Opção 1 (Pacote) — R$ 2.000,00 por categoria, atletas inclusos; ou Opção 2 (Por atleta) — R$ 800,00 por categoria + R$ 90,00 por atleta (mínimo 12, máximo 20 por categoria). O total é a soma das categorias inscritas.
+3.2. O pagamento pode ser parcelado em até 3 parcelas, com vencimentos em 20/07/2026, 20/08/2026 e 20/09/2026, via Pix ou cartão de crédito. Inscrições posteriores seguem o parcelamento remanescente.
+3.3. A escolha da opção fica vinculada após o pagamento da 1ª parcela.
+3.4. A participação está condicionada à quitação integral até 20/09/2026.
 
-5. CONDUTA
-O clube compromete-se a manter conduta esportiva e respeito durante todos os eventos do campeonato.`;
+4. CANCELAMENTO, DESISTÊNCIA E REEMBOLSO
+4.1. As parcelas pagas NÃO são reembolsáveis, em nenhuma hipótese de desistência, ausência (no-show), desclassificação disciplinar ou não quitação das parcelas seguintes.
+4.2. Em caso de não quitação até o vencimento final, a ORGANIZAÇÃO poderá cancelar a inscrição e liberar a vaga, permanecendo não reembolsáveis os valores pagos.
+4.3. Se o EVENTO for cancelado sem remarcação, os valores pagos serão devolvidos integralmente em até 30 dias. Em caso de adiamento ou alteração de data/local por força maior (clima, determinação do poder público, segurança), as inscrições permanecem válidas para a nova data, sem direito a reembolso pela alteração.
+4.4. A vaga é intransferível sem anuência escrita da ORGANIZAÇÃO.
 
-const TERMS_EN = `1. CLUB DATA
-The information provided in this registration must be true and correspond to the club/organization represented.
+5. ROSTER, ELEGIBILIDADE E ESCALAÇÃO
+5.1. Cada categoria exige roster de no mínimo 12 e no máximo 20 atletas, além de até 7 membros de comissão técnica/staff, cadastrados no portal nos prazos divulgados.
+5.2. Limites de idade: Sub-15 — nascidos a partir de 2011; Sub-12 — nascidos a partir de 2014; demais categorias conforme Regulamento Oficial.
+5.3. O CLUBE responde pela elegibilidade, documentação e veracidade dos dados de seus atletas e staff. Atleta inelegível ou dados falsos sujeitam o CLUBE às sanções do Regulamento, inclusive desclassificação, sem reembolso.
+5.4. Atletas menores de 18 anos somente participarão mediante autorização assinada pelo responsável legal (participação, uso de imagem e tratamento de dados), enviada no portal. Sem a autorização, o atleta não será credenciado.
 
-2. APPROVAL
-Portal registration is subject to approval by the BFWC 2026 organization. Registration does not guarantee an automatic spot in the championship.
+6. SAÚDE, SEGURO E RESPONSABILIDADE
+6.1. O CLUBE declara que seus atletas estão aptos à prática esportiva, responsabilizando-se pela verificação das condições de saúde (recomenda-se avaliação médica prévia).
+6.2. A ORGANIZAÇÃO disponibilizará atendimento médico de emergência no local do EVENTO. Tratamentos posteriores, exames, internações e despesas correlatas são de responsabilidade do CLUBE/atleta.
+6.3. O CLUBE e seus atletas assumem os riscos inerentes à prática do flag football. A ORGANIZAÇÃO não responde por danos decorrentes desses riscos inerentes, respondendo apenas por danos causados por dolo ou culpa comprovada de sua parte, na forma da lei.
+6.4. A ORGANIZAÇÃO não se responsabiliza por objetos pessoais, deslocamento, hospedagem e alimentação das delegações, salvo quando expressamente contratados por meio dela.
 
-3. RESPONSIBILITY
-The person responsible for the registration vouches for the accuracy of the information and compliance with the championship rules.
+7. IMAGEM E MARCA
+O CLUBE autoriza, sem ônus e por prazo indeterminado, o uso de seu nome, escudo, uniforme e da imagem coletiva de sua delegação em fotos, vídeos, transmissões e materiais promocionais do EVENTO e de suas edições, no Brasil e no exterior. O uso da marca BFWC pelo CLUBE depende de autorização escrita.
 
-4. PRIVACY
-Data will be used exclusively for communications related to BFWC 2026 and registration management.
+8. CONDUTA E DISCIPLINA
+O CLUBE, seus atletas, staff e torcida vinculada comprometem-se com o fair play e com o Regulamento Oficial (parte integrante destes Termos, disponível no site e sujeito a atualizações divulgadas no portal). Infrações sujeitam o CLUBE a advertência, suspensão, desclassificação e/ou responsabilização civil, sem reembolso. Atletas estão sujeitos a controle antidoping.
 
-5. CONDUCT
-The club commits to maintaining sporting conduct and respect throughout all championship events.`;
+9. PROTEÇÃO DE DADOS (LGPD)
+9.1. Os dados do CLUBE, atletas e staff serão tratados pela ORGANIZAÇÃO para: gestão de inscrições e pagamentos, credenciamento, organização esportiva (tabelas, súmulas, resultados), comunicações do EVENTO e cumprimento de obrigações legais.
+9.2. Poderão ser compartilhados com operadores estritamente necessários: processadores de pagamento, plataforma de hospedagem do site, parceiro oficial de viagens (quando solicitado pelo CLUBE) e autoridades, quando exigido por lei.
+9.3. Dados de menores são tratados com o consentimento específico do responsável legal (cláusula 5.4).
+9.4. Solicitações de titulares (acesso, correção, exclusão): contato@brasilflag.com.
 
-const TERMS_ES = `1. DATOS DEL CLUB
-La información proporcionada en este registro debe ser verdadera y corresponder al club/organización representada.
+10. DISPOSIÇÕES GERAIS
+10.1. Comunicações oficiais serão feitas pelo e-mail cadastrado no portal e consideram-se recebidas na data do envio.
+10.2. A ORGANIZAÇÃO pode ajustar formato de competição, tabela e horários por necessidade técnica, sem direito a reembolso por isso.
+10.3. O registro eletrônico do aceite (data, hora, IP e versão dos Termos) constitui prova da contratação.
+10.4. Fica eleito o foro da Comarca de Leme/SP, com renúncia a qualquer outro.`;
 
-2. APROBACIÓN
-El registro en el portal está sujeto a la aprobación de la organización del BFWC 2026. La inscripción no garantiza un cupo automático en el campeonato.
+const TERMS_EN = `REGISTRATION AND PARTICIPATION AGREEMENT — BRASIL FLAG WORLD CHAMPIONSHIP 2026
 
-3. RESPONSABILIDAD
-El responsable del registro asume la veracidad de la información y el cumplimiento de las reglas del campeonato.
+1. PARTIES AND PURPOSE
+These Terms govern the registration and participation of the club/team identified in this form ("CLUB") in the Brasil Flag World Championship 2026 ("EVENT"), to be held in Leme/SP, Brazil, on Oct 31, 2026, organized by BRASIL SPORTS BUSINESS, Brazilian company ID (CNPJ) 27.517.868/0001-10 ("ORGANIZER"). Electronic acceptance of these Terms by the person responsible for the registration constitutes a valid contract between the parties under Brazilian law (Civil Code, art. 425), no physical signature required.
 
-4. PRIVACIDAD
-Los datos se utilizarán exclusivamente para comunicaciones relacionadas con el BFWC 2026 y la gestión de las inscripciones.
+2. REGISTRATION AND APPROVAL
+2.1. All information provided must be true, complete and up to date; the responsible person declares having powers to represent the CLUB.
+2.2. Registration is subject to review and approval by the ORGANIZER and does not guarantee a spot.
+2.3. A spot in each category is only reserved upon confirmation of the 1st installment payment, following the chronological order of payment and the limit of spots per category.
 
-5. CONDUCTA
-El club se compromete a mantener una conducta deportiva y respeto durante todos los eventos del campeonato.`;
+3. FEES AND PAYMENT
+3.1. The registration fee is set per category, at the CLUB's choice in the portal: Option 1 (Package) — R$ 2,000.00 per category, athletes included; or Option 2 (Per athlete) — R$ 800.00 per category + R$ 90.00 per athlete (minimum 12, maximum 20 per category). The total is the sum of the registered categories.
+3.2. Payment may be split into up to 3 installments, due Jul 20, Aug 20 and Sep 20, 2026, via Pix or credit card. Later registrations follow the remaining schedule.
+3.3. The chosen option is locked after payment of the 1st installment.
+3.4. Participation is conditioned on full payment by Sep 20, 2026.
+
+4. CANCELLATION, WITHDRAWAL AND REFUNDS
+4.1. Paid installments are NON-REFUNDABLE in any case of withdrawal, no-show, disciplinary disqualification or failure to pay the remaining installments.
+4.2. If payment is not completed by the final due date, the ORGANIZER may cancel the registration and release the spot; amounts paid remain non-refundable.
+4.3. If the EVENT is cancelled without rescheduling, amounts paid will be fully refunded within 30 days. In case of postponement or change of date/venue due to force majeure (weather, public authority order, safety), registrations remain valid for the new date, with no refund due to the change.
+4.4. Spots are non-transferable without the ORGANIZER's written consent.
+
+5. ROSTER, ELIGIBILITY AND LINEUP
+5.1. Each category requires a roster of at least 12 and at most 20 athletes, plus up to 7 coaching staff members, registered in the portal within the published deadlines.
+5.2. Age limits: U-15 — born 2011 or later; U-12 — born 2014 or later; other categories as per the Official Rulebook.
+5.3. The CLUB is responsible for the eligibility, documentation and accuracy of its athletes' and staff's data. Ineligible athletes or false data subject the CLUB to the Rulebook sanctions, including disqualification, without refund.
+5.4. Athletes under 18 may only participate upon a signed authorization by their legal guardian (participation, image use and data processing), uploaded in the portal. Without it, the athlete will not be accredited.
+
+6. HEALTH, INSURANCE AND LIABILITY
+6.1. The CLUB declares its athletes are fit for sports practice and is responsible for verifying their health condition (prior medical evaluation is recommended).
+6.2. The ORGANIZER will provide emergency medical care at the EVENT venue. Subsequent treatments, exams, hospitalizations and related expenses are the responsibility of the CLUB/athlete.
+6.3. The CLUB and its athletes assume the risks inherent to flag football. The ORGANIZER is not liable for damages arising from such inherent risks, remaining liable only for damages caused by its proven fault or intent, as per the law.
+6.4. The ORGANIZER is not responsible for personal belongings, transportation, lodging or meals of delegations, unless expressly contracted through it.
+
+7. IMAGE AND BRAND
+The CLUB authorizes, free of charge and for an indefinite period, the use of its name, crest, uniform and the collective image of its delegation in photos, videos, broadcasts and promotional materials of the EVENT and its editions, in Brazil and abroad. Use of the BFWC brand by the CLUB requires written authorization.
+
+8. CONDUCT AND DISCIPLINE
+The CLUB, its athletes, staff and affiliated supporters commit to fair play and to the Official Rulebook (an integral part of these Terms, available on the website and subject to updates published in the portal). Violations subject the CLUB to warning, suspension, disqualification and/or civil liability, without refund. Athletes are subject to anti-doping control.
+
+9. DATA PROTECTION (LGPD)
+9.1. Data of the CLUB, athletes and staff will be processed by the ORGANIZER for: registration and payment management, accreditation, sports organization (schedules, match reports, results), EVENT communications and compliance with legal obligations.
+9.2. Data may be shared with strictly necessary processors: payment providers, website hosting platform, official travel partner (when requested by the CLUB) and authorities, when required by law.
+9.3. Minors' data is processed with the specific consent of the legal guardian (clause 5.4).
+9.4. Data subject requests (access, correction, deletion): contato@brasilflag.com.
+
+10. GENERAL PROVISIONS
+10.1. Official communications will be sent to the e-mail registered in the portal and are deemed received on the date of sending.
+10.2. The ORGANIZER may adjust competition format, schedule and times for technical reasons, with no refund due.
+10.3. The electronic record of acceptance (date, time, IP and Terms version) constitutes proof of contract.
+10.4. The courts of the District of Leme/SP, Brazil, are elected as the competent forum, waiving any other.`;
+
+const TERMS_ES = `TÉRMINO DE INSCRIPCIÓN Y PARTICIPACIÓN — BRASIL FLAG WORLD CHAMPIONSHIP 2026
+
+1. PARTES Y OBJETO
+Estos Términos regulan la inscripción y participación del club/equipo identificado en este registro ("CLUB") en el Brasil Flag World Championship 2026 ("EVENTO"), a realizarse en Leme/SP, Brasil, el 31/10/2026, organizado por BRASIL SPORTS BUSINESS, CNPJ 27.517.868/0001-10 ("ORGANIZACIÓN"). La aceptación electrónica de estos Términos por el responsable indicado en el registro constituye contrato válido entre las partes según la ley brasileña (Código Civil, art. 425), sin necesidad de firma física.
+
+2. REGISTRO Y APROBACIÓN
+2.1. La información proporcionada debe ser verdadera, completa y actualizada; el responsable declara tener poderes para representar al CLUB.
+2.2. El registro está sujeto a análisis y aprobación por la ORGANIZACIÓN y no garantiza cupo.
+2.3. El cupo en cada categoría solo se reserva con la confirmación del pago de la 1.ª cuota, respetando el orden cronológico de pago y el límite de cupos por categoría.
+
+3. VALORES Y PAGO
+3.1. La tarifa de inscripción se define por categoría, a elección del CLUB en el portal: Opción 1 (Paquete) — R$ 2.000,00 por categoría, atletas incluidos; u Opción 2 (Por atleta) — R$ 800,00 por categoría + R$ 90,00 por atleta (mínimo 12, máximo 20 por categoría). El total es la suma de las categorías inscritas.
+3.2. El pago puede dividirse en hasta 3 cuotas, con vencimientos el 20/07/2026, 20/08/2026 y 20/09/2026, vía Pix o tarjeta de crédito. Inscripciones posteriores siguen el calendario restante.
+3.3. La opción elegida queda vinculada tras el pago de la 1.ª cuota.
+3.4. La participación está condicionada al pago total hasta el 20/09/2026.
+
+4. CANCELACIÓN, DESISTIMIENTO Y REEMBOLSO
+4.1. Las cuotas pagadas NO son reembolsables, en ningún caso de desistimiento, ausencia (no-show), descalificación disciplinaria o falta de pago de las cuotas siguientes.
+4.2. En caso de falta de pago hasta el vencimiento final, la ORGANIZACIÓN podrá cancelar la inscripción y liberar el cupo, permaneciendo no reembolsables los valores pagados.
+4.3. Si el EVENTO fuera cancelado sin reprogramación, los valores pagados serán devueltos íntegramente en hasta 30 días. En caso de aplazamiento o cambio de fecha/lugar por fuerza mayor (clima, orden de autoridad pública, seguridad), las inscripciones permanecen válidas para la nueva fecha, sin derecho a reembolso por el cambio.
+4.4. El cupo es intransferible sin consentimiento escrito de la ORGANIZACIÓN.
+
+5. ROSTER, ELEGIBILIDAD Y ALINEACIÓN
+5.1. Cada categoría exige roster de mínimo 12 y máximo 20 atletas, además de hasta 7 miembros del cuerpo técnico/staff, registrados en el portal dentro de los plazos divulgados.
+5.2. Límites de edad: Sub-15 — nacidos desde 2011; Sub-12 — nacidos desde 2014; demás categorías según el Reglamento Oficial.
+5.3. El CLUB responde por la elegibilidad, documentación y veracidad de los datos de sus atletas y staff. Atleta inelegible o datos falsos sujetan al CLUB a las sanciones del Reglamento, incluida la descalificación, sin reembolso.
+5.4. Atletas menores de 18 años solo participarán mediante autorización firmada por el responsable legal (participación, uso de imagen y tratamiento de datos), enviada en el portal. Sin la autorización, el atleta no será acreditado.
+
+6. SALUD, SEGURO Y RESPONSABILIDAD
+6.1. El CLUB declara que sus atletas están aptos para la práctica deportiva, responsabilizándose por verificar sus condiciones de salud (se recomienda evaluación médica previa).
+6.2. La ORGANIZACIÓN dispondrá de atención médica de emergencia en el lugar del EVENTO. Tratamientos posteriores, exámenes, internaciones y gastos relacionados son responsabilidad del CLUB/atleta.
+6.3. El CLUB y sus atletas asumen los riesgos inherentes al flag football. La ORGANIZACIÓN no responde por daños derivados de esos riesgos inherentes, respondiendo solo por daños causados por dolo o culpa comprobada de su parte, conforme a la ley.
+6.4. La ORGANIZACIÓN no se responsabiliza por objetos personales, traslado, hospedaje y alimentación de las delegaciones, salvo cuando sean contratados expresamente por medio de ella.
+
+7. IMAGEN Y MARCA
+El CLUB autoriza, sin costo y por plazo indeterminado, el uso de su nombre, escudo, uniforme y de la imagen colectiva de su delegación en fotos, videos, transmisiones y materiales promocionales del EVENTO y sus ediciones, en Brasil y en el exterior. El uso de la marca BFWC por el CLUB depende de autorización escrita.
+
+8. CONDUCTA Y DISCIPLINA
+El CLUB, sus atletas, staff y afición vinculada se comprometen con el fair play y con el Reglamento Oficial (parte integrante de estos Términos, disponible en el sitio y sujeto a actualizaciones divulgadas en el portal). Las infracciones sujetan al CLUB a advertencia, suspensión, descalificación y/o responsabilidad civil, sin reembolso. Los atletas están sujetos a control antidopaje.
+
+9. PROTECCIÓN DE DATOS (LGPD)
+9.1. Los datos del CLUB, atletas y staff serán tratados por la ORGANIZACIÓN para: gestión de inscripciones y pagos, acreditación, organización deportiva (calendarios, actas, resultados), comunicaciones del EVENTO y cumplimiento de obligaciones legales.
+9.2. Podrán compartirse con operadores estrictamente necesarios: procesadores de pago, plataforma de hosting del sitio, socio oficial de viajes (cuando lo solicite el CLUB) y autoridades, cuando lo exija la ley.
+9.3. Los datos de menores se tratan con el consentimiento específico del responsable legal (cláusula 5.4).
+9.4. Solicitudes de titulares (acceso, corrección, eliminación): contato@brasilflag.com.
+
+10. DISPOSICIONES GENERALES
+10.1. Las comunicaciones oficiales se harán al e-mail registrado en el portal y se consideran recibidas en la fecha de envío.
+10.2. La ORGANIZACIÓN puede ajustar el formato de competición, calendario y horarios por necesidad técnica, sin derecho a reembolso por ello.
+10.3. El registro electrónico de la aceptación (fecha, hora, IP y versión de los Términos) constituye prueba de la contratación.
+10.4. Se elige el fuero de la Comarca de Leme/SP, Brasil, con renuncia a cualquier otro.`;
 
 const TERMS = { pt: TERMS_PT, en: TERMS_EN, es: TERMS_ES };
 
@@ -861,7 +972,7 @@ export default function CadastroPage() {
               <div style={{ marginTop: 20 }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#475569', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 8 }}>{t.terms}</div>
                 <div style={{
-                  height: 140, overflowY: 'auto', padding: '12px 14px', borderRadius: 10,
+                  height: 280, overflowY: 'auto', padding: '14px 16px', borderRadius: 10,
                   background: '#f8fafc', border: '1px solid #e2e8f0',
                   fontSize: 11, color: '#64748b', lineHeight: 1.7, whiteSpace: 'pre-line',
                 }}>

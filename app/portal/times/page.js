@@ -878,7 +878,8 @@ export default function TimesPortalPage() {
   );
 
 
-  const teamFullyPaid = !!payInfo?.fully_paid;
+  const teamFullyPaid = !!payInfo?.fully_paid ||
+    (!!payInfo?.payment_plan && (payInfo?.paid_count || 0) >= payInfo.payment_plan);
   const teamAllComplete = team.status === 'approved' && teamFullyPaid && lineupSubmitted;
   const ps = team.status === 'rejected'
     ? { label: L('Não aprovado', 'Not approved', 'No aprobado'), color: '#ff4444' }
@@ -1037,7 +1038,7 @@ export default function TimesPortalPage() {
               const isRejected       = team.status === 'rejected';
               const paymentConfirmed = !!team.payment_confirmed;
               const hasAthletes      = athletes.length >= MIN_ATH || lineupSubmitted;
-              const allDone          = isApproved && (payInfo ? !!payInfo.fully_paid : false) && lineupSubmitted;
+              const allDone          = isApproved && teamFullyPaid && lineupSubmitted;
 
               // Qual é a fase atual (0-based)
               const currentStep = allDone ? 4
@@ -1047,7 +1048,7 @@ export default function TimesPortalPage() {
                 : isEmailVerified ? 1
                 : 0;
 
-              const fullyPaidStep = payInfo ? !!payInfo.fully_paid : paymentConfirmed;
+              const fullyPaidStep = payInfo ? teamFullyPaid : paymentConfirmed;
               const paidCountStep = payInfo?.paid_count || 0;
               const startedPaying = paymentConfirmed || paidCountStep > 0;
               const STEPS = [
@@ -1065,7 +1066,7 @@ export default function TimesPortalPage() {
                     if (isRejected) return L('❌ Inscrição não aprovada. Entre em contato.', '❌ Registration not approved. Please contact us.', '❌ Inscripción no aprobada. Contáctanos.');
                     if (!isApproved) return L('⏳ Aguardando aprovação da organização para liberar o pagamento.', '⏳ Awaiting organization approval to unlock payment.', '⏳ Esperando la aprobación de la organización para liberar el pago.');
                     const plan = payInfo?.payment_plan;
-                    if (payInfo?.fully_paid) return L('Pagamento concluído.', 'Payment completed.', 'Pago completado.');
+                    if (teamFullyPaid) return L('Pagamento concluído.', 'Payment completed.', 'Pago completado.');
                     if (plan && paidCountStep > 0) return L(`${paidCountStep} parcela${paidCountStep !== 1 ? 's' : ''} paga${paidCountStep !== 1 ? 's' : ''} de ${plan}.`, `${paidCountStep} of ${plan} installment${plan !== 1 ? 's' : ''} paid.`, `${paidCountStep} de ${plan} cuota${plan !== 1 ? 's' : ''} pagada${paidCountStep !== 1 ? 's' : ''}.`);
                     if (startedPaying) return L('Pagamento em andamento.', 'Payment in progress.', 'Pago en curso.');
                     return L('Pague a 1ª parcela para garantir sua vaga.', 'Pay the 1st installment to secure your spot.', 'Paga la 1ª cuota para asegurar tu plaza.');

@@ -71,6 +71,12 @@ async function uploadLogo(supabase, file, teamId) {
   }
 }
 
+const TERMS_VERSION = '2026-07-06';
+
+function clientIp(req) {
+  return (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || req.headers.get('x-real-ip') || null;
+}
+
 export async function POST(req) {
   try {
     // Support both FormData (new) and JSON (legacy)
@@ -138,6 +144,9 @@ export async function POST(req) {
       email_token_expires_at: token_expires,
       status: 'pending_email',
       preferred_language: language,
+      terms_version: TERMS_VERSION,
+      terms_accepted_at: new Date().toISOString(),
+      terms_ip: clientIp(req),
     }).select('id').single();
 
     if (error) throw error;

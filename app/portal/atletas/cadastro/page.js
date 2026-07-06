@@ -29,15 +29,15 @@ const TR = {
     termsSection: 'Termos e aceites', termsHint: 'Leia cada termo clicando sobre ele. Todos são obrigatórios.',
     termAcceptBtn: 'Li e aceito', termsAccepted: '✓ Aceito', termsRequired: 'Obrigatório — clique para ler e aceitar',
     termHealthTitle: 'Declaração de Saúde e Responsabilidade',
-    termHealthText: 'Declaro estar em plenas condições físicas para participar do campeonato e isento a organização do BFWC 2026 de responsabilidade por lesões esportivas. Declaro não ter contraindicação médica para a prática do flag football.',
+    termHealthText: 'Declaro estar em condições físicas e de saúde adequadas à prática do flag football, não possuindo contraindicação médica de que eu tenha conhecimento (recomenda-se avaliação médica prévia). Estou ciente e assumo os riscos inerentes à prática esportiva (contatos acidentais, quedas e lesões deles decorrentes). A organização disponibiliza atendimento de emergência no local do evento; tratamentos posteriores são de minha responsabilidade. Esta declaração não afasta a responsabilidade da organização por danos causados por dolo ou culpa comprovada de sua parte.',
     termImageTitle: 'Autorização de Uso de Imagem e Voz',
-    termImageText: 'Autorizo a organização a captar e utilizar minha imagem, voz e likeness em fotografias, vídeos, transmissões ao vivo, redes sociais e materiais promocionais do BFWC 2026, sem ônus, por prazo indeterminado.',
+    termImageText: 'Autorizo, sem ônus, a captação e o uso da minha imagem, voz e nome em fotos, vídeos, transmissões ao vivo, redes sociais e materiais promocionais e institucionais do BFWC, no Brasil e no exterior, por prazo indeterminado, exclusivamente para finalidades ligadas ao evento, suas edições e sua divulgação. Posso revogar esta autorização para usos futuros mediante solicitação a contato@brasilflag.com, preservados os materiais já produzidos.',
     termRulesTitle: 'Regulamento do Torneio',
-    termRulesText: 'Declaro que li e aceito integralmente o Regulamento Oficial do BFWC 2026. Estou ciente de que violações resultam em advertência, suspensão ou desclassificação, a critério da comissão técnica.',
+    termRulesText: 'Declaro que li e aceito o Regulamento Oficial do BFWC 2026 (disponível no site, parte integrante deste aceite), incluindo regras de elegibilidade, idade por categoria, uniformes e sistema disciplinar. Estou ciente de que infrações me sujeitam a advertência, suspensão ou desclassificação, conforme decisão da comissão disciplinar, garantida manifestação prévia.',
     termPrivacyTitle: 'Política de Privacidade — LGPD',
-    termPrivacyText: 'Consinto com o tratamento dos meus dados pessoais conforme a LGPD (Lei nº 13.709/2018) para fins de gestão da minha participação, credenciamento e divulgação de resultados do evento.',
+    termPrivacyText: 'Consinto com o tratamento dos meus dados pessoais (identificação, contato, data de nascimento, documento, foto e histórico esportivo) pela Brasil Sports Business (CNPJ 27.517.868/0001-10) para: gestão da inscrição, credenciamento, organização esportiva, divulgação de tabelas e resultados e comunicações do evento — conforme a Lei nº 13.709/2018 (LGPD). Meus dados poderão ser compartilhados com operadores necessários (pagamentos, hospedagem do site) e não serão vendidos. Posso exercer meus direitos (acesso, correção, exclusão, revogação) pelo e-mail contato@brasilflag.com.',
     termConductTitle: 'Código de Conduta e Fair Play',
-    termConductText: 'Comprometo-me a manter conduta esportiva exemplar. Declaro não usar substâncias proibidas e aceito submeter-me a controle antidoping. Estou ciente de que condutas discriminatórias resultam em punição imediata.',
+    termConductText: 'Comprometo-me a manter conduta esportiva exemplar com adversários, arbitragem, organização e público. Declaro não fazer uso de substâncias proibidas e aceito submeter-me a eventual controle antidoping. Estou ciente de que atos de violência, discriminação de qualquer natureza ou fraude resultam em sanção imediata, sem prejuízo das medidas legais cabíveis.',
     password: 'Senha *', confirmPassword: 'Confirmar senha *',
     btnNext: 'Continuar →', btnBack: '← Voltar', btnSubmit: 'Criar conta', btnLoading: 'Criando conta...',
     loginLink: 'Já tem conta?', login: 'Fazer login', back: '← Voltar ao portal',
@@ -47,6 +47,13 @@ const TR = {
     passwordMin: 'Mínimo 8 caracteres', passwordMatch: 'As senhas não coincidem',
     photoRequired: 'Foto é obrigatória', historyRequired: 'Histórico é obrigatório',
     allTermsRequired: 'Você deve aceitar todos os termos',
+    minorTitle: 'Atleta menor de 18 anos — Autorização do Responsável',
+    minorText: 'Baixe o modelo, peça ao responsável legal para assinar (participação, uso de imagem e dados) e envie aqui a autorização assinada (PDF ou foto legível). Sem ela o cadastro não é validado.',
+    minorDownload: 'Baixar modelo da autorização',
+    minorBtn: 'Enviar autorização assinada', minorHint: 'PDF, JPG ou PNG · Máx. 5 MB',
+    minorRequired: 'A autorização do responsável é obrigatória para menores de 18 anos',
+    minorInvalidType: 'Use PDF, JPG ou PNG.', minorTooLarge: 'Máximo 5 MB.',
+    minorFile: 'autorizacao-menor-bfwc2026-pt.pdf',
     logoInvalidType: 'Use PNG ou JPG.', logoTooLarge: 'Máximo 2 MB.',
   },
   en: {
@@ -69,16 +76,16 @@ const TR = {
     historyPlaceholder: 'Tell us about your flag football experience: teams, titles, positions, years playing...',
     termsSection: 'Terms & agreements', termsHint: 'Read each term by clicking on it. All are required.',
     termAcceptBtn: 'I have read and accept', termsAccepted: '✓ Accepted', termsRequired: 'Required — click to read and accept',
-    termHealthTitle: 'Health & Liability Declaration',
-    termHealthText: 'I declare I am in full physical condition to participate in the championship and release the BFWC 2026 organization from liability for sports injuries. I declare I have no medical contraindication for practicing flag football.',
+    termHealthTitle: 'Health Declaration & Assumption of Risk',
+    termHealthText: 'I declare I am in adequate physical and health condition to practice flag football and have no medical contraindication known to me (a prior medical evaluation is recommended). I am aware of and assume the risks inherent to sports practice (accidental contact, falls and resulting injuries). The organization provides emergency care at the event venue; subsequent treatments are my responsibility. This declaration does not exclude the organization\'s liability for damages caused by its proven fault or intent.',
     termImageTitle: 'Image & Voice Usage Authorization',
-    termImageText: 'I authorize the organization to capture and use my image, voice and likeness in photos, videos, live broadcasts, social media and promotional materials of BFWC 2026, without compensation, for an indefinite period.',
+    termImageText: 'I authorize, free of charge, the capture and use of my image, voice and name in photos, videos, live broadcasts, social media and promotional and institutional materials of BFWC, in Brazil and abroad, for an indefinite period, exclusively for purposes related to the event, its editions and its promotion. I may revoke this authorization for future uses by request to contato@brasilflag.com, with materials already produced being preserved.',
     termRulesTitle: 'Tournament Rules',
-    termRulesText: 'I declare I have read and fully accept the Official Rules of BFWC 2026. I understand that violations result in warnings, suspension or disqualification, at the discretion of the technical committee.',
+    termRulesText: 'I declare I have read and accept the Official Rulebook of BFWC 2026 (available on the website, an integral part of this acceptance), including eligibility rules, age per category, uniforms and the disciplinary system. I understand that violations subject me to warning, suspension or disqualification, as decided by the disciplinary committee, with the right to be heard.',
     termPrivacyTitle: 'Privacy Policy — LGPD',
-    termPrivacyText: 'I consent to the processing of my personal data in accordance with LGPD (Law No. 13,709/2018) for the purposes of managing my participation, accreditation and publication of event results.',
+    termPrivacyText: 'I consent to the processing of my personal data (identification, contact, date of birth, ID document, photo and sports history) by Brasil Sports Business (CNPJ 27.517.868/0001-10) for: registration management, accreditation, sports organization, publication of schedules and results, and event communications — under Brazilian Law No. 13,709/2018 (LGPD). My data may be shared with necessary processors (payments, website hosting) and will not be sold. I may exercise my rights (access, correction, deletion, revocation) via contato@brasilflag.com.',
     termConductTitle: 'Code of Conduct & Fair Play',
-    termConductText: 'I commit to maintaining exemplary sportsmanship. I declare I do not use prohibited substances and accept anti-doping control. I understand that discriminatory conduct results in immediate punishment.',
+    termConductText: 'I commit to exemplary sporting conduct towards opponents, officials, organization and the public. I declare I do not use prohibited substances and accept possible anti-doping control. I understand that acts of violence, discrimination of any kind or fraud result in immediate sanction, without prejudice to applicable legal measures.',
     password: 'Password *', confirmPassword: 'Confirm password *',
     btnNext: 'Continue →', btnBack: '← Back', btnSubmit: 'Create account', btnLoading: 'Creating account...',
     loginLink: 'Already have an account?', login: 'Log in', back: '← Back to portal',
@@ -88,6 +95,13 @@ const TR = {
     passwordMin: 'Minimum 8 characters', passwordMatch: 'Passwords do not match',
     photoRequired: 'Photo is required', historyRequired: 'Sports history is required',
     allTermsRequired: 'You must accept all terms',
+    minorTitle: 'Athlete under 18 — Legal Guardian Authorization',
+    minorText: 'Download the template, have the legal guardian sign it (participation, image use and data) and upload the signed authorization here (PDF or a readable photo). Without it, the registration is not validated.',
+    minorDownload: 'Download authorization template',
+    minorBtn: 'Upload signed authorization', minorHint: 'PDF, JPG or PNG · Max 5 MB',
+    minorRequired: 'Guardian authorization is required for athletes under 18',
+    minorInvalidType: 'Use PDF, JPG or PNG.', minorTooLarge: 'Max 5 MB.',
+    minorFile: 'autorizacao-menor-bfwc2026-en.pdf',
     logoInvalidType: 'Use PNG or JPG.', logoTooLarge: 'Maximum 2 MB.',
   },
   es: {
@@ -110,16 +124,16 @@ const TR = {
     historyPlaceholder: 'Cuéntanos sobre tu experiencia en flag football: equipos, títulos, posiciones, años jugando...',
     termsSection: 'Términos y aceptaciones', termsHint: 'Lee cada término haciendo clic. Todos son obligatorios.',
     termAcceptBtn: 'He leído y acepto', termsAccepted: '✓ Aceptado', termsRequired: 'Obligatorio — clic para leer y aceptar',
-    termHealthTitle: 'Declaración de Salud y Responsabilidad',
-    termHealthText: 'Declaro estar en plenas condiciones físicas para participar del campeonato y eximo a la organización del BFWC 2026 de responsabilidad por lesiones deportivas. Declaro no tener contraindicación médica para practicar flag football.',
+    termHealthTitle: 'Declaración de Salud y Asunción de Riesgos',
+    termHealthText: 'Declaro estar en condiciones físicas y de salud adecuadas para practicar flag football, sin contraindicación médica de la que tenga conocimiento (se recomienda evaluación médica previa). Conozco y asumo los riesgos inherentes a la práctica deportiva (contactos accidentales, caídas y lesiones derivadas). La organización dispone de atención de emergencia en el lugar del evento; los tratamientos posteriores son de mi responsabilidad. Esta declaración no excluye la responsabilidad de la organización por daños causados por dolo o culpa comprobada de su parte.',
     termImageTitle: 'Autorización de Uso de Imagen y Voz',
-    termImageText: 'Autorizo a la organización a capturar y utilizar mi imagen, voz y apariencia en fotografías, videos, transmisiones en vivo, redes sociales y materiales promocionales del BFWC 2026, sin costo, por tiempo indefinido.',
+    termImageText: 'Autorizo, sin costo, la captación y el uso de mi imagen, voz y nombre en fotos, videos, transmisiones en vivo, redes sociales y materiales promocionales e institucionales del BFWC, en Brasil y en el exterior, por tiempo indefinido, exclusivamente para fines vinculados al evento, sus ediciones y su divulgación. Puedo revocar esta autorización para usos futuros mediante solicitud a contato@brasilflag.com, preservándose los materiales ya producidos.',
     termRulesTitle: 'Reglamento del Torneo',
-    termRulesText: 'Declaro haber leído y aceptado íntegramente el Reglamento Oficial del BFWC 2026. Soy consciente de que las violaciones resultan en advertencia, suspensión o descalificación, a criterio del comité técnico.',
+    termRulesText: 'Declaro que leí y acepto el Reglamento Oficial del BFWC 2026 (disponible en el sitio, parte integrante de esta aceptación), incluidas las reglas de elegibilidad, edad por categoría, uniformes y sistema disciplinario. Soy consciente de que las infracciones me sujetan a advertencia, suspensión o descalificación, según decisión del comité disciplinario, garantizada la manifestación previa.',
     termPrivacyTitle: 'Política de Privacidad — LGPD',
-    termPrivacyText: 'Consiento el tratamiento de mis datos personales conforme a la LGPD (Ley nº 13.709/2018) para la gestión de mi participación, acreditación y divulgación de resultados del evento.',
+    termPrivacyText: 'Consiento el tratamiento de mis datos personales (identificación, contacto, fecha de nacimiento, documento, foto e historial deportivo) por Brasil Sports Business (CNPJ 27.517.868/0001-10) para: gestión de la inscripción, acreditación, organización deportiva, divulgación de calendarios y resultados y comunicaciones del evento — conforme a la Ley brasileña nº 13.709/2018 (LGPD). Mis datos podrán compartirse con operadores necesarios (pagos, hosting del sitio) y no serán vendidos. Puedo ejercer mis derechos (acceso, corrección, eliminación, revocación) por el e-mail contato@brasilflag.com.',
     termConductTitle: 'Código de Conducta y Fair Play',
-    termConductText: 'Me comprometo a mantener una conducta deportiva ejemplar. Declaro no usar sustancias prohibidas y acepto el control antidopaje. Soy consciente de que la conducta discriminatoria resulta en sanción inmediata.',
+    termConductText: 'Me comprometo a mantener una conducta deportiva ejemplar con adversarios, arbitraje, organización y público. Declaro no usar sustancias prohibidas y acepto someterme a eventual control antidopaje. Soy consciente de que actos de violencia, discriminación de cualquier tipo o fraude resultan en sanción inmediata, sin perjuicio de las medidas legales aplicables.',
     password: 'Contraseña *', confirmPassword: 'Confirmar contraseña *',
     btnNext: 'Continuar →', btnBack: '← Volver', btnSubmit: 'Crear cuenta', btnLoading: 'Creando cuenta...',
     loginLink: '¿Ya tienes cuenta?', login: 'Iniciar sesión', back: '← Volver al portal',
@@ -129,6 +143,13 @@ const TR = {
     passwordMin: 'Mínimo 8 caracteres', passwordMatch: 'Las contraseñas no coinciden',
     photoRequired: 'La foto es obligatoria', historyRequired: 'El historial es obligatorio',
     allTermsRequired: 'Debes aceptar todos los términos',
+    minorTitle: 'Atleta menor de 18 años — Autorización del Responsable',
+    minorText: 'Descarga el modelo, pide al responsable legal que lo firme (participación, uso de imagen y datos) y sube aquí la autorización firmada (PDF o foto legible). Sin ella el registro no se valida.',
+    minorDownload: 'Descargar modelo de autorización',
+    minorBtn: 'Subir autorización firmada', minorHint: 'PDF, JPG o PNG · Máx. 5 MB',
+    minorRequired: 'La autorización del responsable es obligatoria para menores de 18 años',
+    minorInvalidType: 'Usa PDF, JPG o PNG.', minorTooLarge: 'Máximo 5 MB.',
+    minorFile: 'autorizacao-menor-bfwc2026-es.pdf',
     logoInvalidType: 'Usa PNG o JPG.', logoTooLarge: 'Máximo 2 MB.',
   },
 };
@@ -205,6 +226,7 @@ export default function AtletasCadastroPage() {
   const [step, setStep]             = useState(1);
   const [photoFile, setPhotoFile]   = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [guardianFile, setGuardianFile] = useState(null);
   const [termsAccepted, setTermsAccepted] = useState({});
   const [form, setForm]             = useState({
     name: '', email: '', birthdate: '', nationality: '', whatsapp: '',
@@ -257,6 +279,17 @@ export default function AtletasCadastroPage() {
   }
   const allTermsOk = TERMS_KEYS.every(k => termsAccepted[k]);
 
+  // Menor de idade na data do evento (31/10/2026)?
+  const isMinor = (() => {
+    if (!form.birthdate) return false;
+    const b = new Date(form.birthdate + 'T00:00:00');
+    const ev = new Date('2026-10-31T00:00:00');
+    let age = ev.getFullYear() - b.getFullYear();
+    const m = ev.getMonth() - b.getMonth();
+    if (m < 0 || (m === 0 && ev.getDate() < b.getDate())) age--;
+    return age < 18;
+  })();
+
   function set(field, value) {
     setForm(f => ({ ...f, [field]: value }));
     setErrors(e => ({ ...e, [field]: '' }));
@@ -291,6 +324,19 @@ export default function AtletasCadastroPage() {
     return errs;
   }
 
+  function handleGuardian(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'].includes(file.type)) {
+      setErrors(er => ({ ...er, guardian: t.minorInvalidType })); return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setErrors(er => ({ ...er, guardian: t.minorTooLarge })); return;
+    }
+    setGuardianFile(file);
+    setErrors(er => ({ ...er, guardian: '' }));
+  }
+
   function validateStep2() {
     const errs = {};
     if (!photoFile)               errs.photo   = t.photoRequired;
@@ -301,6 +347,7 @@ export default function AtletasCadastroPage() {
   function validateStep3() {
     const errs = {};
     if (!allTermsOk)              errs.terms    = t.allTermsRequired;
+    if (isMinor && !guardianFile) errs.guardian = t.minorRequired;
     if (!form.password)           errs.password = t.required;
     else if (form.password.length < 8) errs.password = t.passwordMin;
     if (form.password !== form.confirm) errs.confirm = t.passwordMatch;
@@ -336,6 +383,7 @@ export default function AtletasCadastroPage() {
       fd.append('terms_privacy',  'true');
       fd.append('terms_conduct',  'true');
       if (photoFile) fd.append('photo', photoFile);
+      if (guardianFile) fd.append('guardian_auth', guardianFile);
 
       const res = await fetch('/api/portal/atletas/register', { method: 'POST', body: fd });
       const data = await res.json();
@@ -610,6 +658,23 @@ export default function AtletasCadastroPage() {
                   }} />
                 ))}
               </div>
+
+              {/* Menor de idade: autorização do responsável */}
+              {isMinor && (
+                <div style={{ padding: '16px', borderRadius: 14, border: errors.guardian ? '1px solid #fca5a5' : '1px solid #f4c76a', background: '#fffaf0', marginBottom: 20 }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: '#8a5a0a', marginBottom: 6 }}>🛡️ {t.minorTitle}</div>
+                  <div style={{ fontSize: 12, color: '#7a6238', lineHeight: 1.55, marginBottom: 10 }}>{t.minorText}</div>
+                  <a href={`/downloads/${t.minorFile}`} download style={{ display: 'inline-block', fontSize: 12, fontWeight: 800, color: '#0D4BFF', marginBottom: 12, textDecoration: 'none' }}>⬇ {t.minorDownload}</a>
+                  <div>
+                    <label style={{ display: 'inline-block', padding: '10px 16px', borderRadius: 10, border: '1px solid #d9b96a', background: '#fff', fontSize: 12, fontWeight: 800, color: '#8a5a0a', cursor: 'pointer' }}>
+                      {guardianFile ? `✓ ${guardianFile.name}` : t.minorBtn}
+                      <input type="file" accept=".pdf,.jpg,.jpeg,.png" style={{ display: 'none' }} onChange={handleGuardian} />
+                    </label>
+                    <div style={{ fontSize: 10.5, color: '#a08a5c', marginTop: 6 }}>{t.minorHint}</div>
+                  </div>
+                  {errors.guardian && <div className="login-error" style={{ marginTop: 8 }}>{errors.guardian}</div>}
+                </div>
+              )}
 
               {/* Password */}
               <label className="login-label">{t.password}</label>
