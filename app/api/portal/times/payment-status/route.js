@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getInvoice } from '@/lib/cora';
 import { getBtgCollection, isBtgCollectionPaid } from '@/lib/btg';
-import { getResend, fromEmail, emailLogoImg } from '@/lib/email';
+import { getResend, fromEmail, emailLogoImg, notifyAdminsPayment } from '@/lib/email';
 import { totalCentsForTeam } from '@/lib/installments';
 
 export const runtime = 'nodejs';
@@ -61,6 +61,7 @@ export async function GET(request) {
           .update({ status: 'paid', paid_at: new Date().toISOString() })
           .eq('team_id', team.id).eq('number', inst.number);
 
+        await notifyAdminsPayment({ club_name: team.club_name, number: inst.number, plan_size: inst.plan_size, amount_cents: inst.amount_cents, method: 'Pix' });
         const firstConfirm = !teamConfirmed;
         teamConfirmed = true;
         if (!teamPaymentDate) teamPaymentDate = new Date().toISOString();

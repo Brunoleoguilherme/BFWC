@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { listBtgCollections, isBtgCollectionPaid } from '@/lib/btg';
-import { getResend, fromEmail, emailLogoImg } from '@/lib/email';
+import { getResend, fromEmail, emailLogoImg, notifyAdminsPayment } from '@/lib/email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -46,6 +46,7 @@ export async function POST(req) {
         .single();
 
       if (team) {
+        await notifyAdminsPayment({ club_name: team.club_name, number: inst.number, amount_cents: inst.amount_cents, method: 'Pix (BTG)' });
         await supabase
           .from('portal_teams')
           .update({

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getInvoice } from '@/lib/cora';
-import { getResend, fromEmail, emailLogoImg } from '@/lib/email';
+import { getResend, fromEmail, emailLogoImg, notifyAdminsPayment } from '@/lib/email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -50,6 +50,9 @@ export async function POST(req) {
             amount_paid_cents: (team.amount_paid_cents || 0) + (inst.amount_cents || 0),
           })
           .eq('id', team.id);
+      }
+      if (team) {
+        await notifyAdminsPayment({ club_name: team.club_name, number: inst.number, amount_cents: inst.amount_cents, method: 'Pix' });
       }
       if (team && !team.payment_confirmed) {
         try {

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { constructWebhookEvent } from '@/lib/stripe';
-import { getResend, fromEmail, emailLogoImg } from '@/lib/email';
+import { getResend, fromEmail, emailLogoImg, notifyAdminsPayment } from '@/lib/email';
 
 // Garante runtime Node (precisamos do corpo bruto + crypto)
 export const runtime = 'nodejs';
@@ -50,6 +50,9 @@ async function markPaid(session) {
       .eq('team_id', teamId)
       .neq('status', 'paid');
   }
+
+  // Aviso aos admins (best-effort)
+  await notifyAdminsPayment({ club_name: current.club_name, number: instNum || null, amount_cents: charged, method: 'Cartão (Stripe)' });
 
   // E-mail de confirmação (best-effort, não bloqueia o webhook)
   try {
