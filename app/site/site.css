@@ -1158,4 +1158,30 @@
 
   .partnerGroupLogos img.logoEmbaixada {
     height: 90px !important;
-    max-w
+    max-width: 220px !important;
+  }
+
+  .partnerGroupLogos img.logoPrefeitura {
+    height: 54px !important;
+  }
+
+  .logoPrefeituraWrap {
+    transform: none;
+  }
+
+  .logoPrefeituraWrap span {
+    margin-top: 6px;
+    font-size: 10px;
+  }
+
+  /* Footer: single column */
+  .premiumFooter {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 28px 18px 36px;
+  }
+
+  .newsletterBar {
+    padding: 24px 18px;
+  }
+}

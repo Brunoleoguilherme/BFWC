@@ -117,4 +117,27 @@
   padding: 36px 24px;
   border-radius: 20px;
   border: 1px solid rgba(255,255,255,.1);
-  background: rgba(255,255,2
+  background: rgba(255,255,255,.04);
+  display: flex;
+  justify-content: center;
+}
+
+.uaLogo {
+  width: min(320px, 70%);
+  height: auto;
+  opacity: .95;
+}
+
+@media (max-width: 640px) {
+  .uaNewsHero {
+    padding: 28px 20px 60px;
+  }
+
+  .uaBackBtn {
+    margin-bottom: 28px;
+  }
+
+  .uaText p {
+    font-size: 15px;
+  }
+}

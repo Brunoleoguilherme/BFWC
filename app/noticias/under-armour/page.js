@@ -86,4 +86,7 @@ export default function UnderArmourNewsPage() {
           />
         </div>
 
-    
+      </div>
+    </main>
+  );
+}

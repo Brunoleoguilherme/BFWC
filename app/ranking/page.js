@@ -104,4 +104,9 @@ export default function PublicRankingPage() {
 
         <div style={{ textAlign: 'center', marginTop: 24, display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
           <Link href="/jogos" style={{ color: '#68ff8f', fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>Ver jogos →</Link>
-          <Link href="/site" style={{ color: 'rgba(255,255,255,.5)', fontSi
+          <Link href="/site" style={{ color: 'rgba(255,255,255,.5)', fontSize: 13, textDecoration: 'none', fontWeight: 600 }}>← Voltar ao site</Link>
+        </div>
+      </div>
+    </div>
+  );
+}
