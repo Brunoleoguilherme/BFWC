@@ -563,6 +563,7 @@ export default function TimesPortalPage() {
   const [payPolling, setPayPolling]           = useState(false);
   const [payMethod, setPayMethod]             = useState('pix');
   const [planSize, setPlanSize]               = useState(null);   // 1, 2 ou 3 escolhido
+  const [payPlanChoice, setPayPlanChoice]     = useState('auto'); // 'auto' (parcelado) | '1' (à vista)
   const [catChoice, setCatChoice]             = useState({});     // opção por categoria: { [cat]: '1' | '2' }
   const [athQtys, setAthQtys]                 = useState({});     // atletas por categoria (opção 2)
   const [payInfo, setPayInfo]                 = useState(null);   // resposta de /payment-status
@@ -728,7 +729,7 @@ export default function TimesPortalPage() {
       const r = await fetch('/api/payments/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ team_id: team.id, selection: sel || undefined, installment_number: installmentNumber || undefined, lang }),
+        body: JSON.stringify({ team_id: team.id, selection: sel || undefined, installment_number: installmentNumber || undefined, plan_size: effectivePlan(), lang }),
       });
       const d = await r.json();
       if (!d.ok || !d.url) throw new Error(d.message || 'Não foi possível iniciar o pagamento.');
@@ -747,7 +748,7 @@ export default function TimesPortalPage() {
     if (!locked && !sel) { setPixErr(L('Escolha uma opção de pagamento para cada categoria.', 'Choose a payment option for each category.', 'Elige una opción de pago para cada categoría.')); return; }
     setPixErr(''); setPixLoadingNum(number);
     try {
-      const body = { team_id: team.id, number, selection: sel || undefined };
+      const body = { team_id: team.id, number, selection: sel || undefined, plan_size: effectivePlan() };
       if (docInput) body.document = docInput;
       const r = await fetch('/api/payments/pix/create', {
         method: 'POST',
@@ -893,6 +894,13 @@ export default function TimesPortalPage() {
 
   const MIN_ATH = 12, MAX_ATH = 20;
   const activeCats = registeredCats.filter(c => athByCat[c].length > 0);
+
+  // Plano automático por data (3x até 20/07, 2x até 20/08, depois 1x)
+  const autoPlanNow = () => {
+    const d = new Date().toISOString().slice(0, 10);
+    return d <= '2026-07-20' ? 3 : d <= '2026-08-20' ? 2 : 1;
+  };
+  const effectivePlan = () => payInfo?.payment_plan || (payPlanChoice === '1' ? 1 : autoPlanNow());
 
   // Seleção de pagamento por categoria: { [cat]: { option: '1'|'2', qty? } } — null enquanto faltar escolher
   const buildSelection = () => {
@@ -1259,9 +1267,10 @@ export default function TimesPortalPage() {
           const todayStr  = new Date().toISOString().slice(0, 10);
           const autoPlan  = todayStr <= '2026-07-20' ? 3 : todayStr <= '2026-08-20' ? 2 : 1;
           const lockedPlan = payInfo?.payment_plan || null;
-          const chosenPlan = lockedPlan || autoPlan;
+          const chosenPlan = lockedPlan || (payPlanChoice === '1' ? 1 : autoPlan);
           const ALL_DUES  = ['20 de julho de 2026', '20 de agosto de 2026', '20 de setembro de 2026'];
           const planDues  = ALL_DUES.slice(ALL_DUES.length - chosenPlan);
+          const autoDues  = ALL_DUES.slice(ALL_DUES.length - autoPlan);
 
           const buildParcelas = (n) => {
             const parcela = Math.ceil(total / n);
@@ -1421,6 +1430,23 @@ export default function TimesPortalPage() {
 
                   {payPolling && (
                     <div style={{ padding: '12px 14px', borderRadius: 10, background: ACCENT+'10', border: `1px solid ${ACCENT}25`, fontSize: 12, color: 'rgba(15,23,42,.6)', lineHeight: 1.5, marginBottom: 14 }}>⏳ {L('Confirmando seu pagamento...', 'Confirming your payment...', 'Confirmando tu pago...')}</div>
+                  )}
+
+                  {/* À vista ou parcelado (escolha livre até o 1º pagamento) */}
+                  {!lockedPlan && autoPlan > 1 && (
+                    <div style={{ marginBottom: 16 }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: 'uppercase', color: 'rgba(15,23,42,.35)', marginBottom: 8 }}>{L('Como prefere pagar?', 'How do you prefer to pay?', '¿Cómo prefieres pagar?')}</div>
+                      <div style={{ display: 'flex', gap: 8, flexDirection: isMobile ? 'column' : 'row' }}>
+                        <button onClick={() => setPayPlanChoice('auto')} style={{ flex: 1, textAlign: 'left', padding: '13px 14px', borderRadius: 12, cursor: 'pointer', fontFamily: 'inherit', border: `2px solid ${payPlanChoice === 'auto' ? GREEN : 'rgba(15,23,42,.1)'}`, background: payPlanChoice === 'auto' ? GREEN + '0c' : '#fff' }}>
+                          <div style={{ fontSize: 13, fontWeight: 900, color: '#0f172a' }}>{L(`Parcelado em ${autoPlan}x`, `${autoPlan} installments`, `En ${autoPlan} cuotas`)}</div>
+                          <div style={{ fontSize: 11.5, color: 'rgba(15,23,42,.5)', marginTop: 3 }}>{autoPlan}× {L('de', 'of', 'de')} ~R$ {Math.ceil(total / autoPlan).toLocaleString('pt-BR')} · {L('vencimentos', 'due dates', 'vencimientos')} {autoDues.join(', ')}</div>
+                        </button>
+                        <button onClick={() => setPayPlanChoice('1')} style={{ flex: 1, textAlign: 'left', padding: '13px 14px', borderRadius: 12, cursor: 'pointer', fontFamily: 'inherit', border: `2px solid ${payPlanChoice === '1' ? GREEN : 'rgba(15,23,42,.1)'}`, background: payPlanChoice === '1' ? GREEN + '0c' : '#fff' }}>
+                          <div style={{ fontSize: 13, fontWeight: 900, color: '#0f172a' }}>{L('À vista (1x)', 'Pay in full (1x)', 'Al contado (1x)')}</div>
+                          <div style={{ fontSize: 11.5, color: 'rgba(15,23,42,.5)', marginTop: 3 }}>1× {L('de', 'of', 'de')} R$ {total.toLocaleString('pt-BR')} · {L('quita tudo agora', 'settles everything now', 'liquida todo ahora')}</div>
+                        </button>
+                      </div>
+                    </div>
                   )}
 
                   {/* Seletor de método */}

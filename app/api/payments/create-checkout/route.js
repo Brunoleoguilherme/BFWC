@@ -13,7 +13,7 @@ export async function POST(req) {
     if (process.env.NEXT_PUBLIC_CARD_ENABLED === '0') {
       return NextResponse.json({ ok: false, code: 'CARD_SOON', message: 'Pagamento por cartão estará disponível em breve. Por enquanto, use o Pix.' }, { status: 503 });
     }
-    const { team_id, option, athletes_qty, installment_number, lang, selection } = await req.json();
+    const { team_id, option, athletes_qty, installment_number, lang, selection, plan_size } = await req.json();
     if (!team_id) {
       return NextResponse.json({ ok: false, message: 'team_id obrigatório.' }, { status: 400 });
     }
@@ -73,7 +73,8 @@ export async function POST(req) {
     const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/$/, '');
 
     // Parcela específica (igual ao Pix): plano automático por data, travado na 1ª cobrança
-    const planSize = team.payment_plan || activePlanSize(new Date());
+    // Plano: à vista (1x) se o time escolher; senão automático por data. Trava na 1ª cobrança.
+    const planSize = team.payment_plan || (parseInt(plan_size, 10) === 1 ? 1 : activePlanSize(new Date()));
     const num = Math.min(Math.max(parseInt(installment_number, 10) || 0, 0), planSize);
     let parcela = null;
     if (num > 0) {

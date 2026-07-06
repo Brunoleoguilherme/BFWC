@@ -15,7 +15,7 @@ function classifyDocument(raw) {
 
 export async function POST(req) {
   try {
-    const { team_id, number, document, option, athletes_qty, selection } = await req.json();
+    const { team_id, number, document, option, athletes_qty, selection, plan_size } = await req.json();
     if (!team_id) return NextResponse.json({ ok: false, message: 'team_id obrigatório.' }, { status: 400 });
 
     const supabase = getSupabaseAdmin();
@@ -60,7 +60,8 @@ export async function POST(req) {
     }
 
     // Plano: automático por data, travado na primeira parcela
-    const planSize = team.payment_plan || activePlanSize(new Date());
+    // Plano: à vista (1x) se o time escolher; senão automático por data. Trava na 1ª parcela.
+    const planSize = team.payment_plan || (parseInt(plan_size, 10) === 1 ? 1 : activePlanSize(new Date()));
     const num = Math.min(Math.max(parseInt(number, 10) || 1, 1), planSize);
 
     const doc = classifyDocument(document || team.payer_document);
