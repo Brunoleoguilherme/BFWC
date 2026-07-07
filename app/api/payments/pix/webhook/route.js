@@ -25,7 +25,7 @@ export async function POST(req) {
     const supabase = getSupabaseAdmin();
     const { data: inst } = await supabase
       .from('payment_installments')
-      .select('id, team_id, number, status, amount_cents')
+      .select('id, team_id, number, status, amount_cents, plan_size')
       .eq('cora_invoice_id', resourceId)
       .maybeSingle();
 
@@ -54,13 +54,15 @@ export async function POST(req) {
       if (team) {
         await notifyAdminsPayment({ club_name: team.club_name, number: inst.number, amount_cents: inst.amount_cents, method: 'Pix' });
       }
-      if (team && !team.payment_confirmed) {
+      if (team) {
         try {
+          const parcelaTxt = `parcela ${inst.number}${inst.plan_size ? `/${inst.plan_size}` : ''}`;
+          const valorTxt = ((inst.amount_cents || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
           await getResend().emails.send({
             from: fromEmail,
             to: team.email,
-            subject: '✅ Pagamento confirmado — BFWC 2026',
-            html: `<div style="font-family:Arial,sans-serif">${emailLogoImg(96, 'margin:0 0 14px')}<h2 style="color:#0a7d28">Pagamento confirmado!</h2><p>Olá, <strong>${team.club_name}</strong>. Recebemos sua parcela e seu clube está confirmado no BFWC 2026.</p></div>`,
+            subject: `✅ Pagamento confirmado (${parcelaTxt}) — BFWC 2026`,
+            html: `<div style="font-family:Arial,sans-serif">${emailLogoImg(96, 'margin:0 0 14px')}<h2 style="color:#0a7d28">Pagamento confirmado!</h2><p>Olá, <strong>${team.club_name}</strong>. Recebemos o pagamento da <strong>${parcelaTxt}</strong> no valor de <strong>${valorTxt}</strong>.</p>${!team.payment_confirmed ? '<p>🎉 Sua vaga está garantida no <strong>BFWC 2026</strong>! A inscrição é concluída com o pagamento das demais parcelas.</p>' : '<p>Acompanhe o resumo das parcelas no portal do clube.</p>'}</div>`,
           });
         } catch (e) { console.error('email error', e.message); }
       }

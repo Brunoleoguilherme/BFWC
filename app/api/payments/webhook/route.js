@@ -60,18 +60,19 @@ async function markPaid(session) {
       style: 'currency',
       currency: 'BRL',
     });
+    const parcelaTxt = instNum ? `parcela ${instNum}` : 'taxa de inscrição';
     await getResend().emails.send({
       from: fromEmail,
       to: current.email,
-      subject: '✅ Pagamento confirmado — BFWC 2026',
+      subject: `✅ Pagamento confirmado${instNum ? ` (parcela ${instNum})` : ''} — BFWC 2026`,
       html: `
         <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#0a1628">
           ${emailLogoImg(96, 'margin:0 0 14px')}
           <h2 style="color:#0a7d28">Pagamento confirmado!</h2>
           <p>Olá, <strong>${current.club_name}</strong>.</p>
-          <p>Recebemos o pagamento da taxa de inscrição no valor de <strong>${valor}</strong>.
-          Seu clube está confirmado no <strong>Brasil Flag World Championship 2026</strong>.</p>
-          <p>Você já pode acompanhar tudo pelo portal do clube.</p>
+          <p>Recebemos o pagamento da <strong>${parcelaTxt}</strong> no valor de <strong>${valor}</strong>.
+          Sua vaga está garantida no <strong>Brasil Flag World Championship 2026</strong>.</p>
+          <p>Acompanhe o resumo das parcelas no portal do clube.</p>
           <p style="color:#667">Equipe BFWC 2026</p>
         </div>`,
     });

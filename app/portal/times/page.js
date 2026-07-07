@@ -1115,7 +1115,12 @@ export default function TimesPortalPage() {
                   icon: '✅', label: L('Inscrição confirmada', 'Registration confirmed', 'Inscripción confirmada'),
                   done: isApproved && fullyPaidStep,
                   active: !fullyPaidStep && startedPaying,
-                  desc: (isApproved && fullyPaidStep) ? L('Inscrição confirmada pela organização.', 'Registration confirmed by the organization.', 'Inscripción confirmada por la organización.') : L('Sua inscrição é confirmada após o pagamento completo.', 'Your registration is confirmed after full payment.', 'Tu inscripción se confirma tras el pago completo.'),
+                  badge: (!fullyPaidStep && startedPaying) ? L('VAGA RESERVADA', 'SPOT RESERVED', 'CUPO RESERVADO') : null,
+                  desc: (isApproved && fullyPaidStep)
+                    ? L('Inscrição confirmada pela organização.', 'Registration confirmed by the organization.', 'Inscripción confirmada por la organización.')
+                    : (startedPaying
+                      ? L('🎉 Sua vaga está reservada! A inscrição é confirmada após o pagamento completo.', '🎉 Your spot is reserved! Registration is confirmed after full payment.', '🎉 ¡Tu cupo está reservado! La inscripción se confirma tras el pago completo.')
+                      : L('Sua inscrição é confirmada após o pagamento completo.', 'Your registration is confirmed after full payment.', 'Tu inscripción se confirma tras el pago completo.')),
                 },
                 {
                   icon: '👥', label: L('Inscrição de atletas', 'Athlete registration', 'Inscripción de atletas'),
@@ -1171,7 +1176,7 @@ export default function TimesPortalPage() {
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                               <span style={{ fontSize: 14, fontWeight: 800, color: s.done || s.active ? INK : 'rgba(15,23,42,.4)' }}>{s.label}</span>
                               {s.done && !s.error && <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6, background: GREEN + '18', color: GREEN, letterSpacing: 1 }}>{L('CONCLUÍDO', 'DONE', 'COMPLETADO')}</span>}
-                              {s.active && !s.done && <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6, background: YELLOW + '15', color: YELLOW, letterSpacing: 1 }}>{L('EM ANDAMENTO', 'IN PROGRESS', 'EN CURSO')}</span>}
+                              {s.active && !s.done && <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6, background: (s.badge ? GREEN : YELLOW) + '15', color: s.badge ? GREEN : YELLOW, letterSpacing: 1 }}>{s.badge || L('EM ANDAMENTO', 'IN PROGRESS', 'EN CURSO')}</span>}
                               {s.error  && <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6, background: 'rgba(255,68,68,.12)', color: '#ff4444', letterSpacing: 1 }}>{L('ATENÇÃO', 'ATTENTION', 'ATENCIÓN')}</span>}
                             </div>
                             <div style={{ fontSize: 12, color: s.active || s.done ? 'rgba(15,23,42,.55)' : 'rgba(15,23,42,.25)', lineHeight: 1.55 }}>{s.desc}</div>
