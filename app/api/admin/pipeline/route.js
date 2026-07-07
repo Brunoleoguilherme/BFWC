@@ -73,6 +73,7 @@ export async function GET() {
       email: t.email || '',
       contact_name: t.contact_name || '',
       whatsapp: t.whatsapp || '',
+      logo_url: t.logo_url || null,
       option: String(t.payment_option || '1') === '2' ? '2' : '1',
       athletes: athCount[t.id] || 0,
       athletes_paid_qty: t.athletes_paid_qty || null,

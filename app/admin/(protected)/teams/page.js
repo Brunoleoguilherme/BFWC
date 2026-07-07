@@ -288,6 +288,24 @@ function PortalModal({ team: t, onClose, onUpdate, readOnly }) {
   const idx = stageIndex(t);
   const rejected = t.status === 'rejected';
 
+  async function downloadLogo() {
+    try {
+      const r = await fetch(t.logo_url);
+      const b = await r.blob();
+      const url = URL.createObjectURL(b);
+      const a = document.createElement('a');
+      const ext = ((t.logo_url.split('?')[0].split('.').pop()) || 'png').toLowerCase();
+      a.href = url;
+      a.download = `logo-${(t.club_name || 'time').replace(/\s+/g, '-').toLowerCase()}.${ext}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (_) {
+      window.open(t.logo_url, '_blank');
+    }
+  }
+
   async function setFinalized(fin) {
     setBusy(true);
     const res = await fetch(`/api/admin/portal-teams/${t.id}`, {
@@ -315,6 +333,12 @@ function PortalModal({ team: t, onClose, onUpdate, readOnly }) {
   return (
     <ModalShell onClose={onClose}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4, flexWrap: 'wrap' }}>
+        {t.logo_url && (
+          <img
+            src={t.logo_url} alt={`Logo ${t.club_name}`}
+            style={{ width: 54, height: 54, objectFit: 'contain', borderRadius: 12, border: '1px solid #e2e8f0', background: '#f8fafc', padding: 4, flexShrink: 0 }}
+          />
+        )}
         <h2 style={{ fontSize: 26, fontWeight: 900, letterSpacing: -1, color: '#0f172a' }}>{t.club_name}</h2>
         <PreBadge pre={t.pre_inscrito} />
         {rejected && <Tag label="✕ Rejeitado" color="#ff4444" />}
@@ -338,6 +362,22 @@ function PortalModal({ team: t, onClose, onUpdate, readOnly }) {
           </div>
         ))}
       </div>
+
+      {t.logo_url && (
+        <div style={{ marginBottom: 22 }}>
+          <div style={S.label}>Logo do time</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <img
+              src={t.logo_url} alt={`Logo ${t.club_name}`}
+              style={{ width: 72, height: 72, objectFit: 'contain', borderRadius: 12, border: '1px solid #e2e8f0', background: '#f8fafc', padding: 6 }}
+            />
+            <button style={S.mActionBtn('#0D4BFF')} onClick={downloadLogo}>⬇ Baixar logo</button>
+            <a href={t.logo_url} target="_blank" rel="noreferrer" style={{ ...S.mActionBtn('#64748b'), textDecoration: 'none', display: 'inline-block' }}>
+              Abrir em nova aba →
+            </a>
+          </div>
+        </div>
+      )}
 
       {!readOnly && !rejected && (
         <div style={{ marginBottom: 10 }}>
