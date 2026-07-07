@@ -538,6 +538,9 @@ export default function CadastroPage() {
                     <a href="/docs/codigo-de-etica-bfwc2026-pt.pdf" target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, fontWeight: 700, color: '#0D4BFF', textDecoration: 'none' }}>
                       📄 {lang === 'en' ? 'Code of Ethics, Integrity and Conduct (PDF) →' : lang === 'es' ? 'Código de Ética, Integridad y Conducta (PDF) →' : 'Código de Ética, Integridade e Conduta (PDF) →'}
                     </a>
+                    <a href="/docs/politica-de-privacidade-bfwc2026-pt.pdf" target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, fontWeight: 700, color: '#0D4BFF', textDecoration: 'none' }}>
+                      📄 {lang === 'en' ? 'Privacy and Data Protection Policy (PDF) →' : lang === 'es' ? 'Política de Privacidad y Protección de Datos (PDF) →' : 'Política de Privacidade e Proteção de Dados (PDF) →'}
+                    </a>
                   </div>
                   <div style={{ fontSize: 11, color: '#64748b', marginTop: 10, lineHeight: 1.6 }}>
                     {lang === 'en' ? 'Read both documents before accepting. The Portuguese version is the official one for legal purposes.' : lang === 'es' ? 'Lee ambos documentos antes de aceptar. La versión en portugués es la oficial para fines legales.' : 'Leia os dois documentos antes de aceitar. A versão em português é a oficial para fins jurídicos.'}

@@ -17,10 +17,9 @@ const COPY = {
       { file: 'anexo-i-termo-atleta-bfwc2026-pt.pdf', title: 'Anexo I — Termo de Adesão, Responsabilidade e Participação (Atleta)', desc: 'Termo individual do atleta maior de idade: saúde, riscos, imagem, dados pessoais e adesão às normas.' },
       { file: 'anexo-ii-termo-atleta-menor-bfwc2026-pt.pdf', title: 'Anexo II — Termo de Adesão, Responsabilidade e Participação (Atleta Menor de Idade)', desc: 'Termo assinado pelo pai, mãe ou responsável legal do atleta menor de 18 anos. Obrigatório para categorias Sub-15 e Sub-12.' },
       { file: 'regulamento-oficial-bfwc2026-pt.pdf', title: 'Regulamento Oficial da Competição', desc: 'Regras da competição: inscrições, elenco, sistema de disputa, critérios de desempate, WO, uniformes, equipamentos, arbitragem e disciplina.' },
+      { file: 'politica-de-privacidade-bfwc2026-pt.pdf', title: 'Política de Privacidade e Proteção de Dados Pessoais', desc: 'Como tratamos os dados pessoais de atletas, equipes e participantes, em conformidade com a LGPD: coleta, finalidades, compartilhamento, direitos dos titulares e segurança.' },
     ],
-    pending: [
-      { title: 'Política de Privacidade e Proteção de Dados' },
-    ],
+    pending: [],
     open: 'Abrir PDF →',
   },
   en: {
@@ -37,10 +36,9 @@ const COPY = {
       { file: 'anexo-i-termo-atleta-bfwc2026-pt.pdf', title: 'Annex I — Adhesion, Responsibility and Participation Term (Athlete)', desc: 'Individual term for adult athletes: health, risks, image, personal data and adherence to the rules.' },
       { file: 'anexo-ii-termo-atleta-menor-bfwc2026-pt.pdf', title: 'Annex II — Adhesion, Responsibility and Participation Term (Underage Athlete)', desc: 'Term signed by the parent or legal guardian of athletes under 18. Mandatory for U-15 and U-12 categories.' },
       { file: 'regulamento-oficial-bfwc2026-pt.pdf', title: 'Official Competition Regulations', desc: 'Competition rules: registration, rosters, competition system, tiebreakers, forfeits, uniforms, equipment, officiating and discipline.' },
+      { file: 'politica-de-privacidade-bfwc2026-pt.pdf', title: 'Privacy and Data Protection Policy', desc: 'How we process personal data of athletes, teams and participants, in compliance with the Brazilian LGPD: collection, purposes, sharing, data subject rights and security.' },
     ],
-    pending: [
-      { title: 'Privacy and Data Protection Policy' },
-    ],
+    pending: [],
     open: 'Open PDF →',
   },
   es: {
@@ -57,10 +55,9 @@ const COPY = {
       { file: 'anexo-i-termo-atleta-bfwc2026-pt.pdf', title: 'Anexo I — Término de Adhesión, Responsabilidad y Participación (Atleta)', desc: 'Término individual del atleta mayor de edad: salud, riesgos, imagen, datos personales y adhesión a las normas.' },
       { file: 'anexo-ii-termo-atleta-menor-bfwc2026-pt.pdf', title: 'Anexo II — Término de Adhesión, Responsabilidad y Participación (Atleta Menor de Edad)', desc: 'Término firmado por el padre, madre o responsable legal del atleta menor de 18 años. Obligatorio para Sub-15 y Sub-12.' },
       { file: 'regulamento-oficial-bfwc2026-pt.pdf', title: 'Reglamento Oficial de la Competición', desc: 'Reglas de la competición: inscripciones, plantillas, sistema de disputa, criterios de desempate, WO, uniformes, equipamiento, arbitraje y disciplina.' },
+      { file: 'politica-de-privacidade-bfwc2026-pt.pdf', title: 'Política de Privacidad y Protección de Datos Personales', desc: 'Cómo tratamos los datos personales de atletas, equipos y participantes, en conformidad con la LGPD brasileña: recolección, finalidades, compartición, derechos de los titulares y seguridad.' },
     ],
-    pending: [
-      { title: 'Política de Privacidad y Protección de Datos' },
-    ],
+    pending: [],
     open: 'Abrir PDF →',
   },
 };
