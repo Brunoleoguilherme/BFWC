@@ -63,13 +63,16 @@ function totalCents(team) {
 
 const teams = await sb('portal_teams?select=*&vaga_notified_at=is.null&order=created_at');
 const insts = await sb('payment_installments?select=team_id,number,status,amount_cents,plan_size');
-const interests = await sb('club_interests?select=email,created_at,competitive_history,notes');
+const interests = await sb('club_interests?select=email,club_name,created_at,competitive_history,notes');
 const notified = await sb('portal_teams?select=id,country&vaga_notified_at=not.is.null');
 
 const instBy = {};
 insts.forEach(i => (instBy[i.team_id] ||= []).push(i));
-const preByEmail = new Map(interests.filter(i => i.email).map(i => [i.email.toLowerCase().trim(), i]));
 const norm = s => (s || '').trim().toLowerCase();
+const preByEmail = new Map(interests.filter(i => i.email).map(i => [norm(i.email), i]));
+const preByName = new Map(interests.filter(i => i.club_name).map(i => [norm(i.club_name), i]));
+// casa por e-mail e, se não achar, pelo nome do time (alguns pagaram com e-mail diferente da pré-inscrição)
+const findPre = (team) => preByEmail.get(norm(team.email)) || preByName.get(norm(team.club_name)) || null;
 
 const pendentes = teams.filter(t => t.status !== 'rejected' && (instBy[t.id] || []).some(i => i.status === 'paid'));
 console.log(`Times com vaga garantida ainda não notificados: ${pendentes.length}`);
@@ -86,7 +89,7 @@ for (const team of pendentes) {
   const option = String(team.payment_option || '1') === '2' ? '2' : '1';
   const total = totalCents(team);
   const pago = team.amount_paid_cents || 0;
-  const pre = preByEmail.get(norm(team.email)) || null;
+  const pre = findPre(team);
   const roster = (await sb(`team_athletes?select=id&team_id=eq.${team.id}`)).length;
   const firstOfCountry = !notifiedCountries.includes(norm(team.country));
   notifiedCountries.push(norm(team.country));
