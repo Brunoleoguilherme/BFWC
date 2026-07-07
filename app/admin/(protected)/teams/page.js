@@ -118,6 +118,7 @@ function PortalCard({ t, color, onClick }) {
       <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 10 }}>
         {t.category && <Tag label={t.category.split(',')[0].trim()} color="#0D4BFF" />}
         <Tag label={`${t.athletes} atletas`} color="#64748b" />
+        {t.checkout_started && t.paid_count === 0 && <Tag label="💳 Chegou ao checkout" color="#ea580c" />}
         {t.lineup_submitted && <Tag label="✓ Escalação" color="#14b8a6" />}
         {!t.pre_inscrito && t.status !== 'rejected' && <Tag label="⚠ Novo" color="#d97706" />}
         {t.status === 'rejected' && <Tag label="✕ Rejeitado" color="#ff4444" />}
@@ -326,6 +327,7 @@ function PortalModal({ team: t, onClose, onUpdate, readOnly }) {
     ['Atletas cadastrados', `${t.athletes}${t.athletes_paid_qty ? ` / ${t.athletes_paid_qty} contratados` : ''}`],
     ['Plano', `Opção ${t.option}${t.plan_size ? ` · ${t.plan_size}x` : ''}`],
     ['Pago', `${BRL(t.paid_cents)} de ${BRL(t.total_cents)}${t.plan_size ? ` (${t.paid_count}/${t.plan_size} parcelas)` : ''}`],
+    ['Checkout', t.paid_count > 0 ? '✓ Pagamento iniciado' : t.checkout_started ? '💳 Chegou ao checkout, não pagou' : 'Não chegou ao checkout'],
     ['Escalação', t.lineup_submitted ? '✓ Enviada' : 'Não enviada'],
     ['Cadastro em', new Date(t.created_at).toLocaleString('pt-BR')],
   ].filter(([, v]) => v != null && v !== '');

@@ -62,6 +62,8 @@ export async function GET() {
     const planSize = t.payment_plan || its[0]?.plan_size || null;
     const paidCount = its.filter(i => i.status === 'paid').length;
     const fully = (total > 0 && paid >= total) || (!!planSize && paidCount >= planSize);
+    // Chegou ao checkout: gerou parcela/checkout (Stripe, PagBank ou Pix) mesmo sem pagar
+    const checkoutStarted = its.length > 0 || !!t.stripe_session_id || !!t.pagbank_checkout_id || !!t.payment_plan;
 
     const card = {
       kind: 'portal',
@@ -82,6 +84,7 @@ export async function GET() {
       plan_size: planSize,
       paid_count: paidCount,
       fully_paid: fully,
+      checkout_started: checkoutStarted,
       lineup_submitted: !!t.lineup_submitted,
       finalized: !!t.registration_finalized,
       status: t.status || '',
