@@ -72,7 +72,7 @@ export function TopBanner({ lang }) {
     return (
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 12, background: '#f4ff00', color: '#031020', textAlign: 'center', padding: '13px 16px', lineHeight: 1.3 }}>
         <span style={{ fontWeight: 950, fontStyle: 'italic', textTransform: 'uppercase', fontSize: 'clamp(14px, 1.6vw, 19px)', letterSpacing: '.2px' }}>
-          {lang === 'en' ? 'Registration opens July 7 at 10 AM (BRT)' : lang === 'es' ? 'Inscripciones abren el 07/07 a las 10h (Brasilia)' : 'Inscrições abrem amanhã, 07/07 às 10h'}
+          {lang === 'en' ? 'Registration opens TODAY at 10 AM (BRT)' : lang === 'es' ? 'Inscripciones abren HOY a las 10h (Brasilia)' : 'Inscrições abrem HOJE às 10h'}
         </span>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#031020', color: '#f4ff00', fontWeight: 900, padding: '8px 18px', borderRadius: 8, textTransform: 'uppercase', fontSize: 'clamp(12px, 1.3vw, 15px)', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
           ⏳ {h}:{m}:{s}

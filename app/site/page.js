@@ -118,7 +118,7 @@ export default function SitePage() {
               </Link>
             ) : (
               <div className="yellowBtn" style={{ cursor: 'default' }}>
-                {lang === 'en' ? 'Registration opens July 7 at 10 AM (BRT)' : lang === 'es' ? 'Inscripciones abren el 07/07 a las 10h' : 'Inscrições abrem amanhã, 07/07 às 10h'}
+                {lang === 'en' ? 'Registration opens TODAY at 10 AM (BRT)' : lang === 'es' ? 'Inscripciones abren HOY a las 10h' : 'Inscrições abrem HOJE às 10h'}
               </div>
             )}
 
