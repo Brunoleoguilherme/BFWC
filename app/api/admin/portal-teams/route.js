@@ -9,5 +9,11 @@ export async function GET() {
     .order('created_at', { ascending: false });
 
   if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 500 });
-  return NextResponse.json({ ok: true, teams: data });
+
+  // Sinaliza quem era pré-inscrito (e-mail presente em club_interests)
+  const { data: pre } = await supabase.from('club_interests').select('email');
+  const preEmails = new Set((pre || []).map(p => (p.email || '').toLowerCase().trim()).filter(Boolean));
+  const teams = (data || []).map(t => ({ ...t, pre_inscrito: preEmails.has((t.email || '').toLowerCase().trim()) }));
+
+  return NextResponse.json({ ok: true, teams });
 }

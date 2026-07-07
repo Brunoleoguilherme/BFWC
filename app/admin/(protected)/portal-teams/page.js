@@ -167,6 +167,9 @@ export default function PortalTeamsPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
                   <span style={{ fontWeight: 800, fontSize: 15, color: '#0f172a' }}>{team.club_name}</span>
                   <Tag status={team.status} />
+                  {team.pre_inscrito
+                    ? <span style={{ fontSize: 10, fontWeight: 800, color: '#009c3b', background: 'rgba(0,156,59,.1)', border: '1px solid rgba(0,156,59,.25)', borderRadius: 6, padding: '2px 8px' }}>✔ PRÉ-INSCRITO</span>
+                    : <span style={{ fontSize: 10, fontWeight: 800, color: '#b45309', background: 'rgba(245,158,11,.12)', border: '1px solid rgba(245,158,11,.3)', borderRadius: 6, padding: '2px 8px' }}>⚠ NÃO ERA PRÉ-INSCRITO</span>}
                   {!team.email_verified && (
                     <span style={{ fontSize: 10, fontWeight: 700, color: '#a855f7', background: 'rgba(168,85,247,.1)', border: '1px solid rgba(168,85,247,.2)', borderRadius: 6, padding: '2px 8px' }}>e-mail não verificado</span>
                   )}

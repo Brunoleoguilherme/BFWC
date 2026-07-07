@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { isPortalTimesOpen, isCadastroRestricted, PORTAL_NOT_OPEN_MESSAGE } from '@/lib/registrationWindow';
+import { isPortalTimesOpen, PORTAL_NOT_OPEN_MESSAGE } from '@/lib/registrationWindow';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getResend, fromEmail, adminEmails, emailLogoImg } from '@/lib/email';
 import { randomUUID } from 'crypto';
@@ -26,12 +26,15 @@ function verifyEmailHtml({ club_name, contact_name, verifyUrl }) {
   </div>`;
 }
 
-function adminNewTeamHtml({ club_name, contact_name, email, country, city, category, logo_url, approveUrl }) {
+function adminNewTeamHtml({ club_name, contact_name, email, country, city, category, logo_url, approveUrl, preInscrito }) {
   return `
   <div style="font-family:Inter,sans-serif;background:#031020;color:#fff;padding:40px 24px;max-width:560px;margin:0 auto;border-radius:16px">
     ${emailLogoImg(110, 'margin:0 0 10px')}
     <p style="color:rgba(255,255,255,.4);font-size:13px;margin:0 0 28px">Novo cadastro no Portal</p>
     <h2 style="font-size:18px;font-weight:800;margin:0 0 16px">✅ Novo clube aguardando aprovação</h2>
+    ${preInscrito
+      ? `<p style="display:inline-block;background:rgba(34,224,106,.12);border:1px solid rgba(34,224,106,.4);color:#22e06a;font-size:12px;font-weight:800;padding:6px 14px;border-radius:8px;margin:0 0 16px">✔ PRÉ-INSCRITO${preInscrito.club_name && preInscrito.club_name !== club_name ? ` (na pré-inscrição: ${preInscrito.club_name})` : ''}</p>`
+      : `<p style="display:inline-block;background:rgba(245,208,47,.12);border:1px solid rgba(245,208,47,.4);color:#f5d02f;font-size:12px;font-weight:800;padding:6px 14px;border-radius:8px;margin:0 0 16px">⚠ NÃO ERA PRÉ-INSCRITO — avaliar com atenção</p>`}
     ${logo_url ? `<img src="${logo_url}" alt="Logo do clube" style="width:64px;height:64px;object-fit:contain;border-radius:8px;background:rgba(255,255,255,.05);margin-bottom:16px;display:block">` : ''}
     <table style="width:100%;border-collapse:collapse;margin-bottom:24px">
       ${[['Clube', club_name],['Contato', contact_name],['E-mail', email],['País', country],['Cidade', city],['Categoria', category]].map(([l,v]) => `
@@ -116,20 +119,13 @@ export async function POST(req) {
 
     const supabase = getSupabaseAdmin();
 
-    // Janela 07/07 00:00 → 12/07 23:59 (Brasília): só times já pré-inscritos podem se cadastrar
-    if (isCadastroRestricted()) {
-      const { data: pre } = await supabase
-        .from('club_interests')
-        .select('id')
-        .ilike('email', email)
-        .maybeSingle();
-      if (!pre) {
-        return NextResponse.json({
-          ok: false, code: 'NEEDS_PRE',
-          message: 'Neste período, o cadastro está liberado apenas para times já pré-inscritos. Verifique se usou o mesmo e-mail da pré-inscrição.',
-        }, { status: 403 });
-      }
-    }
+    // Cadastro aberto a todas as equipes. Apenas registramos se o time era
+    // pré-inscrito (e-mail em club_interests) para sinalizar na aprovação.
+    const { data: preInscrito } = await supabase
+      .from('club_interests')
+      .select('id, club_name')
+      .ilike('email', email)
+      .maybeSingle();
 
     // Check if email already exists
     const { data: existing } = await supabase.from('portal_teams').select('id').ilike('email', email).single();
@@ -180,7 +176,7 @@ export async function POST(req) {
         from: fromEmail,
         to,
         subject: `[BFWC Portal] Novo clube aguardando aprovação: ${club_name}`,
-        html: adminNewTeamHtml({ club_name, contact_name, email, country, city, category, logo_url, approveUrl }),
+        html: adminNewTeamHtml({ club_name, contact_name, email, country, city, category, logo_url, approveUrl, preInscrito }),
       })),
     ]);
 
