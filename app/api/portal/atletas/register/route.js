@@ -198,4 +198,14 @@ export async function POST(req) {
           <a href="${verifyUrl}" style="display:inline-block;padding:14px 32px;background:#009c3b;color:#fff;font-weight:900;font-size:14px;text-decoration:none;border-radius:10px;letter-spacing:1px;text-transform:uppercase">
             Confirmar e-mail →
           </a>
-          <p style="color:rgba(255,255,255,.3);font-size:12px;margin:24px 0 0">Este link exp
+          <p style="color:rgba(255,255,255,.3);font-size:12px;margin:24px 0 0">Este link expira em 24 horas.</p>
+        </div>`,
+      });
+    } catch (_) {}
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error('athlete register error', err);
+    return NextResponse.json({ ok: false, message: err.message || 'Erro interno.' }, { status: 500 });
+  }
+}

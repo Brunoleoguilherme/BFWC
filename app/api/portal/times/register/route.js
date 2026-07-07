@@ -180,4 +180,13 @@ export async function POST(req) {
         from: fromEmail,
         to,
         subject: `[BFWC Portal] Novo clube aguardando aprovação: ${club_name}`,
-        html: adminNewTeamHtml({ club_name, contact_name, ema
+        html: adminNewTeamHtml({ club_name, contact_name, email, country, city, category, logo_url, approveUrl }),
+      })),
+    ]);
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error('portal register error', err);
+    return NextResponse.json({ ok: false, message: err.message || 'Erro interno' }, { status: 500 });
+  }
+}
