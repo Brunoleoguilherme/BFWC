@@ -10,21 +10,6 @@ const CATEGORIES = [
   { value: 'Sub-12',     label: 'Sub-12' },
 ];
 
-const TERMS_PT = `1. DADOS DO CLUBE
-As informações fornecidas neste cadastro devem ser verdadeiras e corresponder ao clube/organização representada.
-
-2. APROVAÇÃO
-O cadastro no portal está sujeito à aprovação pela organização do BFWC 2026. A inscrição não garante vaga automática no campeonato.
-
-3. RESPONSABILIDADE
-O responsável pelo cadastro assume a veracidade das informações e o cumprimento das regras do campeonato.
-
-4. PRIVACIDADE
-Os dados serão utilizados exclusivamente para comunicações relacionadas ao BFWC 2026 e gestão das inscrições.
-
-5. CONDUTA
-O clube compromete-se a manter conduta esportiva e respeito durante todos os eventos do campeonato.`;
-
 const T = {
   pt: {
     badge: 'Cadastro de Clube',
@@ -49,7 +34,7 @@ const T = {
     password: 'Senha *',
     confirmPassword: 'Confirmar senha *',
     terms: 'Termos e Condições',
-    acceptTerms: 'Li e aceito os termos e condições',
+    acceptTerms: 'Li e aceito o Termo de Adesão às Condições Gerais e o Código de Ética, Integridade e Conduta',
     btnNext: 'Continuar →',
     btnBack: '← Voltar',
     btnSubmit: 'Criar conta',
@@ -91,7 +76,7 @@ const T = {
     password: 'Password *',
     confirmPassword: 'Confirm password *',
     terms: 'Terms and Conditions',
-    acceptTerms: 'I have read and accept the terms and conditions',
+    acceptTerms: 'I have read and accept the Adhesion Term (General Conditions) and the Code of Ethics, Integrity and Conduct',
     btnNext: 'Continue →',
     btnBack: '← Back',
     btnSubmit: 'Create account',
@@ -133,7 +118,7 @@ const T = {
     password: 'Contraseña *',
     confirmPassword: 'Confirmar contraseña *',
     terms: 'Términos y Condiciones',
-    acceptTerms: 'He leído y acepto los términos y condiciones',
+    acceptTerms: 'He leído y acepto el Término de Adhesión (Condiciones Generales) y el Código de Ética, Integridad y Conducta',
     btnNext: 'Continuar →',
     btnBack: '← Volver',
     btnSubmit: 'Crear cuenta',
@@ -545,12 +530,18 @@ export default function CadastroPage() {
 
               <div style={{ marginTop: 20 }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#475569', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 8 }}>{t.terms}</div>
-                <div style={{
-                  height: 140, overflowY: 'auto', padding: '12px 14px', borderRadius: 10,
-                  background: '#f8fafc', border: '1px solid #e2e8f0',
-                  fontSize: 11, color: '#64748b', lineHeight: 1.7, whiteSpace: 'pre-line',
-                }}>
-                  {TERMS_PT}
+                <div style={{ padding: '14px 16px', borderRadius: 10, background: '#f4f8ff', border: '1px solid #c7d7f5' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <a href="/docs/termo-adesao-times-bfwc2026-pt.pdf" target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, fontWeight: 700, color: '#0D4BFF', textDecoration: 'none' }}>
+                      📄 {lang === 'en' ? 'Adhesion Term — General Registration and Participation Conditions (PDF) →' : lang === 'es' ? 'Término de Adhesión — Condiciones Generales de Inscripción y Participación (PDF) →' : 'Termo de Adesão às Condições Gerais de Inscrição e Participação (PDF) →'}
+                    </a>
+                    <a href="/docs/codigo-de-etica-bfwc2026-pt.pdf" target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, fontWeight: 700, color: '#0D4BFF', textDecoration: 'none' }}>
+                      📄 {lang === 'en' ? 'Code of Ethics, Integrity and Conduct (PDF) →' : lang === 'es' ? 'Código de Ética, Integridad y Conducta (PDF) →' : 'Código de Ética, Integridade e Conduta (PDF) →'}
+                    </a>
+                  </div>
+                  <div style={{ fontSize: 11, color: '#64748b', marginTop: 10, lineHeight: 1.6 }}>
+                    {lang === 'en' ? 'Read both documents before accepting. The Portuguese version is the official one for legal purposes.' : lang === 'es' ? 'Lee ambos documentos antes de aceptar. La versión en portugués es la oficial para fines legales.' : 'Leia os dois documentos antes de aceitar. A versão em português é a oficial para fins jurídicos.'}
+                  </div>
                 </div>
               </div>
 
