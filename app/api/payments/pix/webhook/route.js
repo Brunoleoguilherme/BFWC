@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getInvoice } from '@/lib/cora';
-import { getResend, fromEmail } from '@/lib/email';
+import { getResend, fromEmail, emailLogoImg, notifyAdminsPayment } from '@/lib/email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -51,13 +51,16 @@ export async function POST(req) {
           })
           .eq('id', team.id);
       }
+      if (team) {
+        await notifyAdminsPayment({ club_name: team.club_name, number: inst.number, amount_cents: inst.amount_cents, method: 'Pix' });
+      }
       if (team && !team.payment_confirmed) {
         try {
           await getResend().emails.send({
             from: fromEmail,
             to: team.email,
             subject: '✅ Pagamento confirmado — BFWC 2026',
-            html: `<div style="font-family:Arial,sans-serif"><h2 style="color:#0a7d28">Pagamento confirmado!</h2><p>Olá, <strong>${team.club_name}</strong>. Recebemos sua parcela e seu clube está confirmado no BFWC 2026.</p></div>`,
+            html: `<div style="font-family:Arial,sans-serif">${emailLogoImg(96, 'margin:0 0 14px')}<h2 style="color:#0a7d28">Pagamento confirmado!</h2><p>Olá, <strong>${team.club_name}</strong>. Recebemos sua parcela e seu clube está confirmado no BFWC 2026.</p></div>`,
           });
         } catch (e) { console.error('email error', e.message); }
       }

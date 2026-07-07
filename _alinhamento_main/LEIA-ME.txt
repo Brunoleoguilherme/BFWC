@@ -1,0 +1,32 @@
+ALINHAMENTO DA FAIXA CENTRAL NA MAIN
+=====================================
+
+Esta pasta tem as versões da MAIN de app/site/site.css e app/site/page.js
+já com o alinhamento aplicado (mesma mudança feita na v2).
+
+Rode no terminal, na pasta do projeto:
+
+  :: 1. Salvar o trabalho da v2
+  git add -A
+  git commit -m "v2: faixa central no site + esqueci a senha + reconstrucao page.js"
+
+  :: 2. Ir pra main e aplicar o alinhamento
+  git checkout main
+  copy /Y _alinhamento_main\site.css app\site\site.css
+  copy /Y _alinhamento_main\page.js app\site\page.js
+
+  :: 3. Testar local (npm run dev), depois publicar
+  git add app/site/site.css app/site/page.js
+  git commit -m "site: conteudo alinhado na faixa central de 1132px"
+  git push origin main
+
+  :: 4. Voltar pra v2 e limpar
+  git checkout v2
+  rmdir /S /Q _alinhamento_main
+
+O que muda na main (só visual, sem tocar em lógica):
+- variável --band no site.css: max(24px, calc((100% - 1132px)/2))
+- header, hero, sobre, cards, notícias, parceiros, newsletter e rodapé
+  passam a usar a faixa central (fundos continuam de ponta a ponta)
+- cards das pontas sem padding externo (alinham com o texto)
+- seção de inscrições: maxWidth 1100 -> 1180

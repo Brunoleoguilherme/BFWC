@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { emailLogoImg } from '@/lib/email';
 import { createClient } from '@supabase/supabase-js';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getSupabaseServer } from '@/lib/supabaseServer';
@@ -121,7 +122,7 @@ export async function PATCH(request) {
       from: fromEmail,
       to: target.email,
       subject: '✅ Acesso ao painel BFWC 2026 liberado',
-      html: `<div style="font-family:Arial,sans-serif"><h2 style="color:#0a7d28">Acesso liberado!</h2><p>Olá, <strong>${target.name}</strong>. Seu acesso ao painel administrativo do BFWC 2026 foi aprovado. Você já pode entrar com seu e-mail e a senha que você cadastrou.</p><p><a href="https://www.brasilflagworldchampionship.com/admin/login">Entrar no painel</a></p></div>`,
+      html: `<div style="font-family:Arial,sans-serif">${emailLogoImg(96, 'margin:0 0 14px')}<h2 style="color:#0a7d28">Acesso liberado!</h2><p>Olá, <strong>${target.name}</strong>. Seu acesso ao painel administrativo do BFWC 2026 foi aprovado. Você já pode entrar com seu e-mail e a senha que você cadastrou.</p><p><a href="https://www.brasilflagworldchampionship.com/admin/login">Entrar no painel</a></p></div>`,
     });
   } catch (e) { console.error('approval email error', e.message); }
 

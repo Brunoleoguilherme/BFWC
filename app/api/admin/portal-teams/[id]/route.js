@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { getResend, fromEmail } from '@/lib/email';
+import { getResend, fromEmail, emailLogoImg } from '@/lib/email';
+import { requireAdmin, verifyPassword } from '@/lib/authAdmin';
 
 function approvedHtml({ club_name, contact_name }) {
   return `
   <div style="font-family:Inter,sans-serif;background:#031020;color:#fff;padding:40px 24px;max-width:560px;margin:0 auto;border-radius:16px">
-    <h1 style="font-size:28px;font-weight:900;margin:0 0 6px">BFWC <span style="color:#f4ff00">2026</span></h1>
+    ${emailLogoImg(110, 'margin:0 0 10px')}
     <p style="color:rgba(255,255,255,.4);font-size:13px;margin:0 0 28px">Portal Oficial</p>
     <h2 style="font-size:20px;font-weight:800;margin:0 0 12px">✅ Cadastro aprovado!</h2>
     <p style="color:#c8d8f5;font-size:14px;line-height:1.6;margin:0 0 24px">
@@ -21,7 +22,7 @@ function approvedHtml({ club_name, contact_name }) {
 function rejectedHtml({ club_name, contact_name, admin_notes }) {
   return `
   <div style="font-family:Inter,sans-serif;background:#031020;color:#fff;padding:40px 24px;max-width:560px;margin:0 auto;border-radius:16px">
-    <h1 style="font-size:28px;font-weight:900;margin:0 0 6px">BFWC <span style="color:#f4ff00">2026</span></h1>
+    ${emailLogoImg(110, 'margin:0 0 10px')}
     <p style="color:rgba(255,255,255,.4);font-size:13px;margin:0 0 28px">Portal Oficial</p>
     <h2 style="font-size:20px;font-weight:800;margin:0 0 12px">❌ Cadastro não aprovado</h2>
     <p style="color:#c8d8f5;font-size:14px;line-height:1.6;margin:0 0 16px">
@@ -73,6 +74,37 @@ export async function PATCH(req, { params }) {
     return NextResponse.json({ ok: true, status: newStatus });
   } catch (err) {
     console.error('portal-teams patch error', err);
+    return NextResponse.json({ ok: false, message: err.message }, { status: 500 });
+  }
+}
+
+// Exclui um clube do portal (confirmação por senha de login do admin)
+export async function DELETE(req, { params }) {
+  try {
+    const { profile, error } = await requireAdmin();
+    if (error) return error;
+
+    const { id } = await params;
+    const { password } = await req.json().catch(() => ({}));
+
+    const ok = await verifyPassword(profile.email, password);
+    if (!ok) return NextResponse.json({ ok: false, message: 'Senha incorreta.' }, { status: 401 });
+
+    const supabase = getSupabaseAdmin();
+    const { data: team } = await supabase
+      .from('portal_teams').select('id, club_name').eq('id', id).single();
+    if (!team) return NextResponse.json({ ok: false, message: 'Time não encontrado.' }, { status: 404 });
+
+    // Remove dependências antes do time (roster, contas de atleta, parcelas)
+    await supabase.from('team_athletes').delete().eq('team_id', id);
+    await supabase.from('portal_athletes').delete().eq('team_id', id);
+    await supabase.from('payment_installments').delete().eq('team_id', id);
+    const { error: delErr } = await supabase.from('portal_teams').delete().eq('id', id);
+    if (delErr) return NextResponse.json({ ok: false, message: delErr.message }, { status: 500 });
+
+    return NextResponse.json({ ok: true, deleted: team.club_name });
+  } catch (err) {
+    console.error('portal-teams delete error', err);
     return NextResponse.json({ ok: false, message: err.message }, { status: 500 });
   }
 }

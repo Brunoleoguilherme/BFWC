@@ -3,3 +3,10 @@ node_modules
 .env
 .env.local
 .vercel
+
+guias/src/img/_captures
+guias/src/_captures
+cora-webhook-url.txt
+
+VERCEL-cora-*.txt
+certs-novos/

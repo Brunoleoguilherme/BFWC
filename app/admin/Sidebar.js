@@ -31,13 +31,20 @@ const GROUPS = [
         withCats: true,
       },
       {
-        href: '/admin/teams?status=inscricao_confirmada',
+        href: '/admin/teams#inscritos',
+        label: 'Inscritos',
+        icon: '◐',
+        matchPath: '/admin/teams',
+        matchStatus: null,
+        color: '#ea580c',
+      },
+      {
+        href: '/admin/teams#confirmados',
         label: 'Confirmados',
         icon: '✓',
         matchPath: '/admin/teams',
-        matchStatus: 'inscricao_confirmada',
+        matchStatus: null,
         color: '#009c3b',
-        withCats: true,
       },
       {
         href: '/admin/teams?status=pendente_analise',
@@ -72,6 +79,21 @@ const GROUPS = [
         matchStatus: 'rejeitado',
         color: '#ff4444',
       },
+    ],
+  },
+  {
+    section: 'Financeiro',
+    items: [
+      { href: '/admin/financeiro', label: 'Dashboard Financeiro', icon: '💰', matchPath: '/admin/financeiro', matchStatus: null, color: '#009c3b' },
+    ],
+  },
+  {
+    section: 'Campeonato',
+    items: [
+      { href: '/admin/jogos',      label: 'Jogos',      icon: '🗓', matchPath: '/admin/jogos',      matchStatus: null, color: '#0D4BFF' },
+      { href: '/admin/arbitragem', label: 'Arbitragem', icon: '🧑‍⚖️', matchPath: '/admin/arbitragem', matchStatus: null, color: '#a855f7' },
+      { href: '/admin/delegado',   label: 'Delegado',   icon: '📋', matchPath: '/admin/delegado',   matchStatus: null, color: '#eab308' },
+      { href: '/admin/rankings',   label: 'Rankings',   icon: '🏆', matchPath: '/admin/rankings',   matchStatus: null, color: '#009c3b' },
     ],
   },
   {
@@ -113,10 +135,22 @@ export default function Sidebar({ role = 'admin' }) {
   const currentStatus = searchParams.get('status');
   const currentCat = searchParams.get('category');
 
-  // Blue Panda: only Blue Panda section
-  // Viewer: everything except Sistema
+  // Acesso por papel:
+  //  - blue_panda: só Blue Panda
+  //  - arbitragem: só a tela de Arbitragem
+  //  - delegado_partida: só a tela de Delegado
+  //  - viewer: tudo menos Sistema
+  //  - admin: tudo
+  function onlyCampeonato(href) {
+    const camp = GROUPS.find(g => g.section === 'Campeonato');
+    return [{ section: 'Campeonato', items: camp.items.filter(i => i.href === href) }];
+  }
   const visibleGroups = role === 'blue_panda'
     ? GROUPS.filter(g => g.section === 'Blue Panda')
+    : role === 'arbitragem'
+    ? onlyCampeonato('/admin/arbitragem')
+    : role === 'delegado_partida'
+    ? onlyCampeonato('/admin/delegado')
     : role === 'viewer'
     ? GROUPS.filter(g => g.section !== 'Sistema')
     : GROUPS;

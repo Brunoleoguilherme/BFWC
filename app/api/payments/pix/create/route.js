@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { createPixCharge } from '@/lib/cora';
-import { countCategories, computeInstallments } from '@/lib/installments';
+import { createBtgPixCharge, btgEnabled } from '@/lib/btg';
+import { countCategories, computeInstallments, optionTotalReais, activePlanSize, fullCategoryFor, normalizeSelection, selectionTotalReais, selectionSummary } from '@/lib/installments';
 
 export const runtime = 'nodejs';
 
@@ -14,16 +15,13 @@ function classifyDocument(raw) {
 
 export async function POST(req) {
   try {
-    const { team_id, plan_size, number, document } = await req.json();
+    const { team_id, number, document, option, athletes_qty, selection, plan_size } = await req.json();
     if (!team_id) return NextResponse.json({ ok: false, message: 'team_id obrigatório.' }, { status: 400 });
-
-    const planSize = Math.min(Math.max(parseInt(plan_size, 10) || 1, 1), 3);
-    const num = Math.min(Math.max(parseInt(number, 10) || 1, 1), planSize);
 
     const supabase = getSupabaseAdmin();
     const { data: team, error } = await supabase
       .from('portal_teams')
-      .select('id, club_name, email, category, status, payer_document, payment_plan')
+      .select('id, club_name, email, category, status, payer_document, payment_plan, payment_option, athletes_paid_qty, payment_selection, payment_confirmed')
       .eq('id', team_id)
       .single();
 
@@ -32,25 +30,53 @@ export async function POST(req) {
       return NextResponse.json({ ok: false, message: 'O cadastro precisa estar aprovado antes do pagamento.' }, { status: 403 });
     }
 
-    // Trava do plano: se já há um plano definido, tem que ser o mesmo
-    if (team.payment_plan && team.payment_plan !== planSize) {
-      return NextResponse.json({
-        ok: false, code: 'PLAN_LOCKED',
-        message: `O parcelamento já foi definido em ${team.payment_plan}x. Continue pagando as parcelas desse plano.`,
-      }, { status: 409 });
+    // Cota por categoria: bloqueia o 1º pagamento se a categoria já lotou
+    if (!team.payment_confirmed) {
+      const fullCat = await fullCategoryFor(supabase, team.id, team.category);
+      if (fullCat) {
+        return NextResponse.json({
+          ok: false, code: 'CATEGORY_FULL',
+          message: `Inscrições esgotadas para a categoria ${fullCat}. A cota de times foi preenchida.`,
+        }, { status: 409 });
+      }
     }
+
+    // Seleção por categoria: travada na primeira parcela (retrocompatível com o modelo antigo)
+    let sel = normalizeSelection(team.payment_selection, team.category);
+    let legacy = null; // { option, qty } — modelo antigo de opção única
+    if (!sel) {
+      if (team.payment_option) {
+        legacy = { option: String(team.payment_option), qty: team.athletes_paid_qty || 0 };
+      } else {
+        sel = normalizeSelection(selection, team.category);
+        if (!sel && option) {
+          const opt = String(option) === '2' ? '2' : '1';
+          legacy = { option: opt, qty: opt === '2' ? Math.max(parseInt(athletes_qty, 10) || 0, 0) : 0 };
+        }
+        if (!sel && !legacy) {
+          return NextResponse.json({ ok: false, message: 'Escolha a forma de inscrição para cada categoria.' }, { status: 400 });
+        }
+      }
+    }
+
+    // Plano: automático por data, travado na primeira parcela
+    // Plano: à vista (1x) se o time escolher; senão automático por data. Trava na 1ª parcela.
+    const planSize = team.payment_plan || (parseInt(plan_size, 10) === 1 ? 1 : activePlanSize(new Date()));
+    const num = Math.min(Math.max(parseInt(number, 10) || 1, 1), planSize);
 
     const doc = classifyDocument(document || team.payer_document);
     if (!doc) {
       return NextResponse.json({ ok: false, code: 'NEED_DOCUMENT', message: 'Informe um CPF ou CNPJ válido para gerar o Pix.' }, { status: 422 });
     }
 
-    const numCats = countCategories(team.category);
-    const plan = computeInstallments(numCats, planSize);
+    const totalReais = sel
+      ? selectionTotalReais(sel)
+      : optionTotalReais(legacy.option, countCategories(team.category), legacy.qty);
+    const plan = computeInstallments(totalReais, planSize);
     const parcela = plan.find((p) => p.number === num);
     if (!parcela) return NextResponse.json({ ok: false, message: 'Parcela inválida.' }, { status: 400 });
 
-    // Já existe essa parcela?
+    // Já existe essa parcela paga?
     const { data: existing } = await supabase
       .from('payment_installments')
       .select('id, status')
@@ -64,22 +90,33 @@ export async function POST(req) {
 
     // Valor: override de teste (R$5 por parcela) para o e-mail de teste
     let amountCents = parcela.amount_cents;
-    if (process.env.PIX_TEST_EMAIL && team.email?.toLowerCase() === process.env.PIX_TEST_EMAIL.toLowerCase()) {
+    if (process.env.PAYMENT_TEST_MODE === '1') {
+      amountCents = 500; // preview de teste: R$ 5 por parcela (minimo aceito pela Cora)
+    } else if (process.env.PIX_TEST_EMAIL && team.email?.toLowerCase() === process.env.PIX_TEST_EMAIL.toLowerCase()) {
       amountCents = 500;
     }
 
-    const charge = await createPixCharge({
+    const chargeInput = {
       code: `${team.id}-p${num}`,
       customer: { name: team.club_name, email: team.email, document: doc },
       amountCents,
       serviceName: `Inscrição BFWC 2026 — parcela ${num}/${planSize}`,
       dueDate: parcela.due_date,
-    });
+    };
+    const charge = btgEnabled()
+      ? await createBtgPixCharge(chargeInput)
+      : await createPixCharge(chargeInput);
 
-    // Trava o plano no time + salva documento
+    // Trava opção/atletas/plano no time + salva documento
     await supabase
       .from('portal_teams')
-      .update({ payment_plan: planSize, payer_document: doc.identity })
+      .update({
+        payment_plan: planSize,
+        ...(sel
+          ? { payment_selection: sel, payment_option: selectionSummary(sel).option, athletes_paid_qty: selectionSummary(sel).qty }
+          : { payment_option: legacy.option, athletes_paid_qty: legacy.qty }),
+        payer_document: doc.identity,
+      })
       .eq('id', team.id);
 
     // Upsert da parcela

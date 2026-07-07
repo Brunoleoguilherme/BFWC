@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { getResend, fromEmail } from '@/lib/email';
+import { getResend, fromEmail, emailLogoImg } from '@/lib/email';
 
 const content = {
   pt: {
@@ -151,6 +151,7 @@ function emailHtml(lang) {
 function adminNewsletterHtml(email, lang) {
   return `
     <div style="font-family:Arial,sans-serif;padding:20px;">
+      ${emailLogoImg(90, 'margin:0 0 14px')}
       <h2 style="color:#061018;">📧 Novo inscrito na newsletter — BFWC 2026</h2>
       <table style="border-collapse:collapse;width:100%;max-width:480px;margin-top:16px;">
         <tr style="background:#f5f5f5;">

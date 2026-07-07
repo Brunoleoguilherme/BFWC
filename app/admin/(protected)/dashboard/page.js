@@ -307,16 +307,20 @@ function Panel({ title, badge, badgeColor, total, totalLabel, cats, catKey, load
 }
 
 // ── Page ───────────────────────────────────────────────────────────────────
+const BRL = (cents) => (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
 export default function DashboardPage() {
   const [teams, setTeams] = useState(null);
+  const [fin, setFin]     = useState(null);
 
   useEffect(() => {
     fetch('/api/admin/teams').then(r => r.json()).then(d => setTeams(d.teams || []));
+    fetch('/api/admin/financial').then(r => r.json()).then(d => { if (d.ok) setFin(d); }).catch(() => {});
   }, []);
 
   const loading = teams === null;
 
-  const preInscritos = (teams || []).filter(t => t.status === 'pre_inscrito');
+  const preInscritos = (teams || []).filter(t => !['spam_descartado', 'rejeitado'].includes(t.status));
   const confirmados  = (teams || []).filter(t => t.status === 'inscricao_confirmada');
   const pendentes    = (teams || []).filter(t => t.status === 'pendente_analise').length;
   const rejeitados   = (teams || []).filter(t => t.status === 'rejeitado').length;
@@ -392,6 +396,43 @@ export default function DashboardPage() {
           atletas entre pré-inscritos e confirmados
         </div>
       </div>
+
+      {/* ── Resumo Financeiro ─────────────────────────────────────────────── */}
+      <a href="/admin/financeiro" style={{ textDecoration: 'none', color: 'inherit' }}>
+        <div style={{
+          background: '#ffffff', border: '1px solid rgba(0,156,59,.25)', borderRadius: 22,
+          padding: '28px 30px', marginBottom: 16, boxShadow: '0 1px 4px rgba(0,0,0,.06)',
+          cursor: 'pointer', transition: 'border-color .2s',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 22 }}>
+            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', padding: '4px 10px', borderRadius: 6, background: 'rgba(0,156,59,.15)', color: '#009c3b', border: '1px solid rgba(0,156,59,.35)' }}>Financeiro</span>
+            <span style={{ fontSize: 15, fontWeight: 800, color: '#0f172a' }}>Resumo de Pagamentos</span>
+            <span style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700, color: '#009c3b' }}>Ver detalhes →</span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }} className="dash-grid-cats">
+            {[
+              { label: 'Arrecadado',  value: fin ? BRL(fin.totals.arrecadado_cents) : '—', color: '#009c3b' },
+              { label: 'A receber',   value: fin ? BRL(fin.totals.a_receber_cents)  : '—', color: '#ea580c' },
+              { label: 'Esperado',    value: fin ? BRL(fin.totals.esperado_cents)   : '—', color: '#0f172a' },
+            ].map(s => (
+              <div key={s.label} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '16px 14px' }}>
+                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 8 }}>{s.label}</div>
+                <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: -1, color: fin ? s.color : '#e2e8f0', lineHeight: 1 }}>{s.value}</div>
+              </div>
+            ))}
+          </div>
+          {fin && (
+            <div style={{ marginTop: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                <span style={{ fontSize: 11, color: '#64748b', fontWeight: 700 }}>{fin.totals.pct}% arrecadado{fin.overdue.length ? ` · ${fin.overdue.length} parcela(s) em atraso` : ''}</span>
+              </div>
+              <div style={{ height: 8, borderRadius: 6, background: '#f1f5f9', overflow: 'hidden' }}>
+                <div style={{ width: `${Math.min(fin.totals.pct, 100)}%`, height: '100%', background: 'linear-gradient(90deg,#009c3b,#22e06a)' }} />
+              </div>
+            </div>
+          )}
+        </div>
+      </a>
 
       {/* Aguardando Validação + Pendentes + Em Revisão + Rejeitados */}
       <div className="dash-grid-3">

@@ -2,6 +2,23 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { LANGS, detectLang, saveLang } from '@/lib/i18n';
+
+// Ícones de linha (SVG) para as abas — visual limpo, sem emoji
+function TabIcon({ name, size = 22 }) {
+  const p = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round' };
+  switch (name) {
+    case 'informacoes': return (<svg {...p}><circle cx="12" cy="12" r="9" /><path d="M12 11v5" /><path d="M12 8h.01" /></svg>);
+    case 'inscricao':   return (<svg {...p}><rect x="6" y="4" width="12" height="16" rx="2" /><path d="M9 4.5h6v2H9z" /><path d="M9 11h6M9 15h4" /></svg>);
+    case 'pagamento':   return (<svg {...p}><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M3 10h18" /><path d="M7 15h3" /></svg>);
+    case 'atletas':     return (<svg {...p}><circle cx="8.5" cy="9" r="2.6" /><path d="M3.5 19c0-2.8 2.2-4.4 5-4.4s5 1.6 5 4.4" /><path d="M16 7.5a2.5 2.5 0 0 1 0 5" /><path d="M15.5 14.7c2.4.2 4 1.8 4 4.3" /></svg>);
+    case 'campeonato':  return (<svg {...p}><path d="M7 4h10v3.5a5 5 0 0 1-10 0V4Z" /><path d="M7 5H4.5a2.5 2.5 0 0 0 3 3.4" /><path d="M17 5h2.5a2.5 2.5 0 0 1-3 3.4" /><path d="M12 12.5V16" /><path d="M9 20h6" /><path d="M10 16h4v4h-4z" /></svg>);
+    case 'schedule':    return (<svg {...p}><rect x="3.5" y="5" width="17" height="15" rx="2" /><path d="M3.5 9h17" /><path d="M8 3.5v3M16 3.5v3" /></svg>);
+    case 'results':     return (<svg {...p}><line x1="6" y1="20" x2="6" y2="12" /><line x1="12" y1="20" x2="12" y2="6" /><line x1="18" y1="20" x2="18" y2="14" /></svg>);
+    case 'venue':       return (<svg {...p}><path d="M12 21s7-5.5 7-11a7 7 0 0 0-14 0c0 5.5 7 11 7 11Z" /><circle cx="12" cy="10" r="2.4" /></svg>);
+    default: return null;
+  }
+}
 
 const ACCENT = '#0D4BFF';
 const YELLOW = '#b8860b';
@@ -64,13 +81,13 @@ const PORTAL_STATUS = {
 const CATS = ['Masculino', 'Feminino', 'Sub-15', 'Sub-12'];
 
 const DATES = [
-  { date: '15/07', label: '1ª parcela do pagamento de inscrição', highlight: true },
-  { date: '15/08', label: '2ª parcela do pagamento de inscrição', highlight: true },
-  { date: '15/09', label: '3ª parcela do pagamento de inscrição', highlight: true },
-  { date: '15/10', label: 'Aprovação de documentos dos atletas' },
-  { date: '20/10', label: 'Prazo de envio do roster completo' },
-  { date: '30/10', label: 'Cerimônia de abertura' },
-  { date: '30/10', label: 'Início das rodadas da fase de grupos' },
+  { date: '20/07', label: { pt: '1ª parcela do pagamento de inscrição', en: 'Registration fee — 1st installment', es: '1.ª cuota del pago de inscripción' }, highlight: true },
+  { date: '20/08', label: { pt: '2ª parcela do pagamento de inscrição', en: 'Registration fee — 2nd installment', es: '2.ª cuota del pago de inscripción' }, highlight: true },
+  { date: '20/09', label: { pt: '3ª parcela do pagamento de inscrição', en: 'Registration fee — 3rd installment', es: '3.ª cuota del pago de inscripción' }, highlight: true },
+  { date: '30/09', label: { pt: 'Aprovação de documentos dos atletas', en: 'Athlete document approval', es: 'Aprobación de documentos de los atletas' } },
+  { date: '30/09', label: { pt: 'Prazo de envio do roster completo', en: 'Deadline to submit the full roster', es: 'Fecha límite para enviar el roster completo' } },
+  { date: '31/10', label: { pt: 'Cerimônia de abertura', en: 'Opening ceremony', es: 'Ceremonia de apertura' } },
+  { date: '31/10', label: { pt: 'Início das rodadas da fase de grupos', en: 'Group stage rounds begin', es: 'Inicio de las rondas de la fase de grupos' } },
 ];
 
 const DOCS = [
@@ -81,30 +98,31 @@ const DOCS = [
 ];
 
 const REGS = [
-  { icon: '🏈', title: 'Formato de jogo', text: '5×5 flag football. 2 tempos de 20 min com 2 min de intervalo.' },
-  { icon: '👥', title: 'Roster', text: 'Mín. 10 / máx. 20 atletas por categoria. Entrega até a data limite.' },
-  { icon: '👕', title: 'Uniformes', text: 'Camisas numeradas obrigatórias. Calções sem bolsos. Cleats de borracha.' },
-  { icon: '🚩', title: 'Flags', text: 'Proibido amarrar ou esconder as flags. Rush flag obrigatória.' },
-  { icon: '📋', title: 'Elegibilidade', text: 'E-mail do atleta deve estar na lista do clube. Documento válido exigido.' },
-  { icon: '⚖️', title: 'Fair Play', text: 'Conduta antidesportiva resulta em punição. Decisão da comissão é final.' },
+  { icon: '🏈', title: { pt: 'Formato de jogo', en: 'Game format', es: 'Formato de juego' }, text: { pt: '5×5 flag football. 2 tempos de 20 min com 2 min de intervalo.', en: '5×5 flag football. Two 20-min halves with a 2-min break.', es: '5×5 flag football. Dos tiempos de 20 min con 2 min de descanso.' } },
+  { icon: '👥', title: { pt: 'Roster', en: 'Roster', es: 'Roster' }, text: { pt: 'Mín. 12 / máx. 20 atletas por categoria, com até 7 staffs/coaches permitidos. Entrega até a data limite.', en: 'Min. 12 / max. 20 athletes per category, plus up to 7 staff/coaches. Submit by the deadline.', es: 'Mín. 12 / máx. 20 atletas por categoría, con hasta 7 staff/entrenadores. Entrega hasta la fecha límite.' } },
+  { icon: '👕', title: { pt: 'Uniformes', en: 'Uniforms', es: 'Uniformes' }, text: { pt: 'Dois jogos de camisas numeradas: um claro e um escuro. Calções sem bolsos. Cleats de borracha.', en: 'Two sets of numbered jerseys: one light, one dark. Shorts without pockets. Rubber cleats.', es: 'Dos juegos de camisetas numeradas: una clara y una oscura. Shorts sin bolsillos. Tacos de goma.' } },
+  { icon: '📋', title: { pt: 'Elegibilidade', en: 'Eligibility', es: 'Elegibilidad' }, text: { pt: 'E-mail do atleta deve estar na lista do clube. Documento válido exigido.', en: "The athlete's email must be on the club roster. Valid ID required.", es: 'El correo del atleta debe estar en la lista del club. Se exige documento válido.' } },
+  { icon: '⚖️', title: { pt: 'Fair Play', en: 'Fair Play', es: 'Fair Play' }, text: { pt: 'Conduta antidesportiva resulta em punição. Decisão da comissão é final.', en: "Unsportsmanlike conduct results in penalties. The committee's decision is final.", es: 'La conducta antideportiva resulta en sanción. La decisión del comité es final.' } },
+  { icon: '👨‍⚖️', title: { pt: 'Arbitragem', en: 'Refereeing', es: 'Arbitraje' }, text: { pt: 'Arbitragem experiente em todas as partidas.', en: 'Experienced refereeing in every match.', es: 'Arbitraje experimentado en todos los partidos.' } },
+  { icon: '🤝', title: { pt: 'Estrutura fornecida', en: 'Provided facilities', es: 'Estructura ofrecida' }, text: { pt: 'A organização fornece água, gelo e espaço para alimentação.', en: 'The organization provides water, ice and a food area.', es: 'La organización ofrece agua, hielo y espacio para alimentación.' } },
+  { icon: '📺', title: { pt: 'Transmissão', en: 'Broadcast', es: 'Transmisión' }, text: { pt: 'Transmissão ao vivo de várias partidas do campeonato.', en: 'Live broadcast of several tournament matches.', es: 'Transmisión en vivo de varios partidos del campeonato.' } },
 ];
 
 const TRAVEL = [
-  { icon: '🏨', title: 'Hotéis & Voos', text: 'Nossa agência parceira Blue Panda Travel entrará em contato com as equipes confirmadas para oferecer pacotes com tarifas especiais. Dúvidas: contato@bluepandatravel.com.br' },
-  { icon: '🚌', title: 'Transfer oficial', text: 'Transfer gratuito no dia 30/10, partindo de Guarulhos (GRU) e com parada em Viracopos (VCP), nos horários: 08h00 · 15h00 · 23h00.' },
-  { icon: '🗺️', title: 'Guia do Participante', text: 'Mapa do evento, restaurantes e dicas locais de Leme/SP enviados às equipes confirmadas.' },
+  { icon: '🏨', title: { pt: 'Hotéis & Voos', en: 'Hotels & Flights', es: 'Hoteles y Vuelos' }, text: { pt: 'Nossa agência parceira Blue Panda Travel entrará em contato com as equipes confirmadas para oferecer pacotes com tarifas especiais. Dúvidas: contato@bluepandatravel.com.br', en: 'Our partner agency Blue Panda Travel will contact confirmed teams to offer packages with special rates. Questions: contato@bluepandatravel.com.br', es: 'Nuestra agencia asociada Blue Panda Travel contactará a los equipos confirmados para ofrecer paquetes con tarifas especiales. Dudas: contato@bluepandatravel.com.br' } },
+  { icon: '🗺️', title: { pt: 'Guia do Participante', en: 'Participant Guide', es: 'Guía del Participante' }, text: { pt: 'O guia oficial do participante estará disponível no site.', en: 'The official participant guide will be available on the website.', es: 'La guía oficial del participante estará disponible en el sitio.' } },
 ];
 
 const EQUIP = [
-  { type: 'ok',  item: 'Camisas numeradas (frente e verso, mín. 5cm)' },
-  { type: 'ok',  item: 'Calções sem bolsos externos' },
-  { type: 'ok',  item: 'Calçado esportivo (turf, grama ou tênis)' },
-  { type: 'ok',  item: 'Flags oficiais (trazer o próprio cinto de flags)' },
-  { type: 'opt', item: 'Protetor bucal (recomendado)' },
-  { type: 'opt', item: 'Luvas de receptor (permitido)' },
-  { type: 'opt', item: 'Joelheira e cotoveleira (permitido)' },
-  { type: 'no',  item: 'Cleats com travas de metal — PROIBIDO' },
-  { type: 'no',  item: 'Capacete ou proteção rígida — PROIBIDO' },
+  { type: 'ok',  item: { pt: 'Camisas numeradas (frente e verso, mín. 5cm)', en: 'Numbered jerseys (front and back, min. 5cm)', es: 'Camisetas numeradas (frente y espalda, mín. 5cm)' } },
+  { type: 'ok',  item: { pt: 'Calções sem bolsos externos', en: 'Shorts without external pockets', es: 'Shorts sin bolsillos externos' } },
+  { type: 'ok',  item: { pt: 'Calçado esportivo (turf, grama ou tênis)', en: 'Athletic footwear (turf, grass or sneakers)', es: 'Calzado deportivo (turf, césped o tenis)' } },
+  { type: 'ok',  item: { pt: 'Flags oficiais (trazer o próprio cinto de flags)', en: 'Official flags (bring your own flag belt)', es: 'Flags oficiales (traer tu propio cinturón de flags)' } },
+  { type: 'opt', item: { pt: 'Protetor bucal (recomendado)', en: 'Mouthguard (recommended)', es: 'Protector bucal (recomendado)' } },
+  { type: 'opt', item: { pt: 'Luvas de receptor (permitido)', en: 'Receiver gloves (allowed)', es: 'Guantes de receptor (permitido)' } },
+  { type: 'opt', item: { pt: 'Joelheira e cotoveleira (permitido)', en: 'Knee and elbow pads (allowed)', es: 'Rodilleras y coderas (permitido)' } },
+  { type: 'no',  item: { pt: 'Cleats com travas de metal — PROIBIDO', en: 'Metal-stud cleats — NOT ALLOWED', es: 'Tacos con clavos de metal — PROHIBIDO' } },
+  { type: 'no',  item: { pt: 'Capacete ou proteção rígida — PROIBIDO', en: 'Helmet or hard padding — NOT ALLOWED', es: 'Casco o protección rígida — PROHIBIDO' } },
 ];
 
 const PHASE_LABELS = {
@@ -114,20 +132,20 @@ const PHASE_LABELS = {
 
 // ── Portal status badge (4 etapas) ───────────────────────────────
 // ATIVO só aparece quando o atleta finalizou o cadastro (approved)
-function PortalBadge({ a }) {
+function PortalBadge({ a, L = (pt) => pt }) {
   if (!a.portal_registered)
-    return <span style={tag('rgba(15,23,42,.3)')}>Sem conta</span>;
+    return <span style={tag('rgba(15,23,42,.3)')}>{L('Sem conta', 'No account', 'Sin cuenta')}</span>;
 
   if (!a.portal_email_verified)
-    return <span style={tag('#f4ff00')}>📧 Verificar e-mail</span>;
+    return <span style={tag('#f4ff00')}>📧 {L('Verificar e-mail', 'Verify email', 'Verificar correo')}</span>;
 
   if (a.portal_status === 'approved')
     return (
       <div>
-        <span style={tag(GREEN)}>✓ Aprovado</span>
+        <span style={tag(GREEN)}>✓ {L('Aprovado', 'Approved', 'Aprobado')}</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 5 }}>
           <div style={{ width: 6, height: 6, borderRadius: 3, background: GREEN, flexShrink: 0 }} />
-          <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: .5, color: GREEN }}>ATIVO</span>
+          <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: .5, color: GREEN }}>{L('ATIVO', 'ACTIVE', 'ACTIVO')}</span>
         </div>
       </div>
     );
@@ -135,17 +153,17 @@ function PortalBadge({ a }) {
   // email verificado mas perfil incompleto
   return (
     <div>
-      <span style={tag('#3b9eff')}>✉️ Verificado</span>
+      <span style={tag('#3b9eff')}>✉️ {L('Verificado', 'Verified', 'Verificado')}</span>
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 5 }}>
         <div style={{ width: 6, height: 6, borderRadius: 3, background: '#ff6666', flexShrink: 0 }} />
-        <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: .5, color: '#ff6666' }}>INATIVO</span>
+        <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: .5, color: '#ff6666' }}>{L('INATIVO', 'INACTIVE', 'INACTIVO')}</span>
       </div>
     </div>
   );
 }
 
 // ── Athlete card (mobile) ─────────────────────────────────────────
-function AthleteCard({ a, onEdit, onDelete, deletingId }) {
+function AthleteCard({ a, onEdit, onDelete, deletingId, L = (pt) => pt }) {
   return (
     <div style={{ ...miniCard(), marginBottom: 10 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 10 }}>
@@ -156,7 +174,7 @@ function AthleteCard({ a, onEdit, onDelete, deletingId }) {
           </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {a.category && <span style={tag(ACCENT)}>{a.category}</span>}
-            <PortalBadge a={a} />
+            <PortalBadge a={a} L={L} />
           </div>
         </div>
       </div>
@@ -170,13 +188,13 @@ function AthleteCard({ a, onEdit, onDelete, deletingId }) {
           )}
           {a.birth_date && (
             <div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(15,23,42,.25)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>Nascimento</div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(15,23,42,.25)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>{L('Nascimento', 'Date of birth', 'Nacimiento')}</div>
               <div style={{ fontSize: 12, color: 'rgba(15,23,42,.5)' }}>{new Date(a.birth_date + 'T00:00:00').toLocaleDateString('pt-BR')}</div>
             </div>
           )}
           {a.document && (
             <div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(15,23,42,.25)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>Documento</div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(15,23,42,.25)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>{L('Documento', 'Document', 'Documento')}</div>
               <div style={{ fontSize: 12, color: 'rgba(15,23,42,.5)' }}>{a.document}</div>
             </div>
           )}
@@ -184,10 +202,10 @@ function AthleteCard({ a, onEdit, onDelete, deletingId }) {
       )}
       <div style={{ display: 'flex', gap: 8 }}>
         <button onClick={() => onEdit(a)} style={{ flex: 1, padding: '9px', borderRadius: 9, border: `1px solid ${ACCENT}40`, background: `${ACCENT}12`, color: ACCENT, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-          ✎ Editar
+          ✎ {L('Editar', 'Edit', 'Editar')}
         </button>
         <button onClick={() => onDelete(a.id)} disabled={deletingId === a.id} style={{ flex: 1, padding: '9px', borderRadius: 9, border: '1px solid rgba(255,68,68,.2)', background: 'rgba(255,68,68,.08)', color: '#ff6666', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-          {deletingId === a.id ? '...' : '✕ Excluir'}
+          {deletingId === a.id ? '...' : `✕ ${L('Excluir', 'Delete', 'Eliminar')}`}
         </button>
       </div>
     </div>
@@ -195,7 +213,7 @@ function AthleteCard({ a, onEdit, onDelete, deletingId }) {
 }
 
 // ── Validação de idade por categoria ─────────────────────────────
-function checkCategoryAge(birthDate, category) {
+function checkCategoryAge(birthDate, category, L = (pt) => pt) {
   if (!birthDate || !category) return null;
   const EVENT_YEAR = 2026;
   const limits = { 'Sub-15': 15, 'Sub-12': 12 };
@@ -204,12 +222,16 @@ function checkCategoryAge(birthDate, category) {
   const minBirthYear = EVENT_YEAR - maxAge;
   const birthYear = new Date(birthDate + 'T00:00:00').getFullYear();
   if (birthYear < minBirthYear)
-    return `${category}: nascimento deve ser a partir de ${minBirthYear} (atleta nascido em ${birthYear} é muito velho para esta categoria).`;
+    return L(
+      `${category}: nascimento deve ser a partir de ${minBirthYear} (atleta nascido em ${birthYear} é muito velho para esta categoria).`,
+      `${category}: date of birth must be from ${minBirthYear} onward (athlete born in ${birthYear} is too old for this category).`,
+      `${category}: el nacimiento debe ser a partir de ${minBirthYear} (atleta nacido en ${birthYear} es demasiado mayor para esta categoría).`
+    );
   return null;
 }
 
 // ── Edit modal (mobile-friendly overlay) ─────────────────────────
-function EditModal({ athlete, onSave, onCancel, cats = [] }) {
+function EditModal({ athlete, onSave, onCancel, cats = [], L = (pt) => pt }) {
   const [data, setData] = useState({
     name: athlete.name || '', email: athlete.email || '',
     category: athlete.category || '', jersey_number: athlete.jersey_number || '',
@@ -219,7 +241,7 @@ function EditModal({ athlete, onSave, onCancel, cats = [] }) {
   const [saveErr, setSaveErr] = useState('');
 
   // Validação de idade em tempo real
-  const ageError = checkCategoryAge(data.birth_date, data.category);
+  const ageError = checkCategoryAge(data.birth_date, data.category, L);
 
   async function save() {
     if (ageError) { setSaveErr(ageError); return; }
@@ -235,24 +257,24 @@ function EditModal({ athlete, onSave, onCancel, cats = [] }) {
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(2,8,20,.92)', zIndex: 1000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', backdropFilter: 'blur(6px)' }}>
       <div style={{ width: '100%', maxWidth: 520, background: '#ffffff', borderRadius: '24px 24px 0 0', padding: '24px 20px 40px', boxShadow: '0 -20px 60px rgba(0,0,0,.3)' }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(15,23,42,.15)', margin: '0 auto 20px' }} />
-        <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 18 }}>Editar atleta</div>
+        <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 18 }}>{L('Editar atleta', 'Edit athlete', 'Editar atleta')}</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
-          <div><label style={lbl}>Nome completo *</label><input style={inputSt} value={data.name} onChange={e => setData(p => ({ ...p, name: e.target.value }))} /></div>
+          <div><label style={lbl}>{L('Nome completo *', 'Full name *', 'Nombre completo *')}</label><input style={inputSt} value={data.name} onChange={e => setData(p => ({ ...p, name: e.target.value }))} /></div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <div><label style={lbl}>Nº camisa</label><input style={inputSt} type="number" value={data.jersey_number} onChange={e => setData(p => ({ ...p, jersey_number: e.target.value }))} placeholder="10" /></div>
+            <div><label style={lbl}>{L('Nº camisa', 'Jersey no.', 'Nº camiseta')}</label><input style={inputSt} type="number" value={data.jersey_number} onChange={e => setData(p => ({ ...p, jersey_number: e.target.value }))} placeholder="10" /></div>
             <div>
-              <label style={lbl}>Categoria</label>
+              <label style={lbl}>{L('Categoria', 'Category', 'Categoría')}</label>
               <select style={selectSt} value={data.category} onChange={e => setData(p => ({ ...p, category: e.target.value }))}>
                 <option value="" style={{ background: '#ffffff' }}>—</option>
                 {cats.map(c => <option key={c} value={c} style={{ background: '#ffffff' }}>{c}</option>)}
               </select>
             </div>
           </div>
-          <div><label style={lbl}>E-mail</label><input style={inputSt} type="email" value={data.email} onChange={e => setData(p => ({ ...p, email: e.target.value }))} placeholder="email@atleta.com" /></div>
+          <div><label style={lbl}>{L('E-mail', 'Email', 'Correo')}</label><input style={inputSt} type="email" value={data.email} onChange={e => setData(p => ({ ...p, email: e.target.value }))} placeholder="email@atleta.com" /></div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <div>
               <label style={lbl}>
-                Nascimento{subCategory && <span style={{ color: '#f97316', marginLeft: 4 }}>≥ {minBirthYear}</span>}
+                {L('Nascimento', 'Date of birth', 'Nacimiento')}{subCategory && <span style={{ color: '#f97316', marginLeft: 4 }}>≥ {minBirthYear}</span>}
               </label>
               <input
                 style={{ ...inputSt, borderColor: ageError ? '#ff4444' : 'rgba(15,23,42,.1)' }}
@@ -261,7 +283,7 @@ function EditModal({ athlete, onSave, onCancel, cats = [] }) {
                 onChange={e => setData(p => ({ ...p, birth_date: e.target.value }))}
               />
             </div>
-            <div><label style={lbl}>CPF / Passaporte</label><input style={inputSt} value={data.document} onChange={e => setData(p => ({ ...p, document: e.target.value }))} placeholder="000.000.000-00" /></div>
+            <div><label style={lbl}>{L('CPF / Passaporte', 'Tax ID / Passport', 'CPF / Pasaporte')}</label><input style={inputSt} value={data.document} onChange={e => setData(p => ({ ...p, document: e.target.value }))} placeholder="000.000.000-00" /></div>
           </div>
           {ageError && (
             <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(255,68,68,.1)', border: '1px solid rgba(255,68,68,.25)', fontSize: 12, color: '#ff8888', lineHeight: 1.5 }}>
@@ -272,10 +294,10 @@ function EditModal({ athlete, onSave, onCancel, cats = [] }) {
         {(saveErr && !ageError) && <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(255,68,68,.1)', border: '1px solid rgba(255,68,68,.2)', fontSize: 12, color: '#ff8888', marginBottom: 10 }}>{saveErr}</div>}
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={onCancel} style={{ flex: 1, padding: '14px', borderRadius: 12, border: '1px solid rgba(15,23,42,.1)', background: 'rgba(15,23,42,.05)', color: 'rgba(15,23,42,.5)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-            Cancelar
+            {L('Cancelar', 'Cancel', 'Cancelar')}
           </button>
           <button onClick={save} disabled={saving || !!ageError} style={{ flex: 2, padding: '14px', borderRadius: 12, border: 'none', background: ageError ? 'rgba(255,68,68,.3)' : GREEN, color: ageError ? '#ff8888' : '#fff', fontSize: 14, fontWeight: 800, cursor: ageError ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
-            {saving ? 'Salvando...' : '✓ Salvar'}
+            {saving ? L('Salvando...', 'Saving...', 'Guardando...') : L('✓ Salvar', '✓ Save', '✓ Guardar')}
           </button>
         </div>
       </div>
@@ -492,7 +514,29 @@ function VenueMap() {
 export default function TimesPortalPage() {
   const router = useRouter();
   const [team, setTeam]   = useState(null);
-  const [tab, setTab]     = useState('inscricao');
+  const [tab, setTab]     = useState('informacoes');
+  const [lang, setLang]   = useState('pt');
+  const [langReady, setLangReady] = useState(false);
+  const L = (pt, en, es) => (lang === 'en' ? en : lang === 'es' ? (es ?? en) : pt);
+  const tabLabel = (key) => ({
+    informacoes: L('Informações', 'Information', 'Información'),
+    inscricao:   L('Inscrição', 'Registration', 'Inscripción'),
+    pagamento:   L('Pagamento', 'Payment', 'Pago'),
+    atletas:     L('Atletas', 'Athletes', 'Atletas'),
+    campeonato:  L('Campeonato', 'Championship', 'Campeonato'),
+  }[key] || key);
+  const LO = (o) => (o && typeof o === 'object' && !Array.isArray(o) ? (o[lang] ?? o.pt) : o);
+  useEffect(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('bfwc_lang') : null;
+    if (saved && ['pt', 'en', 'es'].includes(saved)) { setLang(saved); setLangReady(true); }
+  }, []);
+  function chooseLang(code) {
+    setLang(code);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bfwc_lang', code);
+      localStorage.setItem('bfwc_language', code);
+    }
+  }
   const [docs, setDocs]   = useState({});
   const [isMobile, setIsMobile] = useState(false);
 
@@ -502,23 +546,30 @@ export default function TimesPortalPage() {
   const [newAth, setNewAth]           = useState({ name: '', email: '', category: '', jersey_number: '', birth_date: '', document: '' });
   const [athSaving, setAthSaving]     = useState(false);
   const [athError, setAthError]       = useState('');
+  const [athWarn, setAthWarn]         = useState('');
   const [deletingId, setDeletingId]   = useState(null);
   const [editingAth, setEditingAth]   = useState(null); // athlete object being edited
 
   const [games, setGames]           = useState([]);
   const [gamesLoading, setGamesLoading] = useState(false);
   const [gamesTab, setGamesTab]       = useState('schedule');
+  const [teamScorers, setTeamScorers] = useState(null);
   const [lineupSubmitted, setLineupSubmitted] = useState(false);
   const [sendingLineup, setSendingLineup]     = useState(false);
-  const [lineupMsg, setLineupMsg]             = useState('');
+  const [lineupMsg, setLineupMsg]             = useState(null); // { text, ok }
   const [catFilter, setCatFilter]             = useState('all');
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutErr, setCheckoutErr]         = useState('');
   const [payPolling, setPayPolling]           = useState(false);
   const [payMethod, setPayMethod]             = useState('pix');
   const [planSize, setPlanSize]               = useState(null);   // 1, 2 ou 3 escolhido
+  const [payPlanChoice, setPayPlanChoice]     = useState('auto'); // 'auto' (parcelado) | '1' (à vista)
+  const [catChoice, setCatChoice]             = useState({});     // opção por categoria: { [cat]: '1' | '2' }
+  const [athQtys, setAthQtys]                 = useState({});     // atletas por categoria (opção 2)
   const [payInfo, setPayInfo]                 = useState(null);   // resposta de /payment-status
+  const [paidBanner, setPaidBanner]           = useState(false);  // banner "pagamento aprovado" (?paid=1)
   const [activePix, setActivePix]             = useState(null);   // { number, emv, qrcode_url }
+  useEffect(() => { if (lang !== 'pt' && payMethod === 'pix') setPayMethod('card'); }, [lang, payMethod]); // EN/ES: Pix indisponível
   const [pixLoadingNum, setPixLoadingNum]     = useState(0);      // nº da parcela gerando (0 = nenhuma)
   const [pixErr, setPixErr]                   = useState('');
   const [needDoc, setNeedDoc]                 = useState(false);
@@ -547,24 +598,37 @@ export default function TimesPortalPage() {
 
   const loadAthletes = useCallback(async (tid) => {
     setAthLoading(true);
-    const r = await fetch(`/api/portal/times/atletas?team_id=${tid}`);
-    const d = await r.json();
-    setAthletes(d.athletes || []);
-    setAthLoading(false);
+    try {
+      const r = await fetch(`/api/portal/times/atletas?team_id=${tid}`);
+      const d = await r.json();
+      setAthletes(d.athletes || []);
+    } catch {
+      setAthletes([]);
+    } finally {
+      setAthLoading(false);
+    }
   }, []);
 
   const loadGames = useCallback(async (tid) => {
     setGamesLoading(true);
-    const r = await fetch(`/api/portal/times/jogos?team_id=${tid}`);
-    const d = await r.json();
-    setGames(d.games || []);
-    setGamesLoading(false);
+    try {
+      const r = await fetch(`/api/portal/times/jogos?team_id=${tid}`);
+      const d = await r.json();
+      setGames(d.games || []);
+    } catch {
+      setGames([]);
+    } finally {
+      setGamesLoading(false);
+    }
   }, []);
 
   useEffect(() => {
     if (!team) return;
     if (tab === 'atletas')    loadAthletes(team.id);
-    if (tab === 'campeonato') loadGames(team.id);
+    if (tab === 'campeonato') {
+      loadGames(team.id);
+      fetch('/api/rankings').then(r => r.json()).then(d => setTeamScorers(d.ok ? d.scorers : [])).catch(() => setTeamScorers([]));
+    }
   }, [tab, team]);
 
   // Atualiza o status de pagamento + parcelas a partir do servidor
@@ -591,7 +655,17 @@ export default function TimesPortalPage() {
     return false;
   }, []);
 
-  // Ao abrir a aba de pagamento, carrega status/parcelas. Se voltou do Stripe (?paid=1),
+  // Voltou do checkout (?paid=1): abre direto na aba Pagamento com banner de sucesso.
+  useEffect(() => {
+    if (!team) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('paid') === '1') {
+      setTab('pagamento');
+      setPaidBanner(true);
+    }
+  }, [team?.id]);
+
+  // Ao abrir a aba de pagamento, carrega status/parcelas. Se voltou do checkout (?paid=1),
   // faz polling alguns segundos pois a confirmação do cartão pode levar um instante.
   useEffect(() => {
     if (!team || tab !== 'pagamento') return;
@@ -655,18 +729,21 @@ export default function TimesPortalPage() {
     return () => { cancelled = true; s && s.removeEventListener('load', render); };
   }, [activePix]);
 
-  async function startCheckout() {
+  async function startCheckout(installmentNumber) {
     if (!team) return;
+    const locked = !!(payInfo?.payment_selection || payInfo?.payment_option);
+    const sel = locked ? null : buildSelection();
+    if (!locked && !sel) { setCheckoutErr(L('Escolha uma opção de pagamento para cada categoria.', 'Choose a payment option for each category.', 'Elige una opción de pago para cada categoría.')); return; }
     setCheckoutErr(''); setCheckoutLoading(true);
     try {
       const r = await fetch('/api/payments/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ team_id: team.id }),
+        body: JSON.stringify({ team_id: team.id, selection: sel || undefined, installment_number: installmentNumber || undefined, plan_size: effectivePlan(), lang }),
       });
       const d = await r.json();
       if (!d.ok || !d.url) throw new Error(d.message || 'Não foi possível iniciar o pagamento.');
-      window.location.href = d.url; // redireciona para o Checkout hospedado da Stripe
+      window.location.href = d.url; // redireciona para o checkout hospedado do PagBank
     } catch (e) {
       setCheckoutErr(e.message);
       setCheckoutLoading(false);
@@ -675,10 +752,13 @@ export default function TimesPortalPage() {
 
   // Gera o Pix de uma parcela específica
   async function generateParcela(number) {
-    if (!team || !planSize) return;
+    if (!team) return;
+    const locked = !!(payInfo?.payment_selection || payInfo?.payment_option);
+    const sel = locked ? null : buildSelection();
+    if (!locked && !sel) { setPixErr(L('Escolha uma opção de pagamento para cada categoria.', 'Choose a payment option for each category.', 'Elige una opción de pago para cada categoría.')); return; }
     setPixErr(''); setPixLoadingNum(number);
     try {
-      const body = { team_id: team.id, plan_size: planSize, number };
+      const body = { team_id: team.id, number, selection: sel || undefined, plan_size: effectivePlan() };
       if (docInput) body.document = docInput;
       const r = await fetch('/api/payments/pix/create', {
         method: 'POST',
@@ -727,54 +807,87 @@ export default function TimesPortalPage() {
     const minBirthYear = EVENT_YEAR - maxAge;
     const birthYear = new Date(birthDate + 'T00:00:00').getFullYear();
     if (birthYear < minBirthYear) {
-      return `Categoria ${category}: nascimento deve ser a partir de ${minBirthYear}. Este atleta (${birthYear}) é muito velho para esta categoria.`;
+      return L(
+        `Categoria ${category}: nascimento deve ser a partir de ${minBirthYear}. Este atleta (${birthYear}) é muito velho para esta categoria.`,
+        `Category ${category}: date of birth must be from ${minBirthYear} onward. This athlete (${birthYear}) is too old for this category.`,
+        `Categoría ${category}: el nacimiento debe ser a partir de ${minBirthYear}. Este atleta (${birthYear}) es demasiado mayor para esta categoría.`
+      );
     }
     return null;
   }
 
   async function addAthlete(e) {
     e.preventDefault();
-    if (!newAth.name.trim()) { setAthError('Nome obrigatório.'); return; }
+    if (!newAth.name.trim()) { setAthError(L('Nome obrigatório.', 'Name is required.', 'Nombre obligatorio.')); return; }
     const ageErr = validateCategoryAge(newAth.birth_date, newAth.category);
     if (ageErr) { setAthError(ageErr); return; }
     setAthSaving(true); setAthError('');
-    const r = await fetch('/api/portal/times/atletas', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...newAth, team_id: team.id }),
-    });
-    const d = await r.json();
+    let d;
+    try {
+      const r = await fetch('/api/portal/times/atletas', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...newAth, team_id: team.id }),
+      });
+      d = await r.json();
+    } catch {
+      d = { ok: false, message: L('Erro de conexão. Tente novamente.', 'Connection error. Please try again.', 'Error de conexión. Inténtalo de nuevo.') };
+    }
     setAthSaving(false);
     if (d.ok) {
       setAthletes(prev => [...prev, d.athlete]);
       setNewAth({ name: '', email: '', category: '', jersey_number: '', birth_date: '', document: '' });
       setShowAddForm(false);
-    } else setAthError(d.message || 'Erro ao adicionar.');
+      if (d.email_requested && d.email_sent === false) {
+        setAthWarn(L(
+          'Atleta adicionado, mas não conseguimos enviar o convite por e-mail. Procure a administração do Brasil Flag.',
+          'Athlete added, but we could not send the invite email. Please contact the Brasil Flag administration.',
+          'Atleta agregado, pero no pudimos enviar la invitación por e-mail. Contacta con la administración de Brasil Flag.'
+        ));
+      } else {
+        setAthWarn('');
+      }
+    } else setAthError(d.message || L('Erro ao adicionar.', 'Error adding athlete.', 'Error al agregar.'));
   }
 
   async function deleteAthlete(id) {
-    if (!confirm('Remover atleta?')) return;
+    if (!confirm(L('Remover atleta?', 'Remove athlete?', '¿Quitar atleta?'))) return;
     setDeletingId(id);
-    await fetch(`/api/portal/times/atletas/${id}?team_id=${team.id}`, { method: 'DELETE' });
-    setAthletes(prev => prev.filter(a => a.id !== id));
-    setDeletingId(null);
+    try {
+      const r = await fetch(`/api/portal/times/atletas/${id}?team_id=${team.id}`, { method: 'DELETE' });
+      const d = await r.json().catch(() => ({ ok: r.ok }));
+      if (d.ok !== false) {
+        setAthletes(prev => prev.filter(a => a.id !== id));
+      } else {
+        setAthError(d.message || L('Erro ao remover atleta.', 'Error removing athlete.', 'Error al quitar atleta.'));
+      }
+    } catch {
+      setAthError(L('Erro de conexão ao remover atleta.', 'Connection error while removing athlete.', 'Error de conexión al quitar atleta.'));
+    } finally {
+      setDeletingId(null);
+    }
   }
 
   async function submitLineup() {
-    if (!confirm(`Confirmar envio da escalação com ${athletes.length} atleta${athletes.length !== 1 ? 's' : ''}?\n\nApós o envio, alterações no roster precisarão de aprovação da organização.`)) return;
-    setSendingLineup(true); setLineupMsg('');
-    const r = await fetch('/api/portal/times/enviar-escalacao', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ team_id: team.id }),
-    });
-    const d = await r.json();
+    if (!confirm(L(`Confirmar envio da escalação com ${athletes.length} atleta${athletes.length !== 1 ? 's' : ''}?\n\nApós o envio, alterações no roster precisarão de aprovação da organização.`, `Confirm submission of the lineup with ${athletes.length} athlete${athletes.length !== 1 ? 's' : ''}?\n\nAfter submitting, roster changes will require organization approval.`, `¿Confirmar el envío de la alineación con ${athletes.length} atleta${athletes.length !== 1 ? 's' : ''}?\n\nTras el envío, los cambios en el roster necesitarán aprobación de la organización.`))) return;
+    setSendingLineup(true); setLineupMsg(null);
+    let d;
+    try {
+      const r = await fetch('/api/portal/times/enviar-escalacao', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ team_id: team.id }),
+      });
+      d = await r.json();
+    } catch {
+      d = { ok: false, message: L('Erro de conexão. Tente novamente.', 'Connection error. Please try again.', 'Error de conexión. Inténtalo de nuevo.') };
+    }
     setSendingLineup(false);
     if (d.ok) {
       setLineupSubmitted(true);
-      setLineupMsg('Escalação enviada com sucesso! A organização foi notificada.');
+      setLineupMsg({ ok: true, text: L('Escalação enviada com sucesso! A organização foi notificada.', 'Lineup submitted successfully! The organization has been notified.', '¡Alineación enviada con éxito! La organización fue notificada.') });
       const updated = { ...team, lineup_submitted: true };
       setTeam(updated);
       sessionStorage.setItem('bfwc_team_session', JSON.stringify(updated));
-    } else setLineupMsg(d.message || 'Erro ao enviar escalação.');
+    } else setLineupMsg({ ok: false, text: d.message || L('Erro ao enviar escalação.', 'Error submitting lineup.', 'Error al enviar la alineación.') });
   }
 
   async function saveEdit(id, data) {
@@ -795,14 +908,41 @@ export default function TimesPortalPage() {
     </div>
   );
 
-  const ps = PORTAL_STATUS[team.status] || { label: team.status, color: INK };
+
+  const teamFullyPaid = !!payInfo?.fully_paid ||
+    (!!payInfo?.payment_plan && (payInfo?.paid_count || 0) >= payInfo.payment_plan);
+  const teamAllComplete = team.status === 'approved' && teamFullyPaid && lineupSubmitted;
+  const ps = team.status === 'rejected'
+    ? { label: L('Não aprovado', 'Not approved', 'No aprobado'), color: '#ff4444' }
+    : teamAllComplete
+      ? { label: L('Aprovado ✓', 'Approved ✓', 'Aprobado ✓'), color: GREEN }
+      : { label: L('Aguardando aprovação', 'Awaiting approval', 'Esperando aprobación'), color: YELLOW };
   const athByCat = CATS.reduce((acc, c) => { acc[c] = athletes.filter(a => a.category === c); return acc; }, {});
 
   // Só as categorias que o clube escolheu na pré-inscrição
   const registeredCats = CATS.filter(c => team.category?.includes(c));
 
-  const MIN_ATH = 10, MAX_ATH = 20;
+  const MIN_ATH = 12, MAX_ATH = 20;
   const activeCats = registeredCats.filter(c => athByCat[c].length > 0);
+
+  // Plano automático por data (3x até 20/07, 2x até 20/08, depois 1x)
+  const autoPlanNow = () => {
+    const d = new Date().toISOString().slice(0, 10);
+    return d <= '2026-07-20' ? 3 : d <= '2026-08-20' ? 2 : 1;
+  };
+  const effectivePlan = () => payInfo?.payment_plan || (payPlanChoice === '1' ? 1 : autoPlanNow());
+
+  // Seleção de pagamento por categoria: { [cat]: { option: '1'|'2', qty? } } — null enquanto faltar escolher
+  const buildSelection = () => {
+    if (!registeredCats.length) return null;
+    const sel = {};
+    for (const c of registeredCats) {
+      const o = catChoice[c];
+      if (o !== '1' && o !== '2') return null;
+      sel[c] = o === '2' ? { option: '2', qty: Math.min(20, Math.max(12, athQtys[c] ?? 12)) } : { option: '1' };
+    }
+    return sel;
+  };
   const catStatus = (cat) => {
     const n = athByCat[cat]?.length || 0;
     if (n === 0) return 'empty';       // não participando
@@ -848,31 +988,43 @@ export default function TimesPortalPage() {
   };
 
   const TABS = [
+    { key: 'informacoes', icon: 'ℹ️', label: 'Informações' },
     { key: 'inscricao',   icon: '📋', label: 'Inscrição' },
     { key: 'pagamento',   icon: '💳', label: 'Pagamento' },
     { key: 'atletas',     icon: '👥', label: 'Atletas' },
     { key: 'campeonato',  icon: '🏟️', label: 'Campeonato' },
-    { key: 'informacoes', icon: 'ℹ️', label: 'Info' },
   ];
 
   const pad = isMobile ? '16px 14px 80px' : '28px 20px 80px';
   const cpad = isMobile ? '16px' : '24px 28px';
 
   return (
-    <div style={{ minHeight: '100vh', fontFamily: "'Inter', sans-serif", color: INK, position: 'relative', background: '#f1f5f9' }}>
-      {/* imagem de fundo removida para um visual mais limpo */}
+    <div style={{ minHeight: '100vh', fontFamily: "'Inter', sans-serif", color: INK, position: 'relative', background: '#ffffff' }}>
+      {/* Fundo: pinceladas verde/amarelo/azul + mapa do Brasil (Leme-SP) */}
+      <div style={{ position: 'fixed', inset: 0, zIndex: 0, backgroundImage: "url('/assets/portal-bg-brasil.png')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', opacity: .2, pointerEvents: 'none' }} />
       <div style={{ position: 'fixed', inset: 0, zIndex: 1, background: 'linear-gradient(90deg,#031020 0%,#009c3b 50%,#031020 100%)', height: 4, bottom: 'auto' }} />
+      {/* Logo do mundial — canto superior esquerdo */}
+      <a href="/site" style={{ position: 'fixed', top: isMobile ? 10 : 18, left: isMobile ? 10 : 18, zIndex: 20 }}>
+        <img src="/assets/bfwc-logo.jpg" alt="BFWC 2026" width={isMobile ? 58 : 176} height={isMobile ? 58 : 176} style={{ borderRadius: isMobile ? 12 : 22, objectFit: 'cover', boxShadow: '0 10px 34px rgba(0,0,0,.22)', border: isMobile ? '2px solid #fff' : '3px solid #fff' }} />
+      </a>
       <div style={{ position: 'relative', zIndex: 2 }}>
 
       {/* Edit modal */}
-      {editingAth && <EditModal athlete={editingAth} onSave={saveEdit} onCancel={() => setEditingAth(null)} cats={registeredCats} />}
+      {editingAth && <EditModal athlete={editingAth} onSave={saveEdit} onCancel={() => setEditingAth(null)} cats={registeredCats} L={L} />}
 
       {/* ── Hero ── */}
       <div style={{ padding: isMobile ? '32px 20px 28px' : '48px 24px 36px', textAlign: 'center', borderBottom: '1px solid rgba(15,23,42,.08)' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 10, fontWeight: 900, letterSpacing: 3.5, textTransform: 'uppercase', color: '#fff', marginBottom: 16, padding: '6px 16px', borderRadius: 20, background: '#0f172a' }}>
-          🏈 Portal dos Times
+          🏈 {L('Portal dos Times', 'Teams Portal', 'Portal de Equipos')}
         </div>
-        <h1 style={{ fontSize: isMobile ? 30 : 44, fontWeight: 900, letterSpacing: -1.5, margin: '0 0 14px', lineHeight: 1.1, color: '#0f172a' }}>{team.club_name}</h1>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: isMobile ? 12 : 16, margin: '0 0 14px' }}>
+          {team.logo_url ? (
+            <img src={team.logo_url} alt="" style={{ width: isMobile ? 52 : 68, height: isMobile ? 52 : 68, borderRadius: 14, objectFit: 'contain', border: '1px solid rgba(15,23,42,.1)', boxShadow: '0 4px 16px rgba(0,0,0,.1)', flexShrink: 0, background: '#fff', padding: 4, boxSizing: 'border-box' }} />
+          ) : (
+            <span style={{ width: isMobile ? 52 : 68, height: isMobile ? 52 : 68, borderRadius: 14, background: '#0f172a', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? 20 : 26, fontWeight: 900, letterSpacing: -1, flexShrink: 0, boxShadow: '0 4px 16px rgba(0,0,0,.1)' }}>{(team.club_name || '?').split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase()}</span>
+          )}
+          <h1 style={{ fontSize: isMobile ? 30 : 44, fontWeight: 900, letterSpacing: -1.5, margin: 0, lineHeight: 1.1, color: '#0f172a' }}>{team.club_name}</h1>
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 800, letterSpacing: .8, textTransform: 'uppercase', padding: '7px 18px', borderRadius: 24, background: ps.color, color: '#fff', border: 'none' }}>{ps.label}</span>
           {team.country && <span style={{ fontSize: 13, color: 'rgba(15,23,42,.6)', fontWeight: 600 }}>🌍 {team.country}{team.city ? `, ${team.city}` : ''}</span>}
@@ -880,7 +1032,7 @@ export default function TimesPortalPage() {
       </div>
 
       {/* ── Tabs ── */}
-      <div style={{ background: '#ffffff', borderBottom: '1px solid #e2e8f0', overflowX: 'auto' }}>
+      <div className="tabScroll" style={{ background: 'rgba(255,255,255,.88)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderBottom: '1px solid #e2e8f0' }}>
         <div style={{ display: 'flex', maxWidth: 960, margin: '0 auto', alignItems: 'stretch' }}>
           {TABS.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)} style={{
@@ -892,13 +1044,20 @@ export default function TimesPortalPage() {
               fontFamily: 'inherit', fontSize: isMobile ? 12 : 15, fontWeight: 800, cursor: 'pointer',
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, transition: 'all .2s',
             }}>
-              <span style={{ fontSize: isMobile ? 22 : 24 }}>{t.icon}</span>
-              <span>{t.label}</span>
+              <TabIcon name={t.key} size={isMobile ? 20 : 22} />
+              <span style={{ whiteSpace: 'nowrap' }}>{tabLabel(t.key)}</span>
             </button>
           ))}
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', paddingRight: 16 }}>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10, paddingRight: 16 }}>
+            <div style={{ display: 'flex', gap: 5 }}>
+              {[['pt', '/assets/flag-br.png'], ['en', '/assets/flag-us.png'], ['es', '/assets/flag-es.png']].map(([code, flag]) => (
+                <button key={code} onClick={() => chooseLang(code)} title={code.toUpperCase()} style={{ width: 30, height: 30, borderRadius: '50%', overflow: 'hidden', padding: 0, cursor: 'pointer', border: lang === code ? '2px solid #0f172a' : '1px solid #cbd5e1', background: 'none', opacity: lang === code ? 1 : 0.5, flexShrink: 0 }}>
+                  <img src={flag} alt={code} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.15)', display: 'block' }} />
+                </button>
+              ))}
+            </div>
             <button onClick={() => { sessionStorage.removeItem('bfwc_team_session'); router.push('/portal'); }} style={{ padding: '9px 18px', fontSize: 12, fontWeight: 800, background: 'rgba(15,23,42,.05)', border: '1px solid rgba(15,23,42,.15)', borderRadius: 10, color: 'rgba(15,23,42,.6)', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
-              Sair
+              {L('Sair', 'Log out', 'Salir')}
             </button>
           </div>
         </div>
@@ -917,7 +1076,7 @@ export default function TimesPortalPage() {
               const isRejected       = team.status === 'rejected';
               const paymentConfirmed = !!team.payment_confirmed;
               const hasAthletes      = athletes.length >= MIN_ATH || lineupSubmitted;
-              const allDone          = isApproved && paymentConfirmed && lineupSubmitted;
+              const allDone          = isApproved && teamFullyPaid && lineupSubmitted;
 
               // Qual é a fase atual (0-based)
               const currentStep = allDone ? 4
@@ -927,49 +1086,54 @@ export default function TimesPortalPage() {
                 : isEmailVerified ? 1
                 : 0;
 
+              const fullyPaidStep = payInfo ? teamFullyPaid : paymentConfirmed;
+              const paidCountStep = payInfo?.paid_count || 0;
+              const startedPaying = paymentConfirmed || paidCountStep > 0;
               const STEPS = [
                 {
-                  icon: '📋', label: 'Pré-inscrição',
+                  icon: '📋', label: L('Pré-inscrição', 'Pre-registration', 'Pre-inscripción'),
                   done: isEmailVerified,
                   active: !isEmailVerified,
-                  desc: isEmailVerified ? 'Formulário enviado e e-mail confirmado.' : '📧 Confirme seu e-mail para avançar.',
+                  desc: isEmailVerified ? L('Formulário enviado e e-mail confirmado.', 'Form submitted and email confirmed.', 'Formulario enviado y e-mail confirmado.') : L('📧 Confirme seu e-mail para avançar.', '📧 Confirm your email to proceed.', '📧 Confirma tu e-mail para avanzar.'),
                 },
                 {
-                  icon: '✍️', label: 'Inscrição',
-                  done: isApproved,
-                  active: isEmailVerified && !isApproved && !isRejected,
-                  desc: isRejected ? '❌ Inscrição não aprovada. Entre em contato.' : isApproved ? 'Inscrição aprovada pela organização.' : '⏳ Aguardando aprovação da organização.',
+                  icon: '💳', label: L('Pagamento', 'Payment', 'Pago'),
+                  done: fullyPaidStep,
+                  active: isApproved && !fullyPaidStep,
+                  desc: (() => {
+                    if (isRejected) return L('❌ Inscrição não aprovada. Entre em contato.', '❌ Registration not approved. Please contact us.', '❌ Inscripción no aprobada. Contáctanos.');
+                    if (!isApproved) return L('⏳ Aguardando aprovação da organização para liberar o pagamento.', '⏳ Awaiting organization approval to unlock payment.', '⏳ Esperando la aprobación de la organización para liberar el pago.');
+                    const plan = payInfo?.payment_plan;
+                    if (teamFullyPaid) return L('Pagamento concluído.', 'Payment completed.', 'Pago completado.');
+                    if (plan && paidCountStep > 0) return L(`${paidCountStep} parcela${paidCountStep !== 1 ? 's' : ''} paga${paidCountStep !== 1 ? 's' : ''} de ${plan}.`, `${paidCountStep} of ${plan} installment${plan !== 1 ? 's' : ''} paid.`, `${paidCountStep} de ${plan} cuota${plan !== 1 ? 's' : ''} pagada${paidCountStep !== 1 ? 's' : ''}.`);
+                    if (startedPaying) return L('Pagamento em andamento.', 'Payment in progress.', 'Pago en curso.');
+                    return L('Pague a 1ª parcela para garantir sua vaga.', 'Pay the 1st installment to secure your spot.', 'Paga la 1ª cuota para asegurar tu plaza.');
+                  })(),
                   error: isRejected,
                 },
                 {
-                  icon: '💳', label: 'Pagamento',
-                  done: paymentConfirmed,
-                  active: isApproved && !paymentConfirmed,
-                  desc: (() => {
-                    const plan = payInfo?.payment_plan;
-                    const paidN = payInfo?.paid_count || 0;
-                    if (payInfo?.fully_paid) return 'Pagamento confirmado.';
-                    if (plan && plan > 1) return `${paidN} de ${plan} parcelas pagas.`;
-                    return paymentConfirmed ? 'Pagamento confirmado.' : 'Instruções enviadas por e-mail após aprovação.';
-                  })(),
+                  icon: '✅', label: L('Inscrição confirmada', 'Registration confirmed', 'Inscripción confirmada'),
+                  done: isApproved && fullyPaidStep,
+                  active: !fullyPaidStep && startedPaying,
+                  desc: (isApproved && fullyPaidStep) ? L('Inscrição confirmada pela organização.', 'Registration confirmed by the organization.', 'Inscripción confirmada por la organización.') : L('Sua inscrição é confirmada após o pagamento completo.', 'Your registration is confirmed after full payment.', 'Tu inscripción se confirma tras el pago completo.'),
                 },
                 {
-                  icon: '👥', label: 'Inscrição de atletas',
+                  icon: '👥', label: L('Inscrição de atletas', 'Athlete registration', 'Inscripción de atletas'),
                   done: lineupSubmitted,
                   active: isApproved && !lineupSubmitted,
-                  desc: lineupSubmitted ? `Escalação enviada com ${athletes.length} atleta${athletes.length !== 1 ? 's' : ''}.` : `Cadastre seus atletas e envie a escalação (mín. ${MIN_ATH} por categoria).`,
+                  desc: lineupSubmitted ? L(`Escalação enviada com ${athletes.length} atleta${athletes.length !== 1 ? 's' : ''}.`, `Lineup submitted with ${athletes.length} athlete${athletes.length !== 1 ? 's' : ''}.`, `Alineación enviada con ${athletes.length} atleta${athletes.length !== 1 ? 's' : ''}.`) : L(`Cadastre seus atletas e envie a escalação (mín. ${MIN_ATH} por categoria).`, `Register your athletes and submit the lineup (min. ${MIN_ATH} per category).`, `Registra tus atletas y envía la alineación (mín. ${MIN_ATH} por categoría).`),
                 },
                 {
-                  icon: '🏆', label: 'Aprovado',
+                  icon: '🏆', label: L('Aprovado', 'Approved', 'Aprobado'),
                   done: allDone,
                   active: lineupSubmitted && !allDone,
-                  desc: allDone ? '🎉 Tudo pronto! Você está credenciado no BFWC 2026.' : 'Conclusão de todas as etapas anteriores.',
+                  desc: allDone ? L('🎉 Tudo pronto! Você está credenciado no BFWC 2026.', '🎉 All set! You are credentialed for BFWC 2026.', '🎉 ¡Todo listo! Estás acreditado en el BFWC 2026.') : L('Conclusão de todas as etapas anteriores.', 'Completion of all previous steps.', 'Conclusión de todas las etapas anteriores.'),
                 },
               ];
 
               return (
                 <div style={{ ...card(), padding: cpad }}>
-                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 20 }}>Situação da inscrição</div>
+                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 20 }}>{L('Situação da inscrição', 'Registration status', 'Situación de la inscripción')}</div>
 
                   {/* Steps */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -1006,15 +1170,15 @@ export default function TimesPortalPage() {
                           <div style={{ flex: 1, paddingBottom: isLast ? 0 : 20, paddingLeft: 14, paddingTop: 6 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                               <span style={{ fontSize: 14, fontWeight: 800, color: s.done || s.active ? INK : 'rgba(15,23,42,.4)' }}>{s.label}</span>
-                              {s.done && !s.error && <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6, background: GREEN + '18', color: GREEN, letterSpacing: 1 }}>CONCLUÍDO</span>}
-                              {s.active && !s.done && <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6, background: YELLOW + '15', color: YELLOW, letterSpacing: 1 }}>EM ANDAMENTO</span>}
-                              {s.error  && <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6, background: 'rgba(255,68,68,.12)', color: '#ff4444', letterSpacing: 1 }}>ATENÇÃO</span>}
+                              {s.done && !s.error && <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6, background: GREEN + '18', color: GREEN, letterSpacing: 1 }}>{L('CONCLUÍDO', 'DONE', 'COMPLETADO')}</span>}
+                              {s.active && !s.done && <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6, background: YELLOW + '15', color: YELLOW, letterSpacing: 1 }}>{L('EM ANDAMENTO', 'IN PROGRESS', 'EN CURSO')}</span>}
+                              {s.error  && <span style={{ fontSize: 9, fontWeight: 900, padding: '2px 8px', borderRadius: 6, background: 'rgba(255,68,68,.12)', color: '#ff4444', letterSpacing: 1 }}>{L('ATENÇÃO', 'ATTENTION', 'ATENCIÓN')}</span>}
                             </div>
                             <div style={{ fontSize: 12, color: s.active || s.done ? 'rgba(15,23,42,.55)' : 'rgba(15,23,42,.25)', lineHeight: 1.55 }}>{s.desc}</div>
                             {/* Botão de ação inline */}
                             {s.active && i === 3 && !lineupSubmitted && (
                               <button onClick={() => setTab('atletas')} style={{ marginTop: 8, padding: '7px 16px', borderRadius: 9, border: `1px solid ${YELLOW}40`, background: YELLOW + '10', color: YELLOW, fontSize: 11, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
-                                Ir para Atletas →
+                                {L('Ir para Atletas', 'Go to Athletes', 'Ir a Atletas')} →
                               </button>
                             )}
                           </div>
@@ -1025,9 +1189,9 @@ export default function TimesPortalPage() {
 
                   {/* Dados do clube */}
                   <div style={{ borderTop: '1px solid rgba(15,23,42,.06)', marginTop: 20, paddingTop: 16 }}>
-                    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.2)', marginBottom: 10 }}>Dados do cadastro</div>
+                    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.2)', marginBottom: 10 }}>{L('Dados do cadastro', 'Registration details', 'Datos del registro')}</div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 8 }}>
-                      {[['País', team.country],['Cidade', team.city],['Contato', team.contact_name],['WhatsApp', team.whatsapp],['Categorias', team.category],['Atletas est.', team.athletes_count]]
+                      {[[L('País','Country','País'), team.country],[L('Cidade','City','Ciudad'), team.city],[L('Contato','Contact','Contacto'), team.contact_name],['WhatsApp', team.whatsapp]]
                         .filter(([,v]) => v).map(([l, v]) => (
                         <div key={l} style={miniCard()}>
                           <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: 1.5, color: 'rgba(15,23,42,.22)', textTransform: 'uppercase', marginBottom: 2 }}>{l}</div>
@@ -1035,6 +1199,33 @@ export default function TimesPortalPage() {
                         </div>
                       ))}
                     </div>
+
+                    {/* Categorias escolhidas + atletas por categoria */}
+                    {(() => {
+                      const catCounts = registeredCats.map(c => {
+                        const m = team.category?.match(new RegExp(c.replace('-', '\\-') + '\\s*\\((\\d+)\\)'));
+                        return { cat: c, qty: m ? parseInt(m[1], 10) : null };
+                      });
+                      const soma = catCounts.reduce((s, x) => s + (x.qty || 0), 0);
+                      const total = soma || team.athletes_count || 0;
+                      return (
+                        <div style={{ marginTop: 14 }}>
+                          <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: 1.5, color: 'rgba(15,23,42,.22)', textTransform: 'uppercase', marginBottom: 8 }}>Categorias e atletas</div>
+                          <div style={{ ...miniCard(), padding: '2px 14px' }}>
+                            {catCounts.map((x) => (
+                              <div key={x.cat} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid rgba(15,23,42,.06)' }}>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>{x.cat}</span>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(15,23,42,.6)' }}>{x.qty != null ? `${x.qty} atletas` : '—'}</span>
+                              </div>
+                            ))}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '11px 0' }}>
+                              <span style={{ fontSize: 14, fontWeight: 900, color: '#0f172a' }}>Total</span>
+                              <span style={{ fontSize: 14, fontWeight: 900, color: GREEN }}>{total} atletas</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               );
@@ -1042,7 +1233,7 @@ export default function TimesPortalPage() {
 
             {/* Datas */}
             <div style={{ ...card(), padding: cpad }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Datas importantes</div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>{L('Datas importantes', 'Important dates', 'Fechas importantes')}</div>
               {DATES.map((d, i) => {
                 const c = d.highlight ? '#3b9eff' : YELLOW;
                 return (
@@ -1050,7 +1241,7 @@ export default function TimesPortalPage() {
                     <div style={{ width: 52, flexShrink: 0, fontSize: 10, fontWeight: 800, color: c, textAlign: 'center', padding: '5px 0', borderRadius: 7, background: c+'0a', border: `1px solid ${c}25` }}>
                       {d.date}
                     </div>
-                    <div style={{ flex: 1, fontSize: 13, color: 'rgba(15,23,42,.7)' }}>{d.label}</div>
+                    <div style={{ flex: 1, fontSize: 13, color: 'rgba(15,23,42,.7)' }}>{LO(d.label)}</div>
                     {d.highlight && <span style={{ fontSize: 9, fontWeight: 800, padding: '3px 8px', borderRadius: 6, background: '#3b9eff18', color: '#3b9eff', letterSpacing: .8, flexShrink: 0 }}>💳 PGTO</span>}
                   </div>
                 );
@@ -1086,28 +1277,44 @@ export default function TimesPortalPage() {
 
         {/* ══════ TAB PAGAMENTO ══════ */}
         {tab === 'pagamento' && (() => {
-          const PRICE_PER_CAT = 2000; // R$ por categoria
           const numCats = registeredCats.length || 1;
-          const total   = PRICE_PER_CAT * numCats;
           const paid    = !!team.payment_confirmed;
 
+          // Seleção por categoria: travada após o 1º pagamento (payInfo) ou em edição (catChoice)
+          const athCatQty    = (c) => Math.min(20, Math.max(12, athQtys[c] ?? 12));
+          const selTotal     = (sel) => Object.values(sel).reduce((t, x) => t + (String(x.option) === '2' ? 800 + 90 * (parseInt(x.qty, 10) || 0) : 2000), 0);
+          const lockedSel    = payInfo?.payment_selection || null;                                    // novo modelo
+          const lockedLegacy = !lockedSel && payInfo?.payment_option ? payInfo.payment_option : null; // times antigos
+          const isLocked     = !!(lockedSel || lockedLegacy);
+          const draftSel     = !isLocked ? buildSelection() : null;  // null enquanto faltar escolher
+          const effSel       = lockedSel || draftSel;
+          const hasChoice    = isLocked || !!draftSel;
+          const total        = lockedSel ? selTotal(lockedSel)
+                             : lockedLegacy ? Math.round((payInfo?.total_cents || 0) / 100)
+                             : draftSel ? selTotal(draftSel) : 0;
+
+          // Parcelamento automático por data: 3x até 20/07, 2x até 20/08, depois 1x
+          const todayStr  = new Date().toISOString().slice(0, 10);
+          const autoPlan  = todayStr <= '2026-07-20' ? 3 : todayStr <= '2026-08-20' ? 2 : 1;
           const lockedPlan = payInfo?.payment_plan || null;
-          const chosenPlan = lockedPlan || planSize;
-          const DUE = ['15 de julho de 2026', '15 de agosto de 2026', '15 de setembro de 2026'];
+          const chosenPlan = lockedPlan || (payPlanChoice === '1' ? 1 : autoPlan);
+          const ALL_DUES  = ['20 de julho de 2026', '20 de agosto de 2026', '20 de setembro de 2026'];
+          const planDues  = ALL_DUES.slice(ALL_DUES.length - chosenPlan);
+          const autoDues  = ALL_DUES.slice(ALL_DUES.length - autoPlan);
 
           const buildParcelas = (n) => {
             const parcela = Math.ceil(total / n);
             return Array.from({ length: n }, (_, i) => ({
               number: i + 1,
               value: i < n - 1 ? parcela : total - parcela * (n - 1),
-              date: DUE[i],
+              date: planDues[i],
             }));
           };
           const instByNum = {};
           (payInfo?.installments || []).forEach((it) => { instByNum[it.number] = it; });
           const paidCount = payInfo?.paid_count || 0;
-          const remainingReais = payInfo?.remaining_cents != null ? Math.round(payInfo.remaining_cents / 100) : total;
-          const allPaid = payInfo?.fully_paid || (chosenPlan && paidCount >= chosenPlan);
+          const remainingReais = Math.max(0, total - Math.round((payInfo?.amount_paid_cents || 0) / 100));
+          const allPaid = payInfo?.fully_paid || (lockedPlan && paidCount >= lockedPlan);
 
           const qrBlock = (
             <div style={{ marginTop: 12, display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 18, alignItems: isMobile ? 'stretch' : 'flex-start', padding: '14px', borderRadius: 12, background: 'rgba(15,23,42,.03)', border: '1px solid rgba(15,23,42,.07)' }}>
@@ -1116,10 +1323,10 @@ export default function TimesPortalPage() {
                 <div style={{ fontSize: 10, color: 'rgba(15,23,42,.3)', textAlign: 'center' }}>Escaneie no app do seu banco</div>
               </div>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: 'rgba(15,23,42,.3)', textTransform: 'uppercase' }}>Pix copia e cola</div>
+                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: 'rgba(15,23,42,.3)', textTransform: 'uppercase' }}>{L('Pix copia e cola', 'Pix copy & paste', 'Pix copiar y pegar')}</div>
                 <div style={{ padding: '10px 12px', borderRadius: 10, background: 'rgba(15,23,42,.04)', border: '1px solid rgba(15,23,42,.1)', fontSize: 11, fontWeight: 600, wordBreak: 'break-all', lineHeight: 1.5, maxHeight: 80, overflow: 'auto' }}>{activePix?.emv}</div>
                 <button onClick={copyEmv} style={{ padding: '11px 16px', borderRadius: 10, border: `1px solid ${emvCopied ? GREEN+'50' : 'rgba(15,23,42,.12)'}`, background: emvCopied ? GREEN+'12' : 'rgba(15,23,42,.05)', color: emvCopied ? GREEN : 'rgba(15,23,42,.6)', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}>
-                  {emvCopied ? '✓ Copiado!' : '📋 Copiar código Pix'}
+                  {emvCopied ? L('✓ Copiado!', '✓ Copied!', '✓ ¡Copiado!') : L('📋 Copiar código Pix', '📋 Copy Pix code', '📋 Copiar código Pix')}
                 </button>
                 <div style={{ fontSize: 11, color: 'rgba(15,23,42,.45)', lineHeight: 1.55 }}>⏳ Assim que o Pix cair, esta página confirma sozinha.</div>
               </div>
@@ -1129,51 +1336,161 @@ export default function TimesPortalPage() {
           return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14, animation: 'fadeIn .3s ease' }}>
 
+              {/* Banner: voltou do checkout com pagamento aprovado */}
+              {paidBanner && (
+                <div style={{ ...card(), padding: cpad, border: `2px solid ${paid || paidCount > 0 ? GREEN : YELLOW}`, background: paid || paidCount > 0 ? GREEN + '0d' : YELLOW + '0a', display: 'flex', alignItems: 'center', gap: 16, position: 'relative' }}>
+                  <div style={{ fontSize: 40, flexShrink: 0 }}>{paid || paidCount > 0 ? '🎉' : '⏳'}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 17, fontWeight: 900, color: paid || paidCount > 0 ? GREEN : '#0f172a', marginBottom: 4 }}>
+                      {paid || paidCount > 0
+                        ? L('Pagamento concluído com sucesso!', 'Payment completed successfully!', '¡Pago completado con éxito!')
+                        : L('Pagamento recebido — confirmando...', 'Payment received — confirming...', 'Pago recibido — confirmando...')}
+                    </div>
+                    <div style={{ fontSize: 13, color: 'rgba(15,23,42,.6)', lineHeight: 1.5 }}>
+                      {paid || paidCount > 0
+                        ? L('Recebemos seu pagamento e enviamos um e-mail de confirmação. Acompanhe o resumo abaixo.', 'We received your payment and sent a confirmation email. See the summary below.', 'Recibimos tu pago y enviamos un correo de confirmación. Mira el resumen abajo.')
+                        : L('Seu pagamento está sendo processado. Esta página atualiza sozinha em instantes.', 'Your payment is being processed. This page refreshes automatically.', 'Tu pago se está procesando. Esta página se actualiza sola.')}
+                    </div>
+                  </div>
+                  <button onClick={() => setPaidBanner(false)} style={{ position: 'absolute', top: 10, right: 12, background: 'none', border: 'none', fontSize: 16, color: 'rgba(15,23,42,.35)', cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
+                </div>
+              )}
+
               {/* Status geral */}
-              {paid ? (
+              {allPaid && (
                 <div style={{ ...card(), padding: cpad, display: 'flex', alignItems: 'center', gap: 16, border: `1px solid ${GREEN}55` }}>
                   <div style={{ width: 52, height: 52, borderRadius: '50%', background: GREEN + '18', border: `2px solid ${GREEN}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>✅</div>
                   <div>
-                    <div style={{ fontSize: 16, fontWeight: 900, color: GREEN, marginBottom: 4 }}>Inscrição confirmada</div>
-                    <div style={{ fontSize: 13, color: 'rgba(15,23,42,.5)' }}>
-                      {chosenPlan && chosenPlan > 1 && !allPaid
-                        ? `Você está confirmado no BFWC 2026. Parcelas pagas: ${paidCount} de ${chosenPlan}.`
-                        : 'Taxa de inscrição recebida. Você está confirmado no BFWC 2026.'}
-                    </div>
+                    <div style={{ fontSize: 16, fontWeight: 900, color: GREEN, marginBottom: 4 }}>{L('Inscrição confirmada', 'Registration confirmed', 'Inscripción confirmada')}</div>
+                    <div style={{ fontSize: 13, color: 'rgba(15,23,42,.5)' }}>{L('Pagamento concluído. Você está confirmado no BFWC 2026.', 'Payment complete. You are confirmed for BFWC 2026.', 'Pago completado. Estás confirmado en el BFWC 2026.')}</div>
                   </div>
                 </div>
-              ) : (
-                <div style={{ ...card(), padding: cpad, border: `1px solid ${YELLOW}45` }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                    <div>
-                      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 6 }}>Taxa de inscrição</div>
-                      <div style={{ fontSize: 13, color: 'rgba(15,23,42,.5)', marginBottom: 4 }}>
-                        {registeredCats.length} categoria{registeredCats.length !== 1 ? 's' : ''} × R$ {PRICE_PER_CAT.toLocaleString('pt-BR')}
-                      </div>
-                      <div style={{ fontSize: 11, color: 'rgba(15,23,42,.3)' }}>{registeredCats.join(' · ')}</div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 32, fontWeight: 900, color: YELLOW, letterSpacing: -1.5 }}>R$ {total.toLocaleString('pt-BR')}</div>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(15,23,42,.3)', letterSpacing: 1 }}>TOTAL</div>
+              )}
+
+              {/* Pagamento em andamento (1ª parcela paga, mas ainda faltam parcelas) */}
+              {!allPaid && paid && (
+                <div style={{ ...card(), padding: cpad, display: 'flex', alignItems: 'center', gap: 16, border: `1px solid ${YELLOW}55` }}>
+                  <div style={{ width: 52, height: 52, borderRadius: '50%', background: YELLOW + '18', border: `2px solid ${YELLOW}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>⏳</div>
+                  <div>
+                    <div style={{ fontSize: 16, fontWeight: 900, color: '#0f172a', marginBottom: 4 }}>{L('Pagamento em andamento', 'Payment in progress', 'Pago en curso')}</div>
+                    <div style={{ fontSize: 13, color: 'rgba(15,23,42,.5)' }}>
+                      {paidCount} de {chosenPlan} parcelas pagas. A inscrição é confirmada após quitar todas.
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Bloco de pagamento (some quando todas as parcelas estão pagas) */}
-              {!allPaid && (
+              {/* Escolha por categoria (até o 1º pagamento travar a seleção) */}
+              {!allPaid && !isLocked && (
+                <div style={{ ...card(), padding: cpad }}>
+                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 6 }}>{L('Escolha a forma de inscrição', 'Choose your registration option', 'Elige tu forma de inscripción')}</div>
+                  <div style={{ fontSize: 12, color: 'rgba(15,23,42,.5)', marginBottom: 14, lineHeight: 1.5 }}>{L('Escolha uma opção para cada categoria — os valores são somados em um único total.', 'Choose an option for each category — amounts are added into a single total.', 'Elige una opción para cada categoría — los valores se suman en un único total.')}</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {registeredCats.map((c) => {
+                      const o = catChoice[c];
+                      const q = athCatQty(c);
+                      const catSub = o === '1' ? 2000 : o === '2' ? 800 + 90 * q : 0;
+                      return (
+                        <div key={c} style={{ padding: '14px', borderRadius: 14, border: '1px solid rgba(15,23,42,.08)', background: 'rgba(15,23,42,.02)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                            <span style={{ fontSize: 14, fontWeight: 900, color: '#0f172a' }}>🏈 {c}</span>
+                            {o && <span style={{ fontSize: 13, fontWeight: 900, color: o === '2' ? ACCENT : YELLOW }}>R$ {catSub.toLocaleString('pt-BR')}</span>}
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 10 }}>
+                            <button onClick={() => setCatChoice(p => ({ ...p, [c]: '1' }))} style={{ flex: 1, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', padding: '14px', borderRadius: 14, border: `2px solid ${o === '1' ? YELLOW : 'rgba(15,23,42,.1)'}`, background: o === '1' ? YELLOW + '10' : '#fff' }}>
+                              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: YELLOW, marginBottom: 6 }}>{L('Opção 1 · Pacote', 'Option 1 · Package', 'Opción 1 · Paquete')}</div>
+                              <div style={{ fontSize: 20, fontWeight: 900, color: '#0f172a', letterSpacing: -0.5 }}>R$ 2.000</div>
+                              <div style={{ fontSize: 11.5, color: 'rgba(15,23,42,.55)', marginTop: 4, lineHeight: 1.45 }}>{L('Atletas inclusos.', 'Athletes included.', 'Atletas incluidos.')}</div>
+                            </button>
+                            <button onClick={() => setCatChoice(p => ({ ...p, [c]: '2' }))} style={{ flex: 1, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', padding: '14px', borderRadius: 14, border: `2px solid ${o === '2' ? ACCENT : 'rgba(15,23,42,.1)'}`, background: o === '2' ? ACCENT + '0c' : '#fff' }}>
+                              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: ACCENT, marginBottom: 6 }}>{L('Opção 2 · Por atleta', 'Option 2 · Per athlete', 'Opción 2 · Por atleta')}</div>
+                              <div style={{ fontSize: 20, fontWeight: 900, color: '#0f172a', letterSpacing: -0.5 }}>R$ 800 <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>{L('+ R$ 90/atleta', '+ R$ 90/athlete', '+ R$ 90/atleta')}</span></div>
+                              <div style={{ fontSize: 11.5, color: 'rgba(15,23,42,.55)', marginTop: 4, lineHeight: 1.45 }}>{L('Você escolhe a quantidade de atletas (12 a 20).', 'You choose the number of athletes (12 to 20).', 'Tú eliges la cantidad de atletas (12 a 20).')}</div>
+                            </button>
+                          </div>
+                          {o === '2' && (
+                            <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 12, background: ACCENT + '08', border: `1px solid ${ACCENT}22`, flexWrap: 'wrap' }}>
+                              <span style={{ flex: 1, minWidth: 120, fontSize: 12.5, fontWeight: 700, color: '#0f172a' }}>{L('Atletas (R$ 90 cada)', 'Athletes (R$ 90 each)', 'Atletas (R$ 90 c/u)')}</span>
+                              <button type="button" onClick={() => setAthQtys(p => ({ ...p, [c]: Math.max(12, q - 1) }))} style={{ width: 34, height: 34, borderRadius: 9, border: '1px solid #cbd5e1', background: '#fff', fontSize: 17, fontWeight: 900, cursor: 'pointer', color: '#0f172a' }}>−</button>
+                              <input type="number" min={12} max={20} value={athQtys[c] ?? 12} onChange={e => setAthQtys(p => ({ ...p, [c]: Math.max(0, parseInt(e.target.value, 10) || 0) }))} onBlur={e => setAthQtys(p => ({ ...p, [c]: Math.min(20, Math.max(12, parseInt(e.target.value, 10) || 12)) }))} style={{ ...inputSt, width: 70, textAlign: 'center', fontWeight: 800 }} />
+                              <button type="button" onClick={() => setAthQtys(p => ({ ...p, [c]: Math.min(20, q + 1) }))} style={{ width: 34, height: 34, borderRadius: 9, border: '1px solid #cbd5e1', background: '#fff', fontSize: 17, fontWeight: 900, cursor: 'pointer', color: '#0f172a' }}>+</button>
+                              <span style={{ width: 84, textAlign: 'right', fontSize: 12, fontWeight: 800, color: ACCENT }}>+ R$ {(90 * q).toLocaleString('pt-BR')}</span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(15,23,42,.08)' }}>
+                    <span style={{ fontSize: 13, fontWeight: 900, color: draftSel ? '#0f172a' : 'rgba(15,23,42,.45)' }}>{draftSel ? 'Total' : L('Escolha uma opção em cada categoria para continuar', 'Choose an option for each category to continue', 'Elige una opción en cada categoría para continuar')}</span>
+                    {draftSel && <span style={{ fontSize: 20, fontWeight: 900, color: YELLOW, letterSpacing: -0.5 }}>R$ {total.toLocaleString('pt-BR')}</span>}
+                  </div>
+                </div>
+              )}
+
+              {/* Resumo da seleção (travada após o 1º pagamento) */}
+              {!allPaid && isLocked && (
+                <div style={{ ...card(), padding: cpad, border: `1px solid ${YELLOW}45` }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 6 }}>{L('Forma de inscrição definida', 'Registration option set', 'Forma de inscripción definida')}</div>
+                      {lockedSel ? registeredCats.filter(c => lockedSel[c]).map(c => (
+                        <div key={c} style={{ fontSize: 13, color: 'rgba(15,23,42,.55)', marginBottom: 2 }}>
+                          <strong style={{ color: '#0f172a' }}>{c}</strong> — {String(lockedSel[c].option) === '2' ? `${L('Opção 2', 'Option 2', 'Opción 2')} · R$ 800 + ${parseInt(lockedSel[c].qty, 10) || 0} × R$ 90` : `${L('Opção 1 · Pacote', 'Option 1 · Package', 'Opción 1 · Paquete')} · R$ 2.000`}
+                        </div>
+                      )) : (
+                        <div style={{ fontSize: 13, color: 'rgba(15,23,42,.55)' }}>{lockedLegacy === '2' ? `R$ 800 × ${numCats} cat. + R$ 90 × ${payInfo?.athletes_paid_qty || 0} atletas` : `${numCats} categoria${numCats !== 1 ? 's' : ''} × R$ 2.000`}</div>
+                      )}
+                      <div style={{ fontSize: 11, color: 'rgba(15,23,42,.3)', marginTop: 4 }}>{registeredCats.join(' · ')}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: 28, fontWeight: 900, color: YELLOW, letterSpacing: -1.2 }}>R$ {total.toLocaleString('pt-BR')}</div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(15,23,42,.4)', letterSpacing: .3 }}>TOTAL</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Bloco de pagamento (some quando todas as parcelas estão pagas ou sem seleção completa) */}
+              {!allPaid && hasChoice && (
                 <div style={{ ...card(), padding: cpad }}>
                   <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 16 }}>
-                    {paid ? 'Pagar parcelas restantes' : 'Pagar taxa de inscrição'}
+                    {paid ? L('Pagar parcelas restantes', 'Pay remaining installments', 'Pagar cuotas restantes') : L('Pagar taxa de inscrição', 'Pay registration fee', 'Pagar tarifa de inscripción')}
                   </div>
 
                   {payPolling && (
-                    <div style={{ padding: '12px 14px', borderRadius: 10, background: ACCENT+'10', border: `1px solid ${ACCENT}25`, fontSize: 12, color: 'rgba(15,23,42,.6)', lineHeight: 1.5, marginBottom: 14 }}>⏳ Confirmando seu pagamento...</div>
+                    <div style={{ padding: '12px 14px', borderRadius: 10, background: ACCENT+'10', border: `1px solid ${ACCENT}25`, fontSize: 12, color: 'rgba(15,23,42,.6)', lineHeight: 1.5, marginBottom: 14 }}>⏳ {L('Confirmando seu pagamento...', 'Confirming your payment...', 'Confirmando tu pago...')}</div>
+                  )}
+
+                  {/* À vista ou parcelado (escolha livre até o 1º pagamento) */}
+                  {!lockedPlan && autoPlan > 1 && (
+                    <div style={{ marginBottom: 16 }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, textTransform: 'uppercase', color: 'rgba(15,23,42,.35)', marginBottom: 8 }}>{L('Como prefere pagar?', 'How do you prefer to pay?', '¿Cómo prefieres pagar?')}</div>
+                      <div style={{ display: 'flex', gap: 8, flexDirection: isMobile ? 'column' : 'row' }}>
+                        <button onClick={() => setPayPlanChoice('auto')} style={{ flex: 1, textAlign: 'left', padding: '13px 14px', borderRadius: 12, cursor: 'pointer', fontFamily: 'inherit', border: `2px solid ${payPlanChoice === 'auto' ? GREEN : 'rgba(15,23,42,.1)'}`, background: payPlanChoice === 'auto' ? GREEN + '0c' : '#fff' }}>
+                          <div style={{ fontSize: 13, fontWeight: 900, color: '#0f172a' }}>{L(`Parcelado em ${autoPlan}x`, `${autoPlan} installments`, `En ${autoPlan} cuotas`)}</div>
+                          <div style={{ fontSize: 11.5, color: 'rgba(15,23,42,.5)', marginTop: 3 }}>{autoPlan}× {L('de', 'of', 'de')} ~R$ {Math.ceil(total / autoPlan).toLocaleString('pt-BR')} · {L('vencimentos', 'due dates', 'vencimientos')} {autoDues.join(', ')}</div>
+                        </button>
+                        <button onClick={() => setPayPlanChoice('1')} style={{ flex: 1, textAlign: 'left', padding: '13px 14px', borderRadius: 12, cursor: 'pointer', fontFamily: 'inherit', border: `2px solid ${payPlanChoice === '1' ? GREEN : 'rgba(15,23,42,.1)'}`, background: payPlanChoice === '1' ? GREEN + '0c' : '#fff' }}>
+                          <div style={{ fontSize: 13, fontWeight: 900, color: '#0f172a' }}>{L('À vista (1x)', 'Pay in full (1x)', 'Al contado (1x)')}</div>
+                          <div style={{ fontSize: 11.5, color: 'rgba(15,23,42,.5)', marginTop: 3 }}>1× {L('de', 'of', 'de')} R$ {total.toLocaleString('pt-BR')} · {L('quita tudo agora', 'settles everything now', 'liquida todo ahora')}</div>
+                        </button>
+                      </div>
+                    </div>
                   )}
 
                   {/* Seletor de método */}
                   <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-                    {[['pix','🏦','PIX'],['card','💳','Cartão de crédito']].map(([k,ic,lb]) => (
+                    {[['pix','🏦','PIX'],['card','💳', L('Cartão de crédito','Credit card','Tarjeta de crédito')]].filter(([k]) => lang === 'pt' || k !== 'pix').map(([k,ic,lb]) => {
+                      const cardOff = k === 'card' && process.env.NEXT_PUBLIC_CARD_ENABLED === '0';
+                      if (cardOff) return (
+                        <div key={k} style={{ flex: 1, padding: '14px 12px', borderRadius: 14, border: '2px dashed rgba(15,23,42,.12)', background: 'rgba(15,23,42,.02)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, opacity: .65 }}>
+                          <span style={{ fontSize: 24 }}>{ic}</span>
+                          <span style={{ fontSize: 12, fontWeight: 800, color: 'rgba(15,23,42,.45)' }}>{lb}</span>
+                          <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: 1, padding: '2px 8px', borderRadius: 6, background: 'rgba(249,115,22,.12)', color: '#c2620f' }}>{L('EM BREVE','COMING SOON','PRÓXIMAMENTE')}</span>
+                        </div>
+                      );
+                      return (
                       <button key={k} onClick={() => setPayMethod(k)} style={{
                         flex: 1, padding: '14px 12px', borderRadius: 14, cursor: 'pointer', fontFamily: 'inherit',
                         border: `2px solid ${payMethod===k ? YELLOW : 'rgba(15,23,42,.08)'}`,
@@ -1183,35 +1500,32 @@ export default function TimesPortalPage() {
                         <span style={{ fontSize: 24 }}>{ic}</span>
                         <span style={{ fontSize: 12, fontWeight: 800, color: payMethod===k ? YELLOW : 'rgba(15,23,42,.55)' }}>{lb}</span>
                       </button>
-                    ))}
+                      );
+                    })}
                   </div>
+
+                  {lang !== 'pt' && (
+                    <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(16,185,129,.07)', border: '1px solid rgba(16,185,129,.28)', fontSize: 12, color: 'rgba(15,23,42,.68)', lineHeight: 1.6, marginBottom: 14 }}>
+                      🌍 {L('', 'Prefer to pay by international bank transfer (Wise)? Contact Leonardo — email contato@brasilflag.com · WhatsApp +55 81 99565-8710.', '¿Prefieres pagar por transferencia internacional (Wise)? Contacta a Leonardo — correo contato@brasilflag.com · WhatsApp +55 81 99565-8710.')}
+                    </div>
+                  )}
 
                   {/* ── PIX parcelado ── */}
                   {payMethod === 'pix' && (
                     <div>
-                      {/* Seletor de plano */}
-                      <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)', marginBottom: 8 }}>
-                        {lockedPlan ? `Parcelamento escolhido: ${lockedPlan}x` : 'Em quantas vezes quer pagar?'}
+                      {/* Parcelamento automático por data */}
+                      <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)', marginBottom: 8, lineHeight: 1.5 }}>
+                        {L('Parcelamento automático:', 'Automatic installments:', 'Cuotas automáticas:')} <span style={{ color: GREEN, fontWeight: 800 }}>{chosenPlan}x</span>
+                        <span style={{ color: 'rgba(15,23,42,.4)' }}> · {L('vencimentos', 'due dates', 'vencimientos')} {planDues.join(', ')}</span>
                       </div>
-                      {!lockedPlan && (
-                        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-                          {[1,2,3].map(n => (
-                            <button key={n} onClick={() => setPlanSize(n)} style={{
-                              flex: 1, padding: '12px', borderRadius: 12, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 800,
-                              border: `2px solid ${planSize===n ? GREEN : 'rgba(15,23,42,.08)'}`,
-                              background: planSize===n ? GREEN+'12' : 'rgba(15,23,42,.03)',
-                              color: planSize===n ? GREEN : 'rgba(15,23,42,.6)',
-                            }}>
-                              {n}x<div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(15,23,42,.4)', marginTop: 2 }}>R$ {(Math.ceil(total/n)).toLocaleString('pt-BR')}{n>1?'/mês':''}</div>
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                      <div style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(249,115,22,.08)', border: '1px solid rgba(249,115,22,.25)', fontSize: 12, fontWeight: 700, color: '#c2620f', lineHeight: 1.55, marginBottom: 12 }}>
+                        ⚠️ {L('Vagas limitadas por categoria — preenchidas por ordem de pagamento da 1ª parcela.', 'Limited spots per category — filled in order of payment of the 1st installment.', 'Plazas limitadas por categoría — se llenan por orden de pago de la 1.ª cuota.')}
+                      </div>
 
                       {needDoc && (
                         <div style={{ marginBottom: 12 }}>
-                          <label style={lbl}>CPF ou CNPJ do pagador</label>
-                          <input style={inputSt} placeholder="Somente números" value={docInput}
+                          <label style={lbl}>{L('CPF ou CNPJ do pagador', "Payer's tax ID (CPF/CNPJ)", 'CPF o CNPJ del pagador')}</label>
+                          <input style={inputSt} placeholder={L('Somente números', 'Digits only', 'Solo números')} value={docInput}
                             onChange={e => setDocInput(e.target.value.replace(/\D/g,'').slice(0,14))} inputMode="numeric" />
                         </div>
                       )}
@@ -1220,7 +1534,7 @@ export default function TimesPortalPage() {
                       )}
 
                       {!chosenPlan ? (
-                        <div style={{ fontSize: 12, color: 'rgba(15,23,42,.4)' }}>Escolha o parcelamento acima para ver as parcelas.</div>
+                        <div style={{ fontSize: 12, color: 'rgba(15,23,42,.4)' }}>{L('Escolha o parcelamento acima para ver as parcelas.', 'Choose the plan above to see the installments.', 'Elige el plan arriba para ver las cuotas.')}</div>
                       ) : (
                         buildParcelas(chosenPlan).map((p) => {
                           const st = instByNum[p.number];
@@ -1231,15 +1545,15 @@ export default function TimesPortalPage() {
                               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                 <div style={{ width: 34, height: 34, borderRadius: 10, background: (isPaid?GREEN:YELLOW)+'15', border: `1.5px solid ${(isPaid?GREEN:YELLOW)}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0, fontWeight: 900, color: isPaid?GREEN:YELLOW }}>{isPaid ? '✓' : p.number}</div>
                                 <div style={{ flex: 1 }}>
-                                  <div style={{ fontSize: 13, fontWeight: 800 }}>{chosenPlan>1 ? `${p.number}ª parcela` : 'Pagamento'}</div>
-                                  <div style={{ fontSize: 11, color: 'rgba(15,23,42,.38)' }}>📅 {p.date}</div>
+                                  <div style={{ fontSize: 13, fontWeight: 800 }}>{chosenPlan>1 ? L(`${p.number}ª parcela`, `Installment ${p.number}`, `Cuota ${p.number}`) : L('Pagamento','Payment','Pago')}</div>
+                                  <div style={{ fontSize: 11, color: 'rgba(15,23,42,.38)' }}>📅 {L('Pagamento até', 'Pay by', 'Pago hasta')} {p.date}</div>
                                 </div>
                                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                                   <div style={{ fontSize: 15, fontWeight: 900, color: isPaid?GREEN:YELLOW }}>R$ {p.value.toLocaleString('pt-BR')}</div>
                                 </div>
                                 {!isPaid && (
                                   <button onClick={() => generateParcela(p.number)} disabled={pixLoadingNum === p.number} style={{ padding: '10px 16px', borderRadius: 10, border: 'none', background: `linear-gradient(135deg,${GREEN},#0a9d4a)`, color: '#fff', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, opacity: pixLoadingNum === p.number ? 0.7 : 1 }}>
-                                    {pixLoadingNum===p.number ? '...' : (isActive ? 'Novo QR' : 'Pagar')}
+                                    {pixLoadingNum===p.number ? '...' : (isActive ? L('Novo QR','New QR','Nuevo QR') : L('Pagar','Pay','Pagar'))}
                                   </button>
                                 )}
                                 {isPaid && <span style={{ fontSize: 10, fontWeight: 900, color: GREEN, letterSpacing: 1 }}>PAGO</span>}
@@ -1252,17 +1566,42 @@ export default function TimesPortalPage() {
                     </div>
                   )}
 
-                  {/* ── CARTÃO (Stripe, parcelado na própria Stripe) ── */}
+                  {/* ── CARTÃO (Stripe, uma cobrança por parcela — igual ao Pix) ── */}
                   {payMethod === 'card' && (
                     <div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)', marginBottom: 12, lineHeight: 1.5 }}>
+                        {L('Parcelamento automático:', 'Automatic installments:', 'Cuotas automáticas:')} <span style={{ color: GREEN, fontWeight: 800 }}>{chosenPlan}x</span>
+                        <span style={{ color: 'rgba(15,23,42,.4)' }}> · {L('pague cada parcela no cartão até o vencimento', 'pay each installment by card until its due date', 'paga cada cuota con tarjeta hasta su vencimiento')}</span>
+                      </div>
                       {checkoutErr && (
                         <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(255,68,68,.08)', border: '1px solid rgba(255,68,68,.25)', fontSize: 12, color: '#ff8080', lineHeight: 1.5, marginBottom: 12 }}>{checkoutErr}</div>
                       )}
-                      <button onClick={startCheckout} disabled={checkoutLoading} style={{ width: '100%', padding: '16px', borderRadius: 12, border: 'none', background: `linear-gradient(135deg,${ACCENT},#1a5fff)`, color: '#fff', fontSize: 15, fontWeight: 800, cursor: checkoutLoading ? 'wait' : 'pointer', fontFamily: 'inherit', opacity: checkoutLoading ? .7 : 1 }}>
-                        {checkoutLoading ? 'Redirecionando...' : `Pagar R$ ${remainingReais.toLocaleString('pt-BR')} no cartão`}
-                      </button>
+                      {buildParcelas(chosenPlan).map((p) => {
+                        const st = instByNum[p.number];
+                        const isPaid = st?.status === 'paid';
+                        return (
+                          <div key={p.number} style={{ borderRadius: 12, marginBottom: 8, background: isPaid ? GREEN+'08' : 'rgba(15,23,42,.025)', border: `1px solid ${isPaid ? GREEN+'25' : 'rgba(15,23,42,.07)'}`, padding: '13px 14px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                              <div style={{ width: 34, height: 34, borderRadius: 10, background: (isPaid?GREEN:ACCENT)+'15', border: `1.5px solid ${(isPaid?GREEN:ACCENT)}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0, fontWeight: 900, color: isPaid?GREEN:ACCENT }}>{isPaid ? '✓' : p.number}</div>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: 13, fontWeight: 800 }}>{chosenPlan>1 ? L(`${p.number}ª parcela`, `Installment ${p.number}`, `Cuota ${p.number}`) : L('Pagamento','Payment','Pago')}</div>
+                                <div style={{ fontSize: 11, color: 'rgba(15,23,42,.38)' }}>📅 {L('Pagamento até', 'Pay by', 'Pago hasta')} {p.date}</div>
+                              </div>
+                              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                <div style={{ fontSize: 15, fontWeight: 900, color: isPaid?GREEN:ACCENT }}>R$ {p.value.toLocaleString('pt-BR')}</div>
+                              </div>
+                              {!isPaid && (
+                                <button onClick={() => startCheckout(p.number)} disabled={checkoutLoading} style={{ padding: '10px 16px', borderRadius: 10, border: 'none', background: `linear-gradient(135deg,${ACCENT},#1a5fff)`, color: '#fff', fontSize: 12, fontWeight: 800, cursor: checkoutLoading ? 'wait' : 'pointer', fontFamily: 'inherit', flexShrink: 0, opacity: checkoutLoading ? 0.7 : 1 }}>
+                                  {checkoutLoading ? '...' : L('Pagar','Pay','Pagar')}
+                                </button>
+                              )}
+                              {isPaid && <span style={{ fontSize: 10, fontWeight: 900, color: GREEN, letterSpacing: 1 }}>{L('PAGO','PAID','PAGADO')}</span>}
+                            </div>
+                          </div>
+                        );
+                      })}
                       <div style={{ textAlign: 'center', fontSize: 11, color: 'rgba(15,23,42,.3)', lineHeight: 1.5, marginTop: 10 }}>
-                        {remainingReais < total ? `Saldo restante (já pago: R$ ${(total - remainingReais).toLocaleString('pt-BR')}). ` : ''}💳 Parcele em até 3x no cartão na tela da Stripe · 🔒 seguro
+                        {remainingReais < total ? L(`Já pago: R$ ${(total - remainingReais).toLocaleString('pt-BR')} · `, `Already paid: R$ ${(total - remainingReais).toLocaleString('pt-BR')} · `, `Ya pagado: R$ ${(total - remainingReais).toLocaleString('pt-BR')} · `) : ''}💳 {L('Checkout seguro Stripe','Secure Stripe checkout','Checkout seguro Stripe')} · 🔒 {L('seguro','secure','seguro')}
                       </div>
                     </div>
                   )}
@@ -1271,22 +1610,38 @@ export default function TimesPortalPage() {
 
               {/* Resumo */}
               <div style={{ ...card(), padding: cpad }}>
-                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Resumo da cobrança</div>
+                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>{L('Resumo da cobrança', 'Charge summary', 'Resumen del cobro')}</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                  {registeredCats.map((c, i) => (
-                    <div key={c} style={{ display: 'flex', justifyContent: 'space-between', padding: '11px 0', borderBottom: i < registeredCats.length - 1 ? '1px solid rgba(15,23,42,.05)' : 'none' }}>
-                      <span style={{ fontSize: 13, color: 'rgba(15,23,42,.6)' }}>Categoria {c}</span>
-                      <span style={{ fontSize: 13, fontWeight: 700 }}>R$ {PRICE_PER_CAT.toLocaleString('pt-BR')}</span>
-                    </div>
-                  ))}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 0 0', marginTop: 4, borderTop: `2px solid ${YELLOW}20` }}>
-                    <span style={{ fontSize: 15, fontWeight: 900 }}>Total</span>
-                    <span style={{ fontSize: 15, fontWeight: 900, color: YELLOW }}>R$ {total.toLocaleString('pt-BR')}</span>
-                  </div>
+                  {!hasChoice ? (
+                    <div style={{ fontSize: 12, color: 'rgba(15,23,42,.4)', padding: '4px 0' }}>{L('Escolha uma opção acima para ver o detalhamento.', 'Choose an option above to see the breakdown.', 'Elige una opción arriba para ver el detalle.')}</div>
+                  ) : (
+                    <>
+                      {effSel ? registeredCats.filter(c => effSel[c]).map(c => {
+                        const sc = effSel[c];
+                        const isO2 = String(sc.option) === '2';
+                        const sub = isO2 ? 800 + 90 * (parseInt(sc.qty, 10) || 0) : 2000;
+                        return (
+                          <div key={c} style={{ display: 'flex', justifyContent: 'space-between', padding: '11px 0', borderBottom: '1px solid rgba(15,23,42,.05)' }}>
+                            <span style={{ fontSize: 13, color: 'rgba(15,23,42,.6)' }}>{c} — {isO2 ? `${L('Opção 2', 'Option 2', 'Opción 2')} (R$ 800 + ${parseInt(sc.qty, 10) || 0} × R$ 90)` : L('Opção 1 (pacote)', 'Option 1 (package)', 'Opción 1 (paquete)')}</span>
+                            <span style={{ fontSize: 13, fontWeight: 700 }}>R$ {sub.toLocaleString('pt-BR')}</span>
+                          </div>
+                        );
+                      }) : (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '11px 0', borderBottom: '1px solid rgba(15,23,42,.05)' }}>
+                          <span style={{ fontSize: 13, color: 'rgba(15,23,42,.6)' }}>{lockedLegacy === '2' ? `R$ 800 × ${numCats} cat. + R$ 90 × ${payInfo?.athletes_paid_qty || 0} atletas` : `${numCats} categoria${numCats !== 1 ? 's' : ''} × R$ 2.000`}</span>
+                          <span style={{ fontSize: 13, fontWeight: 700 }}>R$ {total.toLocaleString('pt-BR')}</span>
+                        </div>
+                      )}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 0 0', marginTop: 4, borderTop: `2px solid ${YELLOW}20` }}>
+                        <span style={{ fontSize: 15, fontWeight: 900 }}>Total</span>
+                        <span style={{ fontSize: 15, fontWeight: 900, color: YELLOW }}>R$ {total.toLocaleString('pt-BR')}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
                 <div style={{ marginTop: 14, padding: '10px 14px', borderRadius: 10, background: 'rgba(15,23,42,.025)', border: '1px solid rgba(15,23,42,.05)', fontSize: 11, color: 'rgba(15,23,42,.4)', lineHeight: 1.6 }}>
-                  Status: <span style={{ fontWeight: 800, color: paid ? GREEN : YELLOW }}>{paid ? '✅ Confirmado' : '⏳ Aguardando pagamento'}</span>
-                  {chosenPlan ? <span style={{ marginLeft: 8 }}>· Parcelas pagas: {paidCount}/{chosenPlan}</span> : null}
+                  {L('Status','Status','Estado')}: <span style={{ fontWeight: 800, color: allPaid ? GREEN : YELLOW }}>{allPaid ? L('✅ Confirmado','✅ Confirmed','✅ Confirmado') : (paid ? L('🟡 Pagamento em andamento','🟡 Payment in progress','🟡 Pago en curso') : L('⏳ Aguardando pagamento','⏳ Awaiting payment','⏳ Esperando pago'))}</span>
+                  {chosenPlan ? <span style={{ marginLeft: 8 }}>· {L('Parcelas pagas','Installments paid','Cuotas pagadas')}: {paidCount}/{chosenPlan}</span> : null}
                 </div>
               </div>
 
@@ -1300,59 +1655,67 @@ export default function TimesPortalPage() {
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 10 }}>
               <div>
-                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 4 }}>Roster do clube</div>
-                <div style={{ fontSize: isMobile ? 18 : 22, fontWeight: 900 }}>{athletes.length} atleta{athletes.length !== 1 ? 's' : ''}</div>
+                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.72)', marginBottom: 4 }}>{L('Roster do clube', 'Club roster', 'Roster del club')}</div>
+                <div style={{ fontSize: isMobile ? 18 : 22, fontWeight: 900 }}>{athletes.length} {L(athletes.length !== 1 ? 'atletas' : 'atleta', athletes.length !== 1 ? 'athletes' : 'athlete', athletes.length !== 1 ? 'atletas' : 'atleta')}</div>
               </div>
               <button onClick={() => setShowAddForm(!showAddForm)} style={btnPrimary()}>
-                {showAddForm ? '✕ Cancelar' : '+ Atleta'}
+                {showAddForm ? L('✕ Cancelar', '✕ Cancel', '✕ Cancelar') : L('+ Atleta', '+ Athlete', '+ Atleta')}
               </button>
             </div>
+
+            {/* Aviso: convite por e-mail não enviado */}
+            {athWarn && (
+              <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(249,115,22,.12)', border: '1px solid rgba(249,115,22,.3)', marginBottom: 14 }}>
+                <div style={{ fontSize: 12.5, color: '#c2620f', lineHeight: 1.55, display: 'flex', alignItems: 'flex-start', gap: 8 }}><span>⚠️</span><span>{athWarn}</span></div>
+                <a href="https://wa.me/5516997754522" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 10, padding: '7px 14px', borderRadius: 9, background: '#25D366', color: '#fff', fontSize: 12, fontWeight: 800, textDecoration: 'none' }}>💬 {L('Falar no WhatsApp', 'Contact on WhatsApp', 'Hablar por WhatsApp')}</a>
+              </div>
+            )}
 
             {/* Add form */}
             {showAddForm && (
               <div style={{ ...card({ marginBottom: 16, border: `1px solid ${ACCENT}35`, padding: cpad }) }}>
-                <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 14 }}>Novo atleta</div>
+                <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 14 }}>{L('Novo atleta', 'New athlete', 'Nuevo atleta')}</div>
                 <form onSubmit={addAthlete}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
-                    <div><label style={lbl}>Nome completo *</label><input style={inputSt} value={newAth.name} onChange={e => setNewAth(p => ({ ...p, name: e.target.value }))} placeholder="Nome do atleta" /></div>
+                    <div><label style={lbl}>{L('Nome completo *', 'Full name *', 'Nombre completo *')}</label><input style={inputSt} value={newAth.name} onChange={e => setNewAth(p => ({ ...p, name: e.target.value }))} placeholder={L('Nome do atleta', "Athlete's name", 'Nombre del atleta')} /></div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                      <div><label style={lbl}>Nº camisa</label><input style={inputSt} type="number" value={newAth.jersey_number} onChange={e => setNewAth(p => ({ ...p, jersey_number: e.target.value }))} placeholder="10" /></div>
+                      <div><label style={lbl}>{L('Nº camisa', 'Jersey no.', 'Nº camiseta')}</label><input style={inputSt} type="number" value={newAth.jersey_number} onChange={e => setNewAth(p => ({ ...p, jersey_number: e.target.value }))} placeholder="10" /></div>
                       <div>
-                        <label style={lbl}>Categoria</label>
+                        <label style={lbl}>{L('Categoria', 'Category', 'Categoría')}</label>
                         <select style={selectSt} value={newAth.category} onChange={e => setNewAth(p => ({ ...p, category: e.target.value }))}>
-                          <option value="" style={{ background: '#ffffff' }}>Selecionar...</option>
+                          <option value="" style={{ background: '#ffffff' }}>{L('Selecionar...', 'Select...', 'Seleccionar...')}</option>
                           {registeredCats.map(c => <option key={c} value={c} style={{ background: '#ffffff' }}>{c}</option>)}
                         </select>
                       </div>
                     </div>
-                    <div><label style={lbl}>E-mail</label><input style={inputSt} type="email" value={newAth.email} onChange={e => setNewAth(p => ({ ...p, email: e.target.value }))} placeholder="email@atleta.com" /></div>
+                    <div><label style={lbl}>{L('E-mail', 'Email', 'Correo')}</label><input style={inputSt} type="email" value={newAth.email} onChange={e => setNewAth(p => ({ ...p, email: e.target.value }))} placeholder="email@atleta.com" /></div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                      <div><label style={lbl}>Nascimento</label><input style={inputSt} type="date" value={newAth.birth_date} onChange={e => setNewAth(p => ({ ...p, birth_date: e.target.value }))} /></div>
-                      <div><label style={lbl}>CPF / Passaporte</label><input style={inputSt} value={newAth.document} onChange={e => setNewAth(p => ({ ...p, document: e.target.value }))} placeholder="000.000.000-00" /></div>
+                      <div><label style={lbl}>{L('Nascimento', 'Date of birth', 'Nacimiento')}</label><input style={inputSt} type="date" value={newAth.birth_date} onChange={e => setNewAth(p => ({ ...p, birth_date: e.target.value }))} /></div>
+                      <div><label style={lbl}>{L('CPF / Passaporte', 'Tax ID / Passport', 'CPF / Pasaporte')}</label><input style={inputSt} value={newAth.document} onChange={e => setNewAth(p => ({ ...p, document: e.target.value }))} placeholder="000.000.000-00" /></div>
                     </div>
                   </div>
                   {athError && <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(255,68,68,.1)', border: '1px solid rgba(255,68,68,.2)', fontSize: 12, color: '#ff8888', marginBottom: 10 }}>{athError}</div>}
                   <button type="submit" disabled={athSaving} style={{ ...btnPrimary(GREEN, '#fff'), width: '100%', justifyContent: 'center' }}>
-                    {athSaving ? 'Salvando...' : '✓ Adicionar atleta'}
+                    {athSaving ? L('Salvando...', 'Saving...', 'Guardando...') : L('✓ Adicionar atleta', '✓ Add athlete', '✓ Agregar atleta')}
                   </button>
                 </form>
               </div>
             )}
 
             {athLoading ? (
-              <div style={{ textAlign: 'center', padding: 40, color: 'rgba(15,23,42,.3)', fontSize: 13 }}>Carregando...</div>
+              <div style={{ textAlign: 'center', padding: 40, color: 'rgba(15,23,42,.3)', fontSize: 13 }}>{L('Carregando...', 'Loading...', 'Cargando...')}</div>
             ) : athletes.length === 0 ? (
               <div style={{ ...card({ textAlign: 'center', padding: '40px 24px' }) }}>
                 <div style={{ fontSize: 40, marginBottom: 12 }}>👥</div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: 'rgba(15,23,42,.5)', marginBottom: 6 }}>Nenhum atleta cadastrado</div>
-                <div style={{ fontSize: 13, color: 'rgba(15,23,42,.3)' }}>Clique em "+ Atleta" para começar.</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: 'rgba(15,23,42,.5)', marginBottom: 6 }}>{L('Nenhum atleta cadastrado', 'No athletes registered', 'Ningún atleta registrado')}</div>
+                <div style={{ fontSize: 13, color: 'rgba(15,23,42,.3)' }}>{L('Clique em "+ Atleta" para começar.', 'Click "+ Athlete" to start.', 'Haz clic en "+ Atleta" para empezar.')}</div>
               </div>
             ) : (
               <>
                 {/* ── Contadores por categoria — clicáveis ── */}
                 <div style={{ marginBottom: 6 }}>
-                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 10 }}>
-                    Atletas por categoria — clique para filtrar
+                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.72)', marginBottom: 10 }}>
+                    {L('Atletas por categoria — clique para filtrar', 'Athletes by category — click to filter', 'Atletas por categoría — clic para filtrar')}
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: `repeat(${registeredCats.length + 1}, 1fr)`, gap: 8, marginBottom: 8 }}>
                     {registeredCats.map(c => {
@@ -1375,14 +1738,14 @@ export default function TimesPortalPage() {
                           {st !== 'empty' && (
                             <div style={{ position: 'absolute', top: 8, right: 8, width: 7, height: 7, borderRadius: '50%', background: cc }} />
                           )}
-                          <div style={{ fontSize: isMobile ? 20 : 26, fontWeight: 900, color: st === 'empty' ? 'rgba(15,23,42,.2)' : cc, lineHeight: 1 }}>{n}</div>
-                          <div style={{ fontSize: isMobile ? 8 : 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: st === 'empty' ? 'rgba(15,23,42,.22)' : 'rgba(15,23,42,.7)', lineHeight: 1.3 }}>{c}</div>
+                          <div style={{ fontSize: isMobile ? 20 : 26, fontWeight: 900, color: st === 'empty' ? 'rgba(15,23,42,.4)' : cc, lineHeight: 1 }}>{n}</div>
+                          <div style={{ fontSize: isMobile ? 8 : 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: st === 'empty' ? 'rgba(15,23,42,.68)' : 'rgba(15,23,42,.92)', lineHeight: 1.3 }}>{c}</div>
                           {st !== 'empty' && (
                             <div style={{ fontSize: 9, fontWeight: 800, color: cc, letterSpacing: .5 }}>
-                              {st === 'ok' ? `${ic} ${MIN_ATH}–${MAX_ATH}` : st === 'low' ? `${ic} mín. ${MIN_ATH}` : `${ic} máx. ${MAX_ATH}`}
+                              {st === 'ok' ? `${ic} ${MIN_ATH}–${MAX_ATH}` : st === 'low' ? `${ic} ${L('mín.','min.','mín.')} ${MIN_ATH}` : `${ic} ${L('máx.','max.','máx.')} ${MAX_ATH}`}
                             </div>
                           )}
-                          {st === 'empty' && <div style={{ fontSize: 9, color: 'rgba(15,23,42,.18)', letterSpacing: .5 }}>não inscrita</div>}
+                          {st === 'empty' && <div style={{ fontSize: 9, color: 'rgba(15,23,42,.68)', letterSpacing: .5 }}>{L('não inscrita', 'not entered', 'no inscrita')}</div>}
                         </button>
                       );
                     })}
@@ -1396,15 +1759,15 @@ export default function TimesPortalPage() {
                       boxShadow: catFilter === 'all' ? `0 4px 18px ${ACCENT}25` : 'none',
                     }}>
                       <div style={{ fontSize: isMobile ? 20 : 26, fontWeight: 900, color: catFilter === 'all' ? ACCENT : 'rgba(15,23,42,.6)', lineHeight: 1 }}>{athletes.length}</div>
-                      <div style={{ fontSize: isMobile ? 8 : 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: 'rgba(15,23,42,.5)', lineHeight: 1.3 }}>Total</div>
-                      <div style={{ fontSize: 9, color: 'rgba(15,23,42,.3)', letterSpacing: .5 }}>ver todos</div>
+                      <div style={{ fontSize: isMobile ? 8 : 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: 'rgba(15,23,42,.7)', lineHeight: 1.3 }}>{L('Total', 'Total', 'Total')}</div>
+                      <div style={{ fontSize: 9, color: 'rgba(15,23,42,.65)', letterSpacing: .5 }}>{L('ver todos', 'view all', 'ver todos')}</div>
                     </button>
                   </div>
 
                   {/* Legenda de regras */}
                   <div style={{ display: 'flex', gap: 14, padding: '10px 14px', borderRadius: 10, background: 'rgba(15,23,42,.06)', border: '1px solid rgba(15,23,42,.12)', flexWrap: 'wrap' }}>
-                    {[[GREEN, `✓ OK (${MIN_ATH}–${MAX_ATH} atletas)`], ['#f97316', `⚠️ Faltam atletas (mín. ${MIN_ATH})`], ['#ff4444', `🚫 Excede limite (máx. ${MAX_ATH})`]].map(([c, txt]) => (
-                      <span key={txt} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>
+                    {[[GREEN, `✓ ${L('OK', 'OK', 'OK')} (${MIN_ATH}–${MAX_ATH} ${L('atletas','athletes','atletas')})`], ['#f97316', `⚠️ ${L(`Faltam atletas (mín. ${MIN_ATH})`, `Need more athletes (min. ${MIN_ATH})`, `Faltan atletas (mín. ${MIN_ATH})`)}`], ['#ff4444', `🚫 ${L(`Excede limite (máx. ${MAX_ATH})`, `Over the limit (max. ${MAX_ATH})`, `Excede el límite (máx. ${MAX_ATH})`)}`]].map(([c, txt]) => (
+                      <span key={txt} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 700, color: 'rgba(15,23,42,.85)' }}>
                         <span style={{ width: 8, height: 8, borderRadius: '50%', background: c, display: 'inline-block', flexShrink: 0 }} />{txt}
                       </span>
                     ))}
@@ -1415,26 +1778,26 @@ export default function TimesPortalPage() {
                 {catFilter !== 'all' && (
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderRadius: 10, background: catColor(catFilter) + '10', border: `1px solid ${catColor(catFilter)}25`, marginBottom: 10 }}>
                     <span style={{ fontSize: 13, fontWeight: 800, color: catColor(catFilter) }}>
-                      {catIcon(catFilter)} {catFilter} — {athByCat[catFilter]?.length || 0} atleta{(athByCat[catFilter]?.length || 0) !== 1 ? 's' : ''}
-                      {catStatus(catFilter) === 'low' && <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(15,23,42,.5)', marginLeft: 8 }}>({MIN_ATH - (athByCat[catFilter]?.length||0)} faltando)</span>}
-                      {catStatus(catFilter) === 'over' && <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(15,23,42,.5)', marginLeft: 8 }}>({(athByCat[catFilter]?.length||0) - MAX_ATH} além do limite)</span>}
+                      {catIcon(catFilter)} {catFilter} — {athByCat[catFilter]?.length || 0} {L((athByCat[catFilter]?.length || 0) !== 1 ? 'atletas' : 'atleta', (athByCat[catFilter]?.length || 0) !== 1 ? 'athletes' : 'athlete', (athByCat[catFilter]?.length || 0) !== 1 ? 'atletas' : 'atleta')}
+                      {catStatus(catFilter) === 'low' && <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(15,23,42,.5)', marginLeft: 8 }}>({MIN_ATH - (athByCat[catFilter]?.length||0)} {L('faltando','missing','faltan')})</span>}
+                      {catStatus(catFilter) === 'over' && <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(15,23,42,.5)', marginLeft: 8 }}>({(athByCat[catFilter]?.length||0) - MAX_ATH} {L('além do limite','over the limit','sobre el límite')})</span>}
                     </span>
-                    <button onClick={() => setCatFilter('all')} style={{ fontSize: 11, fontWeight: 800, color: 'rgba(15,23,42,.35)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>✕ Limpar filtro</button>
+                    <button onClick={() => setCatFilter('all')} style={{ fontSize: 11, fontWeight: 800, color: 'rgba(15,23,42,.35)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>{L('✕ Limpar filtro', '✕ Clear filter', '✕ Limpiar filtro')}</button>
                   </div>
                 )}
 
                 {/* Enviar escalação */}
                 {lineupMsg && (
-                  <div style={{ padding: '12px 16px', borderRadius: 12, background: lineupMsg.includes('sucesso') ? `${GREEN}10` : 'rgba(255,68,68,.1)', border: `1px solid ${lineupMsg.includes('sucesso') ? GREEN + '30' : 'rgba(255,68,68,.25)'}`, fontSize: 13, fontWeight: 600, color: lineupMsg.includes('sucesso') ? GREEN : '#ff8888', marginBottom: 12 }}>
-                    {lineupMsg}
+                  <div style={{ padding: '12px 16px', borderRadius: 12, background: lineupMsg.ok ? `${GREEN}10` : 'rgba(255,68,68,.1)', border: `1px solid ${lineupMsg.ok ? GREEN + '30' : 'rgba(255,68,68,.25)'}`, fontSize: 13, fontWeight: 600, color: lineupMsg.ok ? GREEN : '#ff8888', marginBottom: 12 }}>
+                    {lineupMsg.text}
                   </div>
                 )}
                 {lineupSubmitted ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 18px', borderRadius: 14, background: `${GREEN}0a`, border: `1px solid ${GREEN}25`, marginBottom: 14 }}>
                     <span style={{ fontSize: 22 }}>✅</span>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 800, color: GREEN }}>Escalação enviada!</div>
-                      <div style={{ fontSize: 12, color: 'rgba(15,23,42,.4)', marginTop: 2 }}>A organização recebeu seu roster com {athletes.length} atleta{athletes.length !== 1 ? 's' : ''}.</div>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: GREEN }}>{L('Escalação enviada!', 'Lineup submitted!', '¡Alineación enviada!')}</div>
+                      <div style={{ fontSize: 12, color: 'rgba(15,23,42,.4)', marginTop: 2 }}>{L(`A organização recebeu seu roster com ${athletes.length} atleta${athletes.length !== 1 ? 's' : ''}.`, `The organization received your roster with ${athletes.length} athlete${athletes.length !== 1 ? 's' : ''}.`, `La organización recibió tu roster con ${athletes.length} atleta${athletes.length !== 1 ? 's' : ''}.`)}</div>
                     </div>
                   </div>
                 ) : (
@@ -1443,24 +1806,24 @@ export default function TimesPortalPage() {
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
                           <span style={{ fontSize: 13, fontWeight: 800, color: INK }}>
-                            {lineupBlocked ? '⚠️ Escalação incompleta' : '🏈 Pronto para enviar sua escalação?'}
+                            {lineupBlocked ? L('⚠️ Escalação incompleta', '⚠️ Incomplete lineup', '⚠️ Alineación incompleta') : L('🏈 Pronto para enviar sua escalação?', '🏈 Ready to submit your lineup?', '🏈 ¿Listo para enviar tu alineación?')}
                           </span>
                           <span style={{ fontSize: 10, fontWeight: 800, padding: '3px 9px', borderRadius: 7, background: 'rgba(255,180,0,.12)', color: '#ffb400', border: '1px solid rgba(255,180,0,.25)', letterSpacing: .5, whiteSpace: 'nowrap' }}>
-                            📅 Prazo: 20/10
+                            📅 {L('Prazo', 'Deadline', 'Plazo')}: 30/09
                           </span>
                         </div>
-                        <div style={{ fontSize: 12, color: 'rgba(15,23,42,.45)', lineHeight: 1.5 }}>
+                        <div style={{ fontSize: 12, color: 'rgba(15,23,42,.62)', lineHeight: 1.5 }}>
                           {lineupBlocked
-                            ? lineupBlockReason || 'Corrija as categorias antes de enviar.'
-                            : `Confirme que todos os atletas estão cadastrados. ${activeCats.map(c=>`${c}: ${athByCat[c].length}`).join(' · ')}`}
+                            ? lineupBlockReason || L('Corrija as categorias antes de enviar.', 'Fix the categories before submitting.', 'Corrige las categorías antes de enviar.')
+                            : `${L('Confirme que todos os atletas estão cadastrados.', 'Confirm that all athletes are registered.', 'Confirma que todos los atletas están registrados.')} ${activeCats.map(c=>`${c}: ${athByCat[c].length}`).join(' · ')}`}
                         </div>
                       </div>
                       <button
                         onClick={submitLineup}
                         disabled={sendingLineup || athletes.length === 0 || lineupBlocked}
-                        title={lineupBlocked ? lineupBlockReason : 'Enviar escalação'}
+                        title={lineupBlocked ? lineupBlockReason : L('Enviar escalação', 'Submit lineup', 'Enviar alineación')}
                         style={{ ...btnPrimary(lineupBlocked ? 'rgba(255,68,68,.2)' : YELLOW, lineupBlocked ? '#ff8888' : '#fff'), flexShrink: 0, justifyContent: 'center', opacity: lineupBlocked ? 1 : 1, cursor: lineupBlocked ? 'not-allowed' : 'pointer', border: lineupBlocked ? '1px solid rgba(255,68,68,.3)' : 'none' }}>
-                        {sendingLineup ? 'Enviando...' : lineupBlocked ? '🔒 Bloqueado' : '✅ Enviar Escalação'}
+                        {sendingLineup ? L('Enviando...', 'Sending...', 'Enviando...') : lineupBlocked ? L('🔒 Bloqueado', '🔒 Blocked', '🔒 Bloqueado') : L('✅ Enviar Escalação', '✅ Submit Lineup', '✅ Enviar Alineación')}
                       </button>
                     </div>
                     {lineupBlocked && (
@@ -1469,7 +1832,7 @@ export default function TimesPortalPage() {
                           const n = athByCat[c].length; const st = catStatus(c);
                           return (
                             <button key={c} onClick={() => setCatFilter(c)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, background: catColor(c) + '12', border: `1px solid ${catColor(c)}30`, cursor: 'pointer', fontFamily: 'inherit', color: catColor(c), fontSize: 11, fontWeight: 800 }}>
-                              {st === 'low' ? `${c}: ${n}/${MIN_ATH} (faltam ${MIN_ATH-n})` : `${c}: ${n}/${MAX_ATH} (remover ${n-MAX_ATH})`}
+                              {st === 'low' ? `${c}: ${n}/${MIN_ATH} (${L(`faltam ${MIN_ATH-n}`, `${MIN_ATH-n} missing`, `faltan ${MIN_ATH-n}`)})` : `${c}: ${n}/${MAX_ATH} (${L(`remover ${n-MAX_ATH}`, `remove ${n-MAX_ATH}`, `quitar ${n-MAX_ATH}`)})`}
                             </button>
                           );
                         })}
@@ -1482,7 +1845,7 @@ export default function TimesPortalPage() {
                 {isMobile ? (
                   <div>
                     {visibleAthletes.map(a => (
-                      <AthleteCard key={a.id} a={a} onEdit={setEditingAth} onDelete={deleteAthlete} deletingId={deletingId} />
+                      <AthleteCard key={a.id} a={a} onEdit={setEditingAth} onDelete={deleteAthlete} deletingId={deletingId} L={L} />
                     ))}
                   </div>
                 ) : (
@@ -1498,8 +1861,8 @@ export default function TimesPortalPage() {
                       </colgroup>
                       <thead>
                         <tr style={{ borderBottom: '1px solid rgba(15,23,42,.06)', background: 'rgba(15,23,42,.015)' }}>
-                          {['#', 'Nome', 'Categoria', 'E-mail', 'Portal', ''].map(h => (
-                            <th key={h} style={{ padding: '11px 14px', textAlign: 'left', fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(15,23,42,.22)' }}>{h}</th>
+                          {['#', L('Nome','Name','Nombre'), L('Categoria','Category','Categoría'), L('E-mail','Email','Correo'), 'Portal', ''].map(h => (
+                            <th key={h} style={{ padding: '11px 14px', textAlign: 'left', fontSize: 10, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(15,23,42,.72)' }}>{h}</th>
                           ))}
                         </tr>
                       </thead>
@@ -1509,23 +1872,23 @@ export default function TimesPortalPage() {
                             onMouseEnter={e => e.currentTarget.style.background = 'rgba(15,23,42,.025)'}
                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                           >
-                            <td style={{ padding: '13px 14px', color: 'rgba(15,23,42,.35)', fontWeight: 700, fontSize: 12 }}>{a.jersey_number || '—'}</td>
+                            <td style={{ padding: '13px 14px', color: 'rgba(15,23,42,.72)', fontWeight: 700, fontSize: 12 }}>{a.jersey_number || '—'}</td>
                             <td style={{ padding: '13px 14px', fontWeight: 700, color: INK, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.name}</td>
                             <td style={{ padding: '13px 14px' }}>{a.category ? <span style={tag(ACCENT)}>{a.category}</span> : <span style={{ color: 'rgba(15,23,42,.2)' }}>—</span>}</td>
-                            <td style={{ padding: '13px 14px', color: 'rgba(15,23,42,.38)', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.email || '—'}</td>
-                            <td style={{ padding: '10px 14px', verticalAlign: 'middle' }}><PortalBadge a={a} /></td>
+                            <td style={{ padding: '13px 14px', color: 'rgba(15,23,42,.72)', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.email || '—'}</td>
+                            <td style={{ padding: '10px 14px', verticalAlign: 'middle' }}><PortalBadge a={a} L={L} /></td>
                             <td style={{ padding: '13px 10px' }}>
                               <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
                                 <button
                                   onClick={() => setEditingAth(a)}
-                                  title="Editar"
+                                  title={L('Editar', 'Edit', 'Editar')}
                                   style={{ width: 30, height: 30, borderRadius: 8, border: `1px solid ${ACCENT}35`, background: `${ACCENT}10`, color: ACCENT, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                   ✎
                                 </button>
                                 <button
                                   onClick={() => deleteAthlete(a.id)}
                                   disabled={deletingId === a.id}
-                                  title="Excluir"
+                                  title={L('Excluir', 'Delete', 'Eliminar')}
                                   style={{ width: 30, height: 30, borderRadius: 8, border: '1px solid rgba(255,68,68,.2)', background: 'rgba(255,68,68,.07)', color: '#ff6666', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                   {deletingId === a.id ? '…' : '✕'}
                                 </button>
@@ -1545,20 +1908,91 @@ export default function TimesPortalPage() {
         {/* ══════ TAB CAMPEONATO ══════ */}
         {tab === 'campeonato' && (
           <div style={{ ...card(), padding: cpad }}>
-            <div style={{ display: 'flex', gap: 6, marginBottom: 16, overflowX: 'auto', paddingBottom: 2 }}>
-              {[{ key: 'schedule', label: '🗓 Próximos' }, { key: 'results', label: '📊 Resultados' }, { key: 'venue', label: '🗺️ Venue' }].map(t => (
-                <button key={t.key} onClick={() => setGamesTab(t.key)} style={{ padding: '9px 14px', borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: isMobile ? 12 : 13, fontWeight: 700, whiteSpace: 'nowrap', background: gamesTab === t.key ? ACCENT : 'rgba(15,23,42,.05)', color: gamesTab === t.key ? '#fff' : 'rgba(15,23,42,.4)', transition: 'all .15s' }}>{t.label}</button>
+            <div className="tabScroll" style={{ display: 'flex', gap: 6, marginBottom: 16, paddingBottom: 2 }}>
+              {[{ key: 'schedule', label: L('Próximos', 'Upcoming', 'Próximos') }, { key: 'results', label: L('Resultados', 'Results', 'Resultados') }, { key: 'venue', label: L('Venue', 'Venue', 'Sede') }].map(t => (
+                <button key={t.key} onClick={() => setGamesTab(t.key)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px', borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: isMobile ? 12 : 13, fontWeight: 700, whiteSpace: 'nowrap', background: gamesTab === t.key ? ACCENT : 'rgba(15,23,42,.05)', color: gamesTab === t.key ? '#fff' : 'rgba(15,23,42,.4)', transition: 'all .15s' }}><TabIcon name={t.key} size={15} /> {t.label}</button>
               ))}
             </div>
 
-            {gamesLoading && <div style={{ textAlign: 'center', padding: 40, color: 'rgba(15,23,42,.3)', fontSize: 13 }}>Carregando...</div>}
+            {(() => {
+              const all = teamScorers || [];
+              const mine = all.filter(s => (s.team_name || '') === (team.club_name || ''));
+              const mono = (name, sz = 26) => {
+                const init = (name || '?').split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+                return <span style={{ width: sz, height: sz, borderRadius: 7, background: '#0f172a', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: Math.round(sz * 0.38), fontWeight: 900, flexShrink: 0, letterSpacing: -.5 }}>{init}</span>;
+              };
+              // avatar da foto do atleta (círculo) — fallback monograma
+              const avatar = (name, photo, sz = 26) => photo
+                ? <img src={photo} alt="" style={{ width: sz, height: sz, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, background: '#e2e8f0', border: '1px solid rgba(15,23,42,.1)' }} />
+                : mono(name, sz);
+              // logo do time (quadrado arredondado) — fallback monograma
+              const teamLogo = (name, logo, sz = 26) => logo
+                ? <img src={logo} alt="" style={{ width: sz, height: sz, borderRadius: 7, objectFit: 'contain', flexShrink: 0, background: '#fff', border: '1px solid rgba(15,23,42,.1)' }} />
+                : mono(name, sz);
+              const row = (s, i, mineHighlight) => (
+                <div key={(s.athlete_id || s.name) + '-' + i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 9, background: mineHighlight && (s.team_name === team.club_name) ? `${GREEN}12` : (i % 2 ? 'rgba(15,23,42,.04)' : 'transparent') }}>
+                  <span style={{ width: 22, fontSize: 13, fontWeight: 900, color: i < 3 ? '#b45309' : '#334155' }}>{['🥇', '🥈', '🥉'][i] || (i + 1)}</span>
+                  {avatar(s.name, s.photo, 26)}
+                  <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: '#0f172a' }}>{s.jersey != null && s.jersey !== '' ? <span style={{ color: '#64748b', fontSize: 11, marginRight: 6 }}>#{s.jersey}</span> : null}{s.name}</span>
+                  {mineHighlight && <span style={{ fontSize: 10.5, color: '#475569', fontWeight: 600, marginRight: 6, maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.team_name}</span>}
+                  {!mineHighlight && s.category && <span style={{ fontSize: 10.5, color: '#475569', fontWeight: 600, marginRight: 6 }}>{s.category}</span>}
+                  <span style={{ fontSize: 15, fontWeight: 900, color: GREEN }}>{s.points}</span>
+                </div>
+              );
+              const STAT_DEFS = [
+                ['TD', 'td'], [L('Conv 1', 'Conv 1', 'Conv 1'), 'conv1'], [L('Conv 2', 'Conv 2', 'Conv 2'), 'conv2'],
+                [L('Int TD', 'Int TD', 'Int TD'), 'int_td'], ['Safety', 'safety'],
+                [L('Conv 1 ret.', 'Ret. Conv 1', 'Conv 1 ret.'), 'int_conv1'], [L('Conv 2 ret.', 'Ret. Conv 2', 'Conv 2 ret.'), 'int_conv2'],
+              ];
+              const detailRow = (s, i) => (
+                <div key={(s.athlete_id || s.name) + '-d' + i} style={{ padding: '12px 14px', borderRadius: 12, background: 'rgba(15,23,42,.03)', border: '1px solid rgba(15,23,42,.1)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                    {avatar(s.name, s.photo, 34)}
+                    <span style={{ flex: 1, fontSize: 14, fontWeight: 800, color: '#0f172a' }}>{s.jersey != null && s.jersey !== '' ? <span style={{ color: '#64748b', fontSize: 11, marginRight: 6 }}>#{s.jersey}</span> : null}{s.name}</span>
+                    {s.category && <span style={{ fontSize: 10.5, color: '#475569', fontWeight: 600 }}>{s.category}</span>}
+                    <span style={{ fontSize: 16, fontWeight: 900, color: GREEN }}>{s.points} <span style={{ fontSize: 9, color: '#64748b', fontWeight: 700 }}>PTS</span></span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(56px, 1fr))', gap: 6 }}>
+                    {STAT_DEFS.map(([lb, k]) => (
+                      <div key={k} style={{ textAlign: 'center', padding: '6px 4px', borderRadius: 8, background: (s[k] || 0) > 0 ? `${ACCENT}14` : '#f1f5f9', border: '1px solid rgba(15,23,42,.1)' }}>
+                        <div style={{ fontSize: 15, fontWeight: 900, color: (s[k] || 0) > 0 ? '#0f172a' : '#94a3b8' }}>{s[k] || 0}</div>
+                        <div style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: .3, color: '#475569', marginTop: 2, lineHeight: 1.15 }}>{lb}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+              const secHead = { fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#334155', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 };
+              const emptyTxt = { fontSize: 13, color: '#64748b' };
+              return (
+                <>
+                  {/* Estatísticas dos atletas do time */}
+                  <div style={{ ...card({ padding: '16px 18px' }), marginBottom: 14 }}>
+                    <div style={secHead}>{teamLogo(team.club_name, team.logo_url, 24)} 📊 {L('Estatísticas do time', 'Team statistics', 'Estadísticas del equipo')} · {team.club_name}</div>
+                    {teamScorers === null ? <div style={emptyTxt}>{L('Carregando...', 'Loading...', 'Cargando...')}</div>
+                      : mine.length === 0 ? <div style={emptyTxt}>{L('Nenhum atleta do seu time pontuou ainda. Aparece aqui após os jogos.', 'No athlete from your team has scored yet. It shows up here after the games.', 'Ningún atleta de tu equipo ha anotado aún. Aparece aquí tras los juegos.')}</div>
+                      : <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{mine.slice(0, 20).map((s, i) => detailRow(s, i))}</div>}
+                  </div>
+
+                  {/* Ranking geral */}
+                  <div style={{ ...card({ padding: '16px 18px' }), marginBottom: 14 }}>
+                    <div style={secHead}>🏆 {L('Ranking geral', 'Overall ranking', 'Ranking general')}</div>
+                    {teamScorers === null ? <div style={emptyTxt}>{L('Carregando...', 'Loading...', 'Cargando...')}</div>
+                      : all.length === 0 ? <div style={emptyTxt}>{L('Sem pontuações registradas ainda.', 'No scoring recorded yet.', 'Sin puntuaciones registradas aún.')}</div>
+                      : <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>{all.slice(0, 10).map((s, i) => row(s, i, true))}</div>}
+                  </div>
+                </>
+              );
+            })()}
+
+            {gamesLoading && <div style={{ textAlign: 'center', padding: 40, color: 'rgba(15,23,42,.3)', fontSize: 13 }}>{L('Carregando...', 'Loading...', 'Cargando...')}</div>}
 
             {!gamesLoading && gamesTab === 'schedule' && (
               upcomingGames.length === 0
                 ? <div style={{ ...card({ textAlign: 'center', padding: 48 }) }}>
                     <div style={{ fontSize: 40, marginBottom: 12 }}>🗓</div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: 'rgba(15,23,42,.5)', marginBottom: 8 }}>Tabela de jogos em breve</div>
-                    <div style={{ fontSize: 13, color: 'rgba(15,23,42,.3)' }}>Horários divulgados após fechamento das inscrições.</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: 'rgba(15,23,42,.5)', marginBottom: 8 }}>{L('Tabela de jogos em breve', 'Match schedule coming soon', 'Calendario de partidos pronto')}</div>
+                    <div style={{ fontSize: 13, color: 'rgba(15,23,42,.3)' }}>{L('Horários divulgados após fechamento das inscrições.', 'Times released after registrations close.', 'Horarios divulgados tras el cierre de inscripciones.')}</div>
                   </div>
                 : <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {upcomingGames.map(g => {
@@ -1581,6 +2015,9 @@ export default function TimesPortalPage() {
                                 {g.category && <span style={tag(ACCENT)}>{g.category}</span>}
                                 {g.phase && g.phase !== 'group' && <span style={tag(YELLOW)}>{PHASE_LABELS[g.phase]}</span>}
                               </div>
+                              {Array.isArray(g.referees) && g.referees.length > 0 && (
+                                <div style={{ marginTop: 6, fontSize: 10.5, color: 'rgba(15,23,42,.4)' }}>🧑‍⚖️ {g.referees.map(r => r.name).join(', ')}</div>
+                              )}
                             </div>
                             <div style={{ textAlign: isMobile ? 'left' : 'right', fontSize: 12, color: 'rgba(15,23,42,.4)', whiteSpace: 'nowrap' }}>
                               📍 {g.field || 'TBD'}
@@ -1596,13 +2033,13 @@ export default function TimesPortalPage() {
               finishedGames.length === 0
                 ? <div style={{ ...card({ textAlign: 'center', padding: 48 }) }}>
                     <div style={{ fontSize: 40, marginBottom: 12 }}>📊</div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>Nenhum resultado ainda</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>{L('Nenhum resultado ainda', 'No results yet', 'Ningún resultado aún')}</div>
                   </div>
                 : <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {finishedGames.map(g => {
                       const { me, ms, os, result } = myResult(g);
                       const rc = result === 'win' ? GREEN : result === 'loss' ? '#ff4444' : YELLOW;
-                      const rl = result === 'win' ? 'Vitória' : result === 'loss' ? 'Derrota' : 'Empate';
+                      const rl = result === 'win' ? L('Vitória','Win','Victoria') : result === 'loss' ? L('Derrota','Loss','Derrota') : L('Empate','Draw','Empate');
                       return (
                         <div key={g.id} style={{ ...card({ padding: cpad }), borderLeft: `4px solid ${rc}` }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -1623,7 +2060,7 @@ export default function TimesPortalPage() {
                       const d = finishedGames.filter(g => myResult(g).result === 'draw').length;
                       return (
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, marginTop: 4 }}>
-                          {[['Vitórias', w, GREEN],['Derrotas', l,'#ff4444'],['Empates', d, YELLOW],['Jogos', finishedGames.length, INK]].map(([k,v,c]) => (
+                          {[[L('Vitórias','Wins','Victorias'), w, GREEN],[L('Derrotas','Losses','Derrotas'), l,'#ff4444'],[L('Empates','Draws','Empates'), d, YELLOW],[L('Jogos','Games','Partidos'), finishedGames.length, INK]].map(([k,v,c]) => (
                             <div key={k} style={miniCard({ textAlign: 'center' })}>
                               <div style={{ fontSize: 20, fontWeight: 900, color: c }}>{v}</div>
                               <div style={{ fontSize: 9, color: 'rgba(15,23,42,.3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>{k}</div>
@@ -1638,16 +2075,16 @@ export default function TimesPortalPage() {
             {!gamesLoading && gamesTab === 'venue' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div style={{ ...card({ padding: cpad }) }}>
-                  <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 12 }}>🗺️ Mapa do Venue</div>
+                  <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 12 }}>🗺️ {L('Mapa do Venue', 'Venue Map', 'Mapa de la Sede')}</div>
                   <VenueMap />
                 </div>
                 {[
-                  { icon: '🔥', title: 'Aquecimento', text: '45 min antes de cada jogo. Localização no mapa do venue.' },
-                  { icon: '🚿', title: 'Vestiários', text: 'Disponíveis com chuveiros para todos os times.' },
-                  { icon: '🏥', title: 'Suporte médico', text: 'Equipe médica presente todos os dias. Posto de primeiros socorros no mapa.' },
-                  { icon: '📞', title: 'Emergências', text: 'Contato de emergência fornecido no guia do participante.' },
-                  { icon: '🍽️', title: 'Alimentação', text: 'Praça de alimentação no venue + lista de restaurantes no guia.' },
-                  { icon: '🅿️', title: 'Estacionamento', text: 'Disponível no venue. Instruções enviadas com o guia.' },
+                  { icon: '🔥', title: L('Aquecimento','Warm-up','Calentamiento'), text: L('45 min antes de cada jogo. Localização no mapa do venue.', '45 min before each game. Location on the venue map.', '45 min antes de cada partido. Ubicación en el mapa de la sede.') },
+                  { icon: '🚿', title: L('Vestiários','Locker rooms','Vestuarios'), text: L('Disponíveis com chuveiros para todos os times.', 'Available with showers for all teams.', 'Disponibles con duchas para todos los equipos.') },
+                  { icon: '🏥', title: L('Suporte médico','Medical support','Soporte médico'), text: L('Equipe médica presente todos os dias. Posto de primeiros socorros no mapa.', 'Medical team present every day. First-aid post on the map.', 'Equipo médico presente todos los días. Puesto de primeros auxilios en el mapa.') },
+                  { icon: '📞', title: L('Emergências','Emergencies','Emergencias'), text: L('Contato de emergência fornecido no guia do participante.', 'Emergency contact provided in the participant guide.', 'Contacto de emergencia en la guía del participante.') },
+                  { icon: '🍽️', title: L('Alimentação','Food','Alimentación'), text: L('Praça de alimentação no venue + lista de restaurantes no guia.', 'Food court at the venue + list of restaurants in the guide.', 'Zona de comidas en la sede + lista de restaurantes en la guía.') },
+                  { icon: '🅿️', title: L('Estacionamento','Parking','Estacionamiento'), text: L('Disponível no venue. Instruções enviadas com o guia.', 'Available at the venue. Instructions sent with the guide.', 'Disponible en la sede. Instrucciones enviadas con la guía.') },
                 ].map(i => (
                   <div key={i.title} style={{ ...card({ display: 'flex', gap: 14, padding: cpad }) }}>
                     <div style={{ fontSize: 22, flexShrink: 0 }}>{i.icon}</div>
@@ -1666,15 +2103,91 @@ export default function TimesPortalPage() {
         {tab === 'informacoes' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
+            {/* Destaque: prazos de confirmação */}
+            <div style={{ borderRadius: 16, padding: '18px 20px', background: '#eff6ff', border: '1px solid #bfdbfe' }}>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: ACCENT, marginBottom: 10 }}>📌 {L('Prazos para confirmar a inscrição', 'Deadlines to confirm registration', 'Plazos para confirmar la inscripción')}</div>
+              <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 12 }}>
+                <div style={{ flex: 1, background: '#fff', border: '1px solid #dbeafe', borderRadius: 12, padding: '12px 14px' }}>
+                  <div style={{ fontSize: 14, fontWeight: 900, color: '#1e3a8a', marginBottom: 3 }}>{L('07/07 a 12/07', 'Jul 7–12', '07/07 al 12/07')}</div>
+                  <div style={{ fontSize: 12.5, color: 'rgba(15,23,42,.6)', lineHeight: 1.5 }} dangerouslySetInnerHTML={{ __html: L('Prioridade para times <strong>já pré-inscritos</strong> confirmarem a inscrição.', 'Priority for <strong>already pre-registered</strong> teams to confirm.', 'Prioridad para equipos <strong>ya pre-inscritos</strong> para confirmar.') }} />
+                </div>
+                <div style={{ flex: 1, background: '#fff', border: '1px solid #dbeafe', borderRadius: 12, padding: '12px 14px' }}>
+                  <div style={{ fontSize: 14, fontWeight: 900, color: '#1e3a8a', marginBottom: 3 }}>{L('13/07 a 20/07', 'Jul 13–20', '13/07 al 20/07')}</div>
+                  <div style={{ fontSize: 12.5, color: 'rgba(15,23,42,.6)', lineHeight: 1.5 }} dangerouslySetInnerHTML={{ __html: L('Aberto para <strong>qualquer time</strong> confirmar a inscrição.', 'Open for <strong>any team</strong> to confirm.', 'Abierto para <strong>cualquier equipo</strong> para confirmar.') }} />
+                </div>
+              </div>
+              <div style={{ marginTop: 10, fontSize: 12, color: 'rgba(15,23,42,.55)', lineHeight: 1.5 }} dangerouslySetInnerHTML={{ __html: L('As vagas são preenchidas por <strong>ordem de pagamento da 1ª parcela</strong>.', 'Spots are filled in <strong>order of 1st installment payment</strong>.', 'Los cupos se llenan por <strong>orden de pago de la 1.ª cuota</strong>.') }} />
+            </div>
+
+            {/* Valores de inscrição */}
             <div style={{ ...card(), padding: cpad }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Regulamento</div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>{L('Valores de inscrição', 'Registration fees', 'Valores de inscripción')}</div>
+              <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 12 }}>
+                <button onClick={() => { setCatChoice(Object.fromEntries(registeredCats.map(c => [c, '1']))); setTab('pagamento'); }} style={{ flex: 1, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', padding: '16px', borderRadius: 14, border: `1px solid ${YELLOW}40`, background: YELLOW + '0a' }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: YELLOW, marginBottom: 6 }}>{L('Opção 1 · Pacote', 'Option 1 · Package', 'Opción 1 · Paquete')}</div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: '#0f172a' }}>R$ 2.000 <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>{L('/categoria', '/category', '/categoría')}</span></div>
+                  <div style={{ fontSize: 12, color: 'rgba(15,23,42,.55)', marginTop: 6, lineHeight: 1.5 }}>{L('Atletas inclusos. Valor por categoria inscrita.', 'Athletes included. Price per registered category.', 'Atletas incluidos. Valor por categoría inscrita.')}</div>
+                  <div style={{ marginTop: 10, fontSize: 12, fontWeight: 800, color: YELLOW }}>{L('Inscrever com esta opção →', 'Register with this option →', 'Inscribirse con esta opción →')}</div>
+                </button>
+                <button onClick={() => { setCatChoice(Object.fromEntries(registeredCats.map(c => [c, '2']))); setTab('pagamento'); }} style={{ flex: 1, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', padding: '16px', borderRadius: 14, border: `1px solid ${ACCENT}40`, background: ACCENT + '0a' }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: ACCENT, marginBottom: 6 }}>{L('Opção 2 · Por atleta', 'Option 2 · Per athlete', 'Opción 2 · Por atleta')}</div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: '#0f172a' }}>R$ 800 <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>{L('/categoria + R$90/atleta', '/category + R$90/athlete', '/categoría + R$90/atleta')}</span></div>
+                  <div style={{ fontSize: 12, color: 'rgba(15,23,42,.55)', marginTop: 6, lineHeight: 1.5 }}>{L('R$ 800 por categoria + R$ 90 por atleta (você escolhe a quantidade).', 'R$ 800 per category + R$ 90 per athlete (you choose the amount).', 'R$ 800 por categoría + R$ 90 por atleta (tú eliges la cantidad).')}</div>
+                  <div style={{ marginTop: 10, fontSize: 12, fontWeight: 800, color: ACCENT }}>{L('Inscrever com esta opção →', 'Register with this option →', 'Inscribirse con esta opción →')}</div>
+                </button>
+              </div>
+              <div style={{ marginTop: 12, fontSize: 12, color: 'rgba(15,23,42,.5)', lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: L('Os valores são <strong>por categoria inscrita</strong>. O pagamento pode ser parcelado em até 3x (Pix ou cartão).', 'Prices are <strong>per registered category</strong>. Payment can be split into up to 3 installments (credit card or Wise transfer).', 'Los valores son <strong>por categoría inscrita</strong>. El pago puede dividirse en hasta 3 cuotas (tarjeta de crédito o transferencia Wise).') }} />
+              <button onClick={() => setTab('pagamento')} style={{ ...btnPrimary(ACCENT, '#fff'), width: '100%', justifyContent: 'center', marginTop: 14 }}>
+                🏈 {L('Inscrever minha equipe', 'Register my team', 'Inscribir mi equipo')}
+              </button>
+            </div>
+
+            {/* Parcelamento e prazos */}
+            <div style={{ ...card(), padding: cpad }}>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>{L('Parcelamento e prazos de pagamento', 'Installments & payment deadlines', 'Cuotas y plazos de pago')}</div>
+              {[[L('1ª parcela', '1st installment', '1.ª cuota'), '20/07/2026'], [L('2ª parcela', '2nd installment', '2.ª cuota'), '20/08/2026'], [L('3ª parcela', '3rd installment', '3.ª cuota'), '20/09/2026']].map(([l, d], i) => (
+                <div key={l} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '11px 0', borderBottom: i < 2 ? '1px solid rgba(15,23,42,.05)' : 'none' }}>
+                  <span style={{ fontSize: 13, color: 'rgba(15,23,42,.6)' }}>{l}</span>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: '#0f172a' }}>{d}</span>
+                </div>
+              ))}
+              <div style={{ marginTop: 12, padding: '12px 14px', borderRadius: 10, background: GREEN + '0e', border: `1px solid ${GREEN}30`, fontSize: 12.5, color: 'rgba(15,23,42,.7)', lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: L('✅ <strong>Pagando a 1ª parcela você já garante a vaga do seu time.</strong> A 1ª parcela deve ser paga até <strong>20/07/2026</strong>, o que habilita o pagamento em <strong>3x</strong>. A <strong>inscrição é confirmada após a quitação total</strong>.', '✅ <strong>Paying the 1st installment secures your spot.</strong> The 1st installment must be paid by <strong>Jul 20, 2026</strong>, enabling payment in <strong>3 installments</strong>. Registration is <strong>confirmed after full payment</strong>.', '✅ <strong>Pagando la 1.ª cuota ya aseguras el cupo de tu equipo.</strong> La 1.ª cuota debe pagarse hasta el <strong>20/07/2026</strong>, lo que habilita el pago en <strong>3 cuotas</strong>. La inscripción se <strong>confirma tras el pago total</strong>.') }} />
+            </div>
+
+            {/* Vagas por categoria */}
+            <div style={{ ...card(), padding: cpad }}>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>{L('Vagas por categoria', 'Spots per category', 'Cupos por categoría')}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: 10 }}>
+                {['Masculino', 'Feminino', 'Sub-15', 'Sub-12'].map((cat) => (
+                  <div key={cat} style={{ ...miniCard(), textAlign: 'center' }}>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 4 }}>{cat}</div>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: YELLOW, letterSpacing: .2 }}>🔥 {L('Vagas limitadas', 'Limited spots', 'Cupos limitados')}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: 12, fontSize: 12, color: 'rgba(15,23,42,.5)', lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: L('As vagas são preenchidas por <strong>ordem de pagamento da 1ª parcela</strong>. Garanta a sua o quanto antes — quando a categoria lota, as inscrições são encerradas.', 'Spots are filled in <strong>order of 1st installment payment</strong>. Secure yours early — once a category fills up, registration closes.', 'Los cupos se llenan por <strong>orden de pago de la 1.ª cuota</strong>. Asegura el tuyo cuanto antes — cuando la categoría se llena, las inscripciones se cierran.') }} />
+            </div>
+
+            {/* Datas importantes */}
+            <div style={{ ...card(), padding: cpad }}>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>{L('Datas importantes', 'Important dates', 'Fechas importantes')}</div>
+              {DATES.map((d, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: i < DATES.length - 1 ? '1px solid rgba(15,23,42,.05)' : 'none' }}>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: d.highlight ? ACCENT : YELLOW, background: (d.highlight ? ACCENT : YELLOW) + '14', borderRadius: 6, padding: '3px 9px', flexShrink: 0, minWidth: 46, textAlign: 'center' }}>{d.date}</span>
+                  <span style={{ fontSize: 13, color: 'rgba(15,23,42,.65)', lineHeight: 1.4 }}>{LO(d.label)}</span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ ...card(), padding: cpad }}>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>{L('Informações', 'Information', 'Información')}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {REGS.map(r => (
-                  <div key={r.title} style={{ ...miniCard(), display: 'flex', gap: 12 }}>
+                {REGS.map((r, i) => (
+                  <div key={i} style={{ ...miniCard(), display: 'flex', gap: 12 }}>
                     <span style={{ fontSize: 20, flexShrink: 0 }}>{r.icon}</span>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 3 }}>{r.title}</div>
-                      <div style={{ fontSize: 12, color: 'rgba(15,23,42,.45)', lineHeight: 1.55 }}>{r.text}</div>
+                      <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 3 }}>{LO(r.title)}</div>
+                      <div style={{ fontSize: 12, color: 'rgba(15,23,42,.45)', lineHeight: 1.55 }}>{LO(r.text)}</div>
                     </div>
                   </div>
                 ))}
@@ -1682,24 +2195,24 @@ export default function TimesPortalPage() {
             </div>
 
             <div style={{ ...card(), padding: cpad }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Equipamentos</div>
-              {EQUIP.map(e => (
-                <div key={e.item} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 0', borderBottom: '1px solid rgba(15,23,42,.04)' }}>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>{L('Equipamentos', 'Equipment', 'Equipamiento')}</div>
+              {EQUIP.map((e, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 0', borderBottom: '1px solid rgba(15,23,42,.04)' }}>
                   <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>{e.type === 'ok' ? '✅' : e.type === 'opt' ? '🔵' : '🚫'}</span>
-                  <span style={{ fontSize: 13, color: e.type === 'no' ? '#ff6666' : 'rgba(15,23,42,.65)', lineHeight: 1.4 }}>{e.item}</span>
+                  <span style={{ fontSize: 13, color: e.type === 'no' ? '#ff6666' : 'rgba(15,23,42,.65)', lineHeight: 1.4 }}>{LO(e.item)}</span>
                 </div>
               ))}
             </div>
 
             <div style={{ ...card(), padding: cpad }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>Hospedagem & Logística</div>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 14 }}>{L('Hospedagem & Logística', 'Lodging & Logistics', 'Alojamiento y Logística')}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {TRAVEL.map(t => (
-                  <div key={t.title} style={{ ...miniCard(), display: 'flex', gap: 12 }}>
-                    <span style={{ fontSize: 20, flexShrink: 0 }}>{t.icon}</span>
+                {TRAVEL.map((tv, i) => (
+                  <div key={i} style={{ ...miniCard(), display: 'flex', gap: 12 }}>
+                    <span style={{ fontSize: 20, flexShrink: 0 }}>{tv.icon}</span>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 3 }}>{t.title}</div>
-                      <div style={{ fontSize: 12, color: 'rgba(15,23,42,.45)', lineHeight: 1.55 }}>{t.text}</div>
+                      <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 3 }}>{LO(tv.title)}</div>
+                      <div style={{ fontSize: 12, color: 'rgba(15,23,42,.45)', lineHeight: 1.55 }}>{LO(tv.text)}</div>
                     </div>
                   </div>
                 ))}

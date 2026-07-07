@@ -3,14 +3,16 @@
 import { useState, useEffect } from 'react';
 
 const ROLES = [
-  { value: 'admin',      label: 'Admin',        color: '#009c3b', desc: 'Acesso total — pode criar e remover usuários' },
-  { value: 'viewer',     label: 'Viewer',        color: '#4d8aff', desc: 'Somente leitura — não pode editar nada' },
-  { value: 'blue_panda', label: '🐼 Blue Panda', color: '#00b4d8', desc: 'Acesso à logística e hospedagem' },
-  { value: 'atleta',     label: '🏃 Atleta',     color: '#009c3b', desc: 'Acesso ao portal de atletas' },
-  { value: 'times',      label: '🏈 Times',      color: '#f97316', desc: 'Acesso ao portal de times/clubes' },
+  { value: 'admin',            label: 'Admin',            color: '#009c3b', desc: 'Acesso total — pode criar e remover usuários' },
+  { value: 'viewer',           label: 'Viewer',           color: '#4d8aff', desc: 'Somente leitura — não pode editar nada' },
+  { value: 'blue_panda',       label: '🐼 Blue Panda',    color: '#00b4d8', desc: 'Acesso à logística e hospedagem' },
+  { value: 'arbitragem',       label: '🧑‍⚖️ Arbitragem',   color: '#a855f7', desc: 'Equipe de arbitragem — jogos e súmulas' },
+  { value: 'delegado_partida', label: '📋 Delegado',      color: '#eab308', desc: 'Delegado da partida — validação e ocorrências no jogo' },
+  { value: 'atleta',           label: '🏃 Atleta',        color: '#009c3b', desc: 'Acesso ao portal de atletas' },
+  { value: 'times',            label: '🏈 Times',         color: '#f97316', desc: 'Acesso ao portal de times/clubes' },
 ];
 
-const ADMIN_ROLES = ROLES.filter(r => ['admin', 'viewer', 'blue_panda'].includes(r.value));
+const ADMIN_ROLES = ROLES.filter(r => ['admin', 'viewer', 'blue_panda', 'arbitragem', 'delegado_partida'].includes(r.value));
 
 function initials(name) {
   return (name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
@@ -350,6 +352,37 @@ function UserRow({ u, onDeleteClick }) {
   );
 }
 
+function UserCard({ u, onDeleteClick }) {
+  const rc = (ROLES.find(x => x.value === u.role) || ROLES[0]).color;
+  const pending = u.status && u.status !== 'approved' && u.status !== 'active';
+  return (
+    <div style={{
+      position: 'relative',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
+      gap: 8, padding: '20px 16px 16px', borderRadius: 16,
+      background: '#ffffff', border: '1px solid #e2e8f0', boxShadow: '0 1px 4px rgba(0,0,0,.06)',
+    }}>
+      <button
+        onClick={() => onDeleteClick(u)} title="Excluir usuário"
+        style={{ position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: 8, background: 'rgba(255,68,68,.07)', border: '1px solid rgba(255,68,68,.16)', color: 'rgba(255,68,68,.6)', fontSize: 12, cursor: 'pointer' }}
+      >🗑</button>
+
+      <div style={{ width: 52, height: 52, borderRadius: '50%', background: rc + '18', border: `1px solid ${rc}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 900, color: rc }}>
+        {initials(u.name)}
+      </div>
+      <div style={{ fontSize: 13.5, fontWeight: 800, color: '#0f172a', lineHeight: 1.25, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>{u.name}</div>
+      <Badge role={u.role} />
+      <div style={{ fontSize: 11, color: '#64748b', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>{u.email}</div>
+      {pending && (
+        <span style={{ fontSize: 9.5, fontWeight: 700, color: '#f97316', background: 'rgba(249,115,22,.1)', border: '1px solid rgba(249,115,22,.2)', borderRadius: 5, padding: '2px 7px' }}>
+          {u.status === 'pending_approval' ? 'aguardando' : u.status}
+        </span>
+      )}
+      {u.created_at && <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>{new Date(u.created_at).toLocaleDateString('pt-BR')}</div>}
+    </div>
+  );
+}
+
 function PendingRow({ u, onApprove, onDeleteClick, busy }) {
   const oc = '#f97316';
   return (
@@ -456,20 +489,24 @@ export default function UsersPage() {
     return matchRole && matchSearch;
   });
 
-  const pendingUsers = filtered.filter(u => u.source === 'admin' && u.role === 'pending');
-  const adminUsers  = filtered.filter(u => u.source === 'admin' && u.role === 'admin');
-  const viewerUsers = filtered.filter(u => u.source === 'admin' && u.role === 'viewer');
-  const pandaUsers  = filtered.filter(u => u.source === 'admin' && u.role === 'blue_panda');
-  const timesUsers  = filtered.filter(u => u.source === 'times');
-  const atletaUsers = filtered.filter(u => u.source === 'atleta');
+  const pendingUsers  = filtered.filter(u => u.source === 'admin' && u.role === 'pending');
+  const adminUsers    = filtered.filter(u => u.source === 'admin' && u.role === 'admin');
+  const viewerUsers   = filtered.filter(u => u.source === 'admin' && u.role === 'viewer');
+  const pandaUsers    = filtered.filter(u => u.source === 'admin' && u.role === 'blue_panda');
+  const arbUsers      = filtered.filter(u => u.source === 'admin' && u.role === 'arbitragem');
+  const delegadoUsers = filtered.filter(u => u.source === 'admin' && u.role === 'delegado_partida');
+  const timesUsers    = filtered.filter(u => u.source === 'times');
+  const atletaUsers   = filtered.filter(u => u.source === 'atleta');
 
   const FILTERS = [
-    { value: 'all',        label: `Todos (${users.length})` },
-    { value: 'admin',      label: `Admin (${users.filter(u => u.role === 'admin').length})` },
-    { value: 'viewer',     label: `Viewer (${users.filter(u => u.role === 'viewer').length})` },
-    { value: 'blue_panda', label: `Blue Panda (${users.filter(u => u.role === 'blue_panda').length})` },
-    { value: 'times',      label: `Times (${users.filter(u => u.role === 'times').length})` },
-    { value: 'atleta',     label: `Atletas (${users.filter(u => u.role === 'atleta').length})` },
+    { value: 'all',              label: `Todos (${users.length})` },
+    { value: 'admin',            label: `Admin (${users.filter(u => u.role === 'admin').length})` },
+    { value: 'viewer',           label: `Viewer (${users.filter(u => u.role === 'viewer').length})` },
+    { value: 'blue_panda',       label: `Blue Panda (${users.filter(u => u.role === 'blue_panda').length})` },
+    { value: 'arbitragem',       label: `Arbitragem (${users.filter(u => u.role === 'arbitragem').length})` },
+    { value: 'delegado_partida', label: `Delegado (${users.filter(u => u.role === 'delegado_partida').length})` },
+    { value: 'times',            label: `Times (${users.filter(u => u.role === 'times').length})` },
+    { value: 'atleta',           label: `Atletas (${users.filter(u => u.role === 'atleta').length})` },
   ];
 
   const rowProps = { onDeleteClick: setDeleteTarget };
@@ -528,43 +565,42 @@ export default function UsersPage() {
 
       {loading ? (
         <div style={{ color: '#94a3b8', paddingTop: 60, textAlign: 'center', fontSize: 14 }}>Carregando...</div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {pendingUsers.length > 0 && (
-            <>
-              <SectionHeader label="Aguardando aprovação" count={pendingUsers.length} />
-              {pendingUsers.map(u => (
-                <PendingRow key={u.id} u={u} onApprove={approve} onDeleteClick={setDeleteTarget} busy={approving} />
-              ))}
-            </>
-          )}
-
-          <SectionHeader label="Administradores" count={adminUsers.length} />
-          {adminUsers.length === 0
-            ? <div style={{ padding: '12px 16px', fontSize: 12, color: '#94a3b8' }}>Nenhum admin.</div>
-            : adminUsers.map(u => <UserRow key={u.id} u={u} {...rowProps} />)}
-
-          <SectionHeader label="Viewers" count={viewerUsers.length} />
-          {viewerUsers.length === 0
-            ? <div style={{ padding: '12px 16px', fontSize: 12, color: '#94a3b8' }}>Nenhum viewer.</div>
-            : viewerUsers.map(u => <UserRow key={u.id} u={u} {...rowProps} />)}
-
-          <SectionHeader label="Blue Panda" count={pandaUsers.length} />
-          {pandaUsers.length === 0
-            ? <div style={{ padding: '12px 16px', fontSize: 12, color: '#94a3b8' }}>Nenhum usuário Blue Panda.</div>
-            : pandaUsers.map(u => <UserRow key={u.id} u={u} {...rowProps} />)}
-
-          <SectionHeader label="Times / Clubes" count={timesUsers.length} />
-          {timesUsers.length === 0
-            ? <div style={{ padding: '12px 16px', fontSize: 12, color: '#94a3b8' }}>Nenhum time cadastrado no portal.</div>
-            : timesUsers.map(u => <UserRow key={u.id} u={u} {...rowProps} />)}
-
-          <SectionHeader label="Atletas" count={atletaUsers.length} />
-          {atletaUsers.length === 0
-            ? <div style={{ padding: '12px 16px', fontSize: 12, color: '#94a3b8' }}>Nenhum atleta cadastrado no portal.</div>
-            : atletaUsers.map(u => <UserRow key={u.id} u={u} {...rowProps} />)}
-        </div>
-      )}
+      ) : (() => {
+        const grid = (items, empty) => items.length === 0
+          ? <div style={{ padding: '10px 4px', fontSize: 12, color: '#94a3b8' }}>{empty}</div>
+          : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12, marginTop: 4 }}>
+              {items.map(u => <UserCard key={u.id} u={u} onDeleteClick={setDeleteTarget} />)}
+            </div>;
+        const GROUPS = [
+          { label: 'Administradores', items: adminUsers,    empty: 'Nenhum admin.' },
+          { label: 'Viewers',         items: viewerUsers,   empty: 'Nenhum viewer.' },
+          { label: 'Blue Panda',      items: pandaUsers,    empty: 'Nenhum usuário Blue Panda.' },
+          { label: 'Arbitragem',      items: arbUsers,      empty: 'Nenhum usuário de arbitragem.' },
+          { label: 'Delegados da partida', items: delegadoUsers, empty: 'Nenhum delegado cadastrado.' },
+          { label: 'Times / Clubes',  items: timesUsers,    empty: 'Nenhum time cadastrado no portal.' },
+          { label: 'Atletas',         items: atletaUsers,   empty: 'Nenhum atleta cadastrado no portal.' },
+        ];
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {pendingUsers.length > 0 && (
+              <div>
+                <SectionHeader label="Aguardando aprovação" count={pendingUsers.length} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
+                  {pendingUsers.map(u => (
+                    <PendingRow key={u.id} u={u} onApprove={approve} onDeleteClick={setDeleteTarget} busy={approving} />
+                  ))}
+                </div>
+              </div>
+            )}
+            {GROUPS.map(g => (
+              <div key={g.label}>
+                <SectionHeader label={g.label} count={g.items.length} />
+                {grid(g.items, g.empty)}
+              </div>
+            ))}
+          </div>
+        );
+      })()}
 
       {showCreate && (
         <CreateModal onClose={() => setShowCreate(false)} onCreated={fetchUsers} />

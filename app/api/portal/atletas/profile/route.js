@@ -56,7 +56,7 @@ export async function GET(req) {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from('portal_athletes')
-    .select('id,name,email,nationality,phone,whatsapp,document,emergency_name,emergency_phone,emergency_relation,position,shirt_size,photo_url,instagram,tiktok,birthdate,history,terms_health,terms_image,terms_rules,terms_privacy,terms_conduct,terms_accepted_at,profile_complete,profile_completed_at,status,team_id')
+    .select('id,name,email,nationality,phone,whatsapp,document,emergency_name,emergency_phone,emergency_relation,position,shirt_size,photo_url,document_url,instagram,tiktok,birthdate,history,terms_health,terms_image,terms_rules,terms_privacy,terms_conduct,terms_accepted_at,profile_complete,profile_completed_at,status,team_id,guardian_auth_url')
     .eq('id', athlete_id)
     .single();
 

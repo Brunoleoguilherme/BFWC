@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { getResend, fromEmail } from '@/lib/email';
+import { getResend, fromEmail, emailLogoImg } from '@/lib/email';
 
 /* ── Email copy by language ─────────────────────────────────── */
 const COPY = {
@@ -88,6 +88,7 @@ function buildHtml(c, club_name) {
 
     <!-- Logo Header -->
     <div style="text-align:center;margin-bottom:32px">
+      ${emailLogoImg(120, 'margin:0 auto 14px')}
       <div style="display:inline-block;padding:12px 28px;background:linear-gradient(135deg,#031020,#061830);border:1px solid rgba(244,255,0,.25);border-radius:14px">
         <div style="font-size:11px;font-weight:800;letter-spacing:4px;text-transform:uppercase;color:#f4ff00;margin-bottom:4px">BRASIL FLAG WORLD CHAMPIONSHIP</div>
         <div style="font-size:36px;font-weight:900;color:#fff;letter-spacing:-2px;line-height:1">2026</div>

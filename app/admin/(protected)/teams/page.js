@@ -46,8 +46,12 @@ const S = {
   }),
 };
 
+const BRL = (cents) => ((cents || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+// Status usados apenas na análise das PRÉ-INSCRIÇÕES (form club_interests).
+// Inscritos/Confirmados agora vêm do PAGAMENTO (portal_teams), não daqui.
 const STATUSES = [
-  { key: 'pre_inscrito',         label: 'Pré-inscritos', color: '#a855f7' },
+  { key: 'pre_inscrito',         label: 'Novos',         color: '#a855f7' },
   { key: 'pendente_analise',     label: 'Pendente',      color: '#94a3b8' },
   { key: 'em_revisao',           label: 'Em Revisão',    color: '#009c3b' },
   { key: 'aprovado',             label: 'Aprovado',      color: '#009c3b' },
@@ -55,6 +59,8 @@ const STATUSES = [
   { key: 'rejeitado',            label: 'Rejeitado',     color: '#ff4444' },
 ];
 const STATUS_MAP = Object.fromEntries(STATUSES.map(s => [s.key, s]));
+// Colunas do Kanban de pré-inscrição (sem o status manual "Confirmado")
+const KANBAN_STATUSES = STATUSES.filter(s => s.key !== 'inscricao_confirmada');
 
 function Tag({ label, color }) {
   return <span style={S.tag(color)}>{label}</span>;
@@ -90,6 +96,7 @@ function Card({ team, onClick, isDragging, onDragStart, onDragEnd }) {
       <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>
         {team.category && <Tag label={team.category.split(',')[0].trim()} color="#0D4BFF" />}
         {team.athletes_count && <Tag label={`${team.athletes_count} atletas`} color="#64748b" />}
+        {team.status === 'aprovado' && <Tag label="✓ Aprovado" color="#009c3b" />}
         {team.flagged_suspect && <Tag label="⚠ Suspeito" color="#ff4444" />}
       </div>
       <div style={{ fontSize: 10, color: '#94a3b8' }}>
@@ -226,7 +233,7 @@ function Modal({ team, onClose, onUpdate, readOnly = false }) {
             <div style={{ marginBottom: 20 }}>
               <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 10 }}>Mover para</div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {STATUSES.filter(s => s.key !== t.status).map(s => (
+                {KANBAN_STATUSES.filter(s => s.key !== t.status).map(s => (
                   <button key={s.key} style={S.mActionBtn(s.color)} onClick={() => { updateStatus(s.key); onClose(); }}>{s.label}</button>
                 ))}
                 <button style={S.mActionBtn('#ff4444')} onClick={() => { updateStatus('spam_descartado'); onClose(); }}>🗑 Spam</button>
@@ -305,9 +312,11 @@ export default function TeamsPage() {
   const [search, setSearch] = useState('');
   const [showSpam, setShowSpam] = useState(false);
   const [role, setRole] = useState('admin');
+  const [reg, setReg] = useState(null); // funil por pagamento (inscritos/confirmados)
 
   useEffect(() => {
     fetch('/api/admin/me').then(r => r.json()).then(d => setRole(d.role || 'viewer'));
+    fetch('/api/admin/registrations').then(r => r.json()).then(d => { if (d.ok) setReg(d); }).catch(() => {});
   }, []);
 
   // Drag state
@@ -354,24 +363,33 @@ export default function TeamsPage() {
     return true;
   });
 
-  const confirmed = teams.filter(t => t.status === 'inscricao_confirmada');
-  const total = teams.filter(t => t.status !== 'spam_descartado').length;
-  const totalAthletes = confirmed.reduce((s, t) => s + (parseInt(t.athletes_count) || 0), 0);
+  const preInscritos = teams.filter(t => !['spam_descartado', 'rejeitado'].includes(t.status)).length;
+  const inscritosCount   = reg?.counts?.inscritos ?? null;
+  const confirmadosCount = reg?.counts?.confirmados ?? null;
   const pendingCount = teams.filter(t => t.status === 'pendente_analise').length;
+  const revisaoCount = teams.filter(t => t.status === 'em_revisao').length;
 
-  const cols = showSpam
-    ? [...STATUSES, { key: 'spam_descartado', label: 'Spam', color: '#ff4444' }]
-    : STATUSES;
+  // Colunas do quadro, alinhadas com os cards de cima.
+  // 'crm' = status da pré-inscrição (arrastável) · 'pay' = etapa de pagamento (portal, somente leitura)
+  const board = [
+    { key: 'pre_inscritos', label: 'Pré-inscritos', color: '#a855f7', type: 'crm', statuses: ['pre_inscrito', 'aprovado'], drop: 'pre_inscrito' },
+    { key: 'inscritos', label: 'Inscritos', color: '#ea580c', type: 'pay', teams: reg?.inscritos },
+    { key: 'pendentes', label: 'Pendentes', color: '#94a3b8', type: 'crm', statuses: ['pendente_analise'], drop: 'pendente_analise' },
+    { key: 'em_revisao', label: 'Em Revisão', color: '#eab308', type: 'crm', statuses: ['em_revisao'], drop: 'em_revisao' },
+    { key: 'confirmados', label: 'Confirmados', color: '#009c3b', type: 'pay', teams: reg?.confirmados },
+    ...(showSpam ? [{ key: 'spam', label: 'Spam', color: '#ff4444', type: 'crm', statuses: ['spam_descartado'], drop: 'spam_descartado' }] : []),
+  ];
 
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", color: '#0f172a' }}>
       <style>{`
-        .teams-stats { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
+        .teams-stats { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: nowrap; }
         .teams-stat-card { flex: 1; min-width: 100px; padding: 18px 20px; border-radius: 16px; }
-        .teams-board { display: flex; overflow-x: auto; align-items: flex-start; padding-bottom: 32px; gap: 0; }
+        .teams-board { display: flex; overflow-x: auto; align-items: flex-start; padding-bottom: 32px; gap: 14px; }
         .teams-col { width: 252px; flex-shrink: 0; }
         @media (max-width: 640px) {
-          .teams-stats { gap: 8px; }
+          .teams-stats { gap: 8px; flex-wrap: wrap; }
+          .teams-stats > div { min-width: 45% !important; }
           .teams-stat-card { padding: 14px 16px !important; min-width: 80px; }
           .teams-stat-num { font-size: 28px !important; }
           .teams-board { flex-direction: column; overflow-x: visible; padding-bottom: 16px; }
@@ -384,7 +402,7 @@ export default function TeamsPage() {
       <div style={{ marginBottom: 28 }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: '#009c3b', marginBottom: 8 }}>CRM</div>
         <h1 className="teams-title" style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1.5, color: '#0f172a', marginBottom: 0 }}>
-          {filterStatus ? (STATUS_MAP[filterStatus]?.label || filterStatus) : 'Times Inscritos'}
+          {filterStatus ? (STATUS_MAP[filterStatus]?.label || filterStatus) : 'Pré-inscritos'}
         </h1>
         {filterStatus && (
           <a href="/admin/teams" style={{ display: 'inline-block', marginTop: 8, fontSize: 12, color: '#64748b', textDecoration: 'none' }}>
@@ -396,13 +414,14 @@ export default function TeamsPage() {
       {/* Stats */}
       <div className="teams-stats">
         {[
-          { label: 'Total',       value: total,            alert: false },
-          { label: 'Confirmados', value: confirmed.length, alert: false },
-          { label: 'Atletas',     value: totalAthletes,    alert: false },
-          { label: 'Pendentes',   value: pendingCount,     alert: pendingCount > 0 },
+          { label: 'Pré-inscritos', value: preInscritos, sub: 'cadastros recebidos', alert: false },
+          { label: 'Inscritos', value: inscritosCount == null ? '—' : inscritosCount, sub: 'pagaram a 1ª parcela', alert: false },
+          { label: 'Pendentes', value: pendingCount, sub: 'aguardando análise', alert: pendingCount > 0 },
+          { label: 'Em Revisão', value: revisaoCount, sub: 'em análise pela equipe', alert: false },
+          { label: 'Confirmados', value: confirmadosCount == null ? '—' : confirmadosCount, sub: 'pagaram todas as parcelas', alert: false },
         ].map(s => (
           <div key={s.label} style={{
-            flex: 1, minWidth: 130, padding: '18px 22px',
+            flex: 1, minWidth: 0, padding: '16px 18px',
             background: s.alert ? '#fffde7' : '#ffffff',
             border: `1px solid ${s.alert ? 'rgba(244,255,0,.4)' : '#e2e8f0'}`,
             borderRadius: 16,
@@ -410,6 +429,7 @@ export default function TeamsPage() {
           }}>
             <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: s.alert ? '#009c3b' : '#64748b', marginBottom: 8 }}>{s.label}</div>
             <div style={{ fontSize: 38, fontWeight: 900, letterSpacing: -2, lineHeight: 1, color: '#0f172a' }}>{s.value}</div>
+            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 7, letterSpacing: .2 }}>{s.sub}</div>
           </div>
         ))}
       </div>
@@ -455,44 +475,38 @@ export default function TeamsPage() {
           )}
         </div>
       ) : (
-        /* Kanban with drag-and-drop */
+        /* Quadro: colunas alinhadas com os cards de cima */
         <div className="teams-board">
-          {cols.map((col, idx) => {
-            const items = filtered.filter(t => t.status === col.key);
-            const isOver = dragOver === col.key;
+          {board.map((col, idx) => {
+            const isCrm = col.type === 'crm';
+            const items = isCrm
+              ? filtered.filter(t => col.statuses.includes(t.status))
+              : (col.teams || []).filter(t => {
+                  if (!search) return true;
+                  const q = search.toLowerCase();
+                  return t.club_name?.toLowerCase().includes(q) || t.city?.toLowerCase().includes(q) || t.country?.toLowerCase().includes(q);
+                });
+            const isOver = isCrm && dragOver === col.drop;
+
+            const dragProps = isCrm ? {
+              onDragOver: e => { e.preventDefault(); if (dragOver !== col.drop) setDragOver(col.drop); },
+              onDragEnter: e => { e.preventDefault(); setDragOver(col.drop); },
+              onDragLeave: e => { if (!e.currentTarget.contains(e.relatedTarget)) setDragOver(null); },
+              onDrop: e => { e.preventDefault(); handleDrop(col.drop); },
+            } : {};
 
             return (
-              <div key={col.key} style={{ display: 'flex', flexShrink: 0, width: '100%' }}>
-                {/* Divider between columns */}
-                {idx > 0 && (
-                  <div className="teams-col-divider" style={{
-                    width: 1,
-                    alignSelf: 'stretch',
-                    background: '#e2e8f0',
-                    margin: '0 10px',
-                    flexShrink: 0,
-                  }} />
-                )}
-
-                {/* Column */}
-                <div
-                  className="teams-col"
-                  style={{ width: 252 }}
-                  onDragOver={e => { e.preventDefault(); if (dragOver !== col.key) setDragOver(col.key); }}
-                  onDragEnter={e => { e.preventDefault(); setDragOver(col.key); }}
-                  onDragLeave={e => {
-                    if (!e.currentTarget.contains(e.relatedTarget)) setDragOver(null);
-                  }}
-                  onDrop={e => { e.preventDefault(); handleDrop(col.key); }}
-                >
+              <div key={col.key} id={col.key} style={{ display: 'flex', flexShrink: 0, scrollMarginTop: 80 }}>
+                {/* Column (estilo Trello: coluna cinza com cards dentro) */}
+                <div className="teams-col" style={{ width: 258, background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 16, padding: '12px 10px', alignSelf: 'flex-start' }} {...dragProps}>
                   {/* Column header */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, padding: '0 2px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '2px 6px' }}>
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: col.color, flexShrink: 0 }} />
                     <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: '#475569' }}>{col.label}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 9px', borderRadius: 20, background: '#e2e8f0', color: '#64748b' }}>{items.length}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 9px', borderRadius: 20, background: '#e2e8f0', color: '#64748b' }}>{!isCrm && !reg ? '—' : items.length}</span>
                   </div>
 
-                  {/* Drop zone */}
+                  {/* Drop zone / lista */}
                   <div style={{
                     minHeight: 80,
                     borderRadius: 14,
@@ -501,7 +515,7 @@ export default function TeamsPage() {
                     padding: isOver ? 6 : 0,
                     transition: 'all .15s',
                   }}>
-                    {items.map(t => (
+                    {isCrm ? items.map(t => (
                       <Card
                         key={t.id}
                         team={t}
@@ -513,8 +527,13 @@ export default function TeamsPage() {
                         }}
                         onDragEnd={() => { setDragId(null); setDragOver(null); }}
                       />
+                    )) : items.map(t => (
+                      <PayCard key={t.id} t={t} color={col.color} />
                     ))}
-                    {items.length === 0 && !isOver && (
+                    {!isCrm && !reg && (
+                      <div style={{ color: '#94a3b8', fontSize: 12, padding: '20px 0', textAlign: 'center' }}>Carregando...</div>
+                    )}
+                    {items.length === 0 && !isOver && (isCrm || reg) && (
                       <div style={{
                         border: '1px dashed #e2e8f0', borderRadius: 14,
                         padding: 28, textAlign: 'center', color: '#94a3b8', fontSize: 12,
@@ -533,6 +552,31 @@ export default function TeamsPage() {
       {selected && (
         <Modal team={selected} onClose={() => setSelected(null)} onUpdate={() => { fetchTeams(); setSelected(null); }} readOnly={role === 'viewer'} />
       )}
+    </div>
+  );
+}
+
+// ── Card compacto de time por pagamento (colunas Inscritos / Confirmados) ───
+function PayCard({ t, color }) {
+  const pct = t.total_cents > 0 ? Math.min(100, Math.round((t.paid_cents / t.total_cents) * 100)) : 0;
+  return (
+    <div style={{ padding: '14px 15px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 14, marginBottom: 10, boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+        <span style={{ fontSize: 13, fontWeight: 800, color: '#0f172a' }}>{t.club_name}</span>
+        <span style={{ fontSize: 10, fontWeight: 800, color: t.option === '2' ? '#a855f7' : t.option === 'mix' ? '#ea580c' : '#0D4BFF', flexShrink: 0 }}>{t.option === 'mix' ? 'Mista' : `Opção ${t.option}`}</span>
+      </div>
+      <div style={{ fontSize: 11, color: '#64748b', margin: '3px 0 8px' }}>{[t.city, t.country].filter(Boolean).join(' · ')}</div>
+      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 10 }}>
+        {t.category && <span style={S.tag('#0D4BFF')}>{t.category.split(',')[0].trim()}</span>}
+        <span style={S.tag('#64748b')}>{t.athletes} atletas</span>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10.5, marginBottom: 5 }}>
+        <span style={{ color: '#64748b', fontWeight: 600 }}>{BRL(t.paid_cents)} <span style={{ color: '#cbd5e1' }}>/ {BRL(t.total_cents)}</span></span>
+        <span style={{ fontWeight: 800, color }}>{t.plan_size ? `${t.paid_count}/${t.plan_size} parc.` : `${pct}%`}</span>
+      </div>
+      <div style={{ height: 6, borderRadius: 5, background: '#e2e8f0', overflow: 'hidden' }}>
+        <div style={{ width: `${pct}%`, height: '100%', background: color }} />
+      </div>
     </div>
   );
 }

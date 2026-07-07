@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { constructWebhookEvent } from '@/lib/stripe';
-import { getResend, fromEmail } from '@/lib/email';
+import { getResend, fromEmail, emailLogoImg, notifyAdminsPayment } from '@/lib/email';
 
 // Garante runtime Node (precisamos do corpo bruto + crypto)
 export const runtime = 'nodejs';
@@ -23,7 +23,7 @@ async function markPaid(session) {
   // Idempotência: se esse mesmo PaymentIntent já foi processado, ignora
   if (current.stripe_payment_intent && current.stripe_payment_intent === session.payment_intent) return;
 
-  const charged = session.amount_total ?? 0; // o cartão cobrou o saldo restante
+  const charged = session.amount_total ?? 0;
   await supabase
     .from('portal_teams')
     .update({
@@ -34,12 +34,25 @@ async function markPaid(session) {
     })
     .eq('id', teamId);
 
-  // Cartão quita o restante: marca todas as parcelas pendentes como pagas
-  await supabase
-    .from('payment_installments')
-    .update({ status: 'paid', paid_at: new Date().toISOString() })
-    .eq('team_id', teamId)
-    .neq('status', 'paid');
+  const instNum = parseInt(session?.metadata?.installment_number, 10) || 0;
+  if (instNum > 0) {
+    // Pagamento de UMA parcela específica (cartão por parcela)
+    await supabase
+      .from('payment_installments')
+      .update({ status: 'paid', paid_at: new Date().toISOString() })
+      .eq('team_id', teamId)
+      .eq('number', instNum);
+  } else {
+    // Compatibilidade: cobrança do saldo total quita todas as parcelas pendentes
+    await supabase
+      .from('payment_installments')
+      .update({ status: 'paid', paid_at: new Date().toISOString() })
+      .eq('team_id', teamId)
+      .neq('status', 'paid');
+  }
+
+  // Aviso aos admins (best-effort)
+  await notifyAdminsPayment({ club_name: current.club_name, number: instNum || null, amount_cents: charged, method: 'Cartão (Stripe)' });
 
   // E-mail de confirmação (best-effort, não bloqueia o webhook)
   try {
@@ -53,6 +66,7 @@ async function markPaid(session) {
       subject: '✅ Pagamento confirmado — BFWC 2026',
       html: `
         <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#0a1628">
+          ${emailLogoImg(96, 'margin:0 0 14px')}
           <h2 style="color:#0a7d28">Pagamento confirmado!</h2>
           <p>Olá, <strong>${current.club_name}</strong>.</p>
           <p>Recebemos o pagamento da taxa de inscrição no valor de <strong>${valor}</strong>.

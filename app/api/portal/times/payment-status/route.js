@@ -1,13 +1,17 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getInvoice } from '@/lib/cora';
-import { getResend, fromEmail } from '@/lib/email';
-import { totalCentsFor } from '@/lib/installments';
+import { getBtgCollection, isBtgCollectionPaid } from '@/lib/btg';
+import { getResend, fromEmail, emailLogoImg, notifyAdminsPayment } from '@/lib/email';
+import { totalCentsForTeam } from '@/lib/installments';
 
 export const runtime = 'nodejs';
 
 async function isInvoicePaid(invoiceId) {
   try {
+    if (String(invoiceId).startsWith('btg:')) {
+      return isBtgCollectionPaid(await getBtgCollection(invoiceId));
+    }
     const inv = await getInvoice(invoiceId);
     return (
       inv?.status === 'PAID' ||
@@ -28,7 +32,7 @@ export async function GET(request) {
   const supabase = getSupabaseAdmin();
   const { data: team, error } = await supabase
     .from('portal_teams')
-    .select('id, club_name, email, category, payment_confirmed, payment_date, payment_plan, amount_paid_cents')
+    .select('id, club_name, email, category, payment_confirmed, payment_date, payment_plan, amount_paid_cents, payment_option, athletes_paid_qty, payment_selection')
     .eq('id', teamId)
     .single();
 
@@ -57,6 +61,7 @@ export async function GET(request) {
           .update({ status: 'paid', paid_at: new Date().toISOString() })
           .eq('team_id', team.id).eq('number', inst.number);
 
+        await notifyAdminsPayment({ club_name: team.club_name, number: inst.number, plan_size: inst.plan_size, amount_cents: inst.amount_cents, method: 'Pix' });
         const firstConfirm = !teamConfirmed;
         teamConfirmed = true;
         if (!teamPaymentDate) teamPaymentDate = new Date().toISOString();
@@ -70,7 +75,7 @@ export async function GET(request) {
             await getResend().emails.send({
               from: fromEmail, to: team.email,
               subject: '✅ Pagamento confirmado — BFWC 2026',
-              html: `<div style="font-family:Arial,sans-serif"><h2 style="color:#0a7d28">Pagamento confirmado!</h2><p>Olá, <strong>${team.club_name}</strong>. Recebemos seu pagamento e seu clube está confirmado no BFWC 2026.</p></div>`,
+              html: `<div style="font-family:Arial,sans-serif">${emailLogoImg(90, 'margin:0 0 12px')}<h2 style="color:#0a7d28">Pagamento confirmado!</h2><p>Olá, <strong>${team.club_name}</strong>. Recebemos seu pagamento e seu clube está confirmado no BFWC 2026.</p></div>`,
             });
           } catch (e) { console.error('email error', e.message); }
         }
@@ -78,7 +83,7 @@ export async function GET(request) {
     }
   }
 
-  const totalCents = totalCentsFor(team.category);
+  const totalCents = totalCentsForTeam(team);
   const remaining = Math.max(0, totalCents - amountPaid);
   const fullyPaid = remaining <= 0 && (teamConfirmed || amountPaid > 0);
   const paidCount = list.filter((i) => i.status === 'paid').length;
@@ -88,6 +93,9 @@ export async function GET(request) {
     payment_confirmed: teamConfirmed,
     payment_date: teamPaymentDate,
     payment_plan: team.payment_plan,
+    payment_option: team.payment_option || null,
+    payment_selection: team.payment_selection || null,
+    athletes_paid_qty: team.athletes_paid_qty || 0,
     amount_paid_cents: amountPaid,
     total_cents: totalCents,
     remaining_cents: remaining,

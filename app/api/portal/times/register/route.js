@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { isPortalTimesOpen, isCadastroRestricted, PORTAL_NOT_OPEN_MESSAGE } from '@/lib/registrationWindow';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { getResend, fromEmail, adminEmails } from '@/lib/email';
+import { getResend, fromEmail, adminEmails, emailLogoImg } from '@/lib/email';
 import { randomUUID } from 'crypto';
 import { pbkdf2Sync, randomBytes } from 'crypto';
+import { isCadastroRestricted, isPortalTimesOpen, PORTAL_NOT_OPEN_MESSAGE } from '@/lib/registrationWindow';
 
 function hashPassword(password) {
   const salt = randomBytes(16).toString('hex');
@@ -14,7 +15,7 @@ function hashPassword(password) {
 function verifyEmailHtml({ club_name, contact_name, verifyUrl }) {
   return `
   <div style="font-family:Inter,sans-serif;background:#031020;color:#fff;padding:40px 24px;max-width:560px;margin:0 auto;border-radius:16px">
-    <h1 style="font-size:28px;font-weight:900;margin:0 0 6px">BFWC <span style="color:#f4ff00">2026</span></h1>
+    ${emailLogoImg(110, 'margin:0 0 10px')}
     <p style="color:rgba(255,255,255,.4);font-size:13px;margin:0 0 28px">Brasil Flag World Championship</p>
     <h2 style="font-size:20px;font-weight:800;margin:0 0 12px">Confirme seu e-mail</h2>
     <p style="color:#c8d8f5;font-size:14px;line-height:1.6;margin:0 0 24px">
@@ -30,7 +31,7 @@ function verifyEmailHtml({ club_name, contact_name, verifyUrl }) {
 function adminNewTeamHtml({ club_name, contact_name, email, country, city, category, logo_url, approveUrl }) {
   return `
   <div style="font-family:Inter,sans-serif;background:#031020;color:#fff;padding:40px 24px;max-width:560px;margin:0 auto;border-radius:16px">
-    <h1 style="font-size:28px;font-weight:900;margin:0 0 6px">BFWC <span style="color:#f4ff00">2026</span></h1>
+    ${emailLogoImg(110, 'margin:0 0 10px')}
     <p style="color:rgba(255,255,255,.4);font-size:13px;margin:0 0 28px">Novo cadastro no Portal</p>
     <h2 style="font-size:18px;font-weight:800;margin:0 0 16px">✅ Novo clube aguardando aprovação</h2>
     ${logo_url ? `<img src="${logo_url}" alt="Logo do clube" style="width:64px;height:64px;object-fit:contain;border-radius:8px;background:rgba(255,255,255,.05);margin-bottom:16px;display:block">` : ''}
@@ -69,6 +70,12 @@ async function uploadLogo(supabase, file, teamId) {
     console.error('logo upload exception', e);
     return null;
   }
+}
+
+const TERMS_VERSION = '2026-07-06';
+
+function clientIp(req) {
+  return (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || req.headers.get('x-real-ip') || null;
 }
 
 export async function POST(req) {
@@ -111,7 +118,7 @@ export async function POST(req) {
 
     const supabase = getSupabaseAdmin();
 
-    // Janela 07/07 -> 12/07 (Brasília): só times já pré-inscritos podem se cadastrar
+    // Janela 07/07 00:00 → 12/07 23:59 (Brasília): só times já pré-inscritos podem se cadastrar
     if (isCadastroRestricted()) {
       const { data: pre } = await supabase
         .from('club_interests')
@@ -143,6 +150,9 @@ export async function POST(req) {
       email_token_expires_at: token_expires,
       status: 'pending_email',
       preferred_language: language,
+      terms_version: TERMS_VERSION,
+      terms_accepted_at: new Date().toISOString(),
+      terms_ip: clientIp(req),
     }).select('id').single();
 
     if (error) throw error;

@@ -8,11 +8,20 @@ import {
   adminValidationHtml,
 } from '@/lib/email';
 import { randomUUID } from 'crypto';
+import { isPreCadastroClosed } from '@/lib/registrationWindow';
 
 const required = ['club_name', 'country', 'city', 'contact_name', 'email', 'whatsapp'];
 
 export async function POST(request) {
   try {
+    // Pré-inscrições encerram em 01/07/2026 23:59 (Brasília)
+    if (isPreCadastroClosed()) {
+      return NextResponse.json(
+        { ok: false, code: 'PRE_CLOSED', message: 'As pré-inscrições foram encerradas.' },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
 
     const missing = required.filter(

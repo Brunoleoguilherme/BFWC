@@ -1,6 +1,24 @@
 import { NextResponse } from 'next/server';
+import { isPortalTimesOpen, PORTAL_NOT_OPEN_MESSAGE } from '@/lib/registrationWindow';
+
+const TERMS_VERSION = '2026-07-06';
+const EVENT_DATE = '2026-10-31';
+
+function clientIp(req) {
+  return (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || req.headers.get('x-real-ip') || null;
+}
+
+function isMinorAtEvent(birthdate) {
+  if (!birthdate) return false;
+  const b = new Date(birthdate + 'T00:00:00');
+  const e = new Date(EVENT_DATE + 'T00:00:00');
+  let age = e.getFullYear() - b.getFullYear();
+  const m = e.getMonth() - b.getMonth();
+  if (m < 0 || (m === 0 && e.getDate() < b.getDate())) age--;
+  return age < 18;
+}
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { getResend, fromEmail } from '@/lib/email';
+import { getResend, fromEmail, emailLogoImg } from '@/lib/email';
 import { randomUUID, pbkdf2Sync, randomBytes } from 'crypto';
 import { isPortalTimesOpen, PORTAL_NOT_OPEN_MESSAGE } from '@/lib/registrationWindow';
 
@@ -40,7 +58,7 @@ export async function POST(req) {
     // Accept FormData (new) or JSON (legacy)
     const ct = req.headers.get('content-type') || '';
     let name, email, password, language, birthdate, nationality, whatsapp,
-        instagram, position, history, photoFile,
+        instagram, position, history, photoFile, guardianFile,
         terms_health, terms_image, terms_rules, terms_privacy, terms_conduct;
 
     if (ct.includes('multipart/form-data')) {
@@ -62,6 +80,8 @@ export async function POST(req) {
       terms_conduct = fd.get('terms_conduct') === 'true';
       const photo = fd.get('photo');
       if (photo && photo.size > 0) photoFile = photo;
+      const guardian = fd.get('guardian_auth');
+      if (guardian && guardian.size > 0) guardianFile = guardian;
     } else {
       const body = await req.json();
       ({ name, email, password, language = 'pt', birthdate, nationality, whatsapp,
@@ -101,6 +121,8 @@ export async function POST(req) {
         message: 'O clube ao qual você pertence ainda não foi aprovado no portal. Aguarde a aprovação.',
       }, { status: 403 });
 
+    // Menores: a autorização do responsável é enviada depois, no portal (prazo 30/09/2026)
+
     // 3. Create account
     const password_hash        = hashPassword(password);
     const verification_token   = randomUUID();
@@ -127,6 +149,9 @@ export async function POST(req) {
       terms_rules:     terms_rules   || false,
       terms_privacy:   terms_privacy || false,
       terms_conduct:   terms_conduct || false,
+      terms_version:   TERMS_VERSION,
+      terms_accepted_at: new Date().toISOString(),
+      terms_ip:        clientIp(req),
     }).select('id').single();
 
     if (error) throw error;
@@ -135,6 +160,24 @@ export async function POST(req) {
     if (photoFile && athlete?.id) {
       const photo_url = await uploadPhoto(supabase, photoFile, athlete.id);
       if (photo_url) await supabase.from('portal_athletes').update({ photo_url }).eq('id', athlete.id);
+    }
+
+    // 4b. Upload da autorização do responsável (menores)
+    if (guardianFile && athlete?.id) {
+      try {
+        const ext = (guardianFile.name || 'autorizacao.pdf').split('.').pop().toLowerCase();
+        const path = `athletes/${athlete.id}/autorizacao-responsavel.${ext}`;
+        const bytes = Buffer.from(await guardianFile.arrayBuffer());
+        const { error: upErr } = await supabase.storage
+          .from('portal-media')
+          .upload(path, bytes, { contentType: guardianFile.type || 'application/pdf', upsert: true });
+        if (!upErr) {
+          const { data } = supabase.storage.from('portal-media').getPublicUrl(path);
+          await supabase.from('portal_athletes').update({ guardian_auth_url: data?.publicUrl || null }).eq('id', athlete.id);
+        } else {
+          console.error('guardian auth upload error', upErr);
+        }
+      } catch (e) { console.error('guardian auth upload exception', e); }
     }
 
     // 5. Send verification email
@@ -148,7 +191,7 @@ export async function POST(req) {
         subject: 'BFWC 2026 — Confirme seu e-mail (Atleta)',
         html: `
         <div style="font-family:Inter,sans-serif;background:#031020;color:#fff;padding:40px 24px;max-width:560px;margin:0 auto;border-radius:16px">
-          <h1 style="font-size:28px;font-weight:900;margin:0 0 6px">BFWC <span style="color:#009c3b">2026</span></h1>
+          ${emailLogoImg(110, 'margin:0 0 10px')}
           <p style="color:rgba(255,255,255,.4);font-size:13px;margin:0 0 28px">Área dos Atletas</p>
           <h2 style="font-size:20px;font-weight:800;margin:0 0 12px">Confirme seu e-mail</h2>
           <p style="color:#c8d8f5;font-size:14px;line-height:1.6;margin:0 0 24px">
