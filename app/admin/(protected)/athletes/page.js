@@ -99,11 +99,15 @@ export default function AthletesPage() {
           country: a.country || '',
           stage: a.stage || 'pendente',
           categories: new Set(),
+          catCounts: {},
           athletes: [],
         });
       }
       const t = map.get(a.team_id);
-      if (a.category) t.categories.add(a.category);
+      if (a.category) {
+        t.categories.add(a.category);
+        t.catCounts[a.category] = (t.catCounts[a.category] || 0) + 1;
+      }
       t.athletes.push(a);
     });
     const arr = [...map.values()].map(t => ({ ...t, categories: [...t.categories] }));
@@ -136,18 +140,22 @@ export default function AthletesPage() {
       </div>
 
       {/* Stats */}
-      <div style={{ display: 'flex', gap: 14, marginBottom: 24, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
         {[
-          { label: 'Times', value: teams.length },
-          { label: 'Atletas', value: filteredAthletes.length },
+          { label: 'Times', value: teams.length, color: '#0f172a' },
+          { label: 'Atletas', value: filteredAthletes.length, color: '#0f172a' },
+          { label: 'Masculino', value: filteredAthletes.filter(a => a.category?.includes('Masculino')).length, color: '#0D4BFF' },
+          { label: 'Feminino', value: filteredAthletes.filter(a => a.category?.includes('Feminino')).length, color: '#e84dff' },
+          { label: 'Sub-15', value: filteredAthletes.filter(a => a.category?.includes('Sub-15')).length, color: '#009c3b' },
+          { label: 'Sub-12', value: filteredAthletes.filter(a => a.category?.includes('Sub-12')).length, color: '#d97706' },
         ].map(s => (
           <div key={s.label} style={{
-            padding: '20px 26px', minWidth: 150,
+            padding: '18px 22px', minWidth: 118, flex: '1 1 118px',
             background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 18,
             boxShadow: '0 1px 4px rgba(0,0,0,.06)',
           }}>
             <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#64748b', marginBottom: 8 }}>{s.label}</div>
-            <div style={{ fontSize: 40, fontWeight: 900, letterSpacing: -2, lineHeight: 1, color: '#0f172a' }}>
+            <div style={{ fontSize: 36, fontWeight: 900, letterSpacing: -2, lineHeight: 1, color: loading ? '#e2e8f0' : s.color }}>
               {loading ? '—' : s.value}
             </div>
           </div>
@@ -221,7 +229,9 @@ export default function AthletesPage() {
                 ); })()}
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
                   {t.categories.map(c => (
-                    <span key={c} style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 6, background: 'rgba(13,75,255,.1)', color: '#0D4BFF', border: '1px solid rgba(13,75,255,.2)' }}>{c}</span>
+                    <span key={c} style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 6, background: 'rgba(13,75,255,.1)', color: '#0D4BFF', border: '1px solid rgba(13,75,255,.2)' }}>
+                      {c} · <strong>{t.catCounts[c] || 0}</strong> atleta{(t.catCounts[c] || 0) !== 1 ? 's' : ''}
+                    </span>
                   ))}
                 </div>
               </div>

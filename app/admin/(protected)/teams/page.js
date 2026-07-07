@@ -294,8 +294,35 @@ function InterestModal({ team, onClose, onUpdate, readOnly }) {
 // ── Modal: time do portal ──────────────────────────────────────────────
 function PortalModal({ team: t, onClose, onUpdate, readOnly }) {
   const [busy, setBusy] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [ef, setEf] = useState(null);
+  const [pwd, setPwd] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [editErr, setEditErr] = useState('');
   const idx = stageIndex(t);
   const rejected = t.status === 'rejected';
+
+  function startEdit() {
+    setEf({
+      club_name: t.club_name || '', city: t.city || '', country: t.country || '',
+      contact_name: t.contact_name || '', email: t.email || '', whatsapp: t.whatsapp || '',
+      instagram: t.instagram || '', description: t.description || '', category: t.category || '',
+    });
+    setPwd(''); setEditErr(''); setEditing(true);
+  }
+
+  async function saveEdit() {
+    if (!pwd) { setEditErr('Digite sua senha de login para confirmar.'); return; }
+    setSaving(true); setEditErr('');
+    const res = await fetch(`/api/admin/portal-teams/${t.id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'edit', password: pwd, fields: ef }),
+    });
+    const d = await res.json().catch(() => ({}));
+    setSaving(false);
+    if (d.ok) { onUpdate(); onClose(); }
+    else setEditErr(d.message || 'Erro ao salvar.');
+  }
 
   async function downloadLogo() {
     try {
@@ -390,7 +417,7 @@ function PortalModal({ team: t, onClose, onUpdate, readOnly }) {
         </div>
       )}
 
-      {!readOnly && !rejected && (
+      {!readOnly && !rejected && !editing && (
         <div style={{ marginBottom: 10 }}>
           <div style={S.label}>Ações</div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -403,6 +430,7 @@ function PortalModal({ team: t, onClose, onUpdate, readOnly }) {
                 {busy ? 'Salvando...' : '🏁 Marcar inscrição finalizada'}
               </button>
             )}
+            <button style={S.mActionBtn('#d97706')} onClick={startEdit}>✏️ Editar dados</button>
             <a href="/admin/portal-teams" style={{ ...S.mActionBtn('#0D4BFF'), textDecoration: 'none', display: 'inline-block' }}>
               Abrir em Aprovações →
             </a>
@@ -412,6 +440,45 @@ function PortalModal({ team: t, onClose, onUpdate, readOnly }) {
               Marque como finalizada após validar os documentos do time.
             </p>
           )}
+        </div>
+      )}
+
+      {editing && ef && (
+        <div style={{ marginBottom: 10, padding: '20px 22px', borderRadius: 16, background: '#fffbeb', border: '1px solid #fde68a' }}>
+          <div style={{ ...S.label, color: '#b45309' }}>✏️ Editar dados do time</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 14px' }}>
+            {[
+              ['club_name', 'Nome do time'], ['category', 'Categorias'],
+              ['city', 'Cidade'], ['country', 'País'],
+              ['contact_name', 'Contato'], ['whatsapp', 'WhatsApp'],
+              ['email', 'E-mail (login do time)'], ['instagram', 'Instagram'],
+            ].map(([k, label]) => (
+              <div key={k}>
+                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 4 }}>{label}</div>
+                <input style={{ ...S.mInput, marginBottom: 0 }} value={ef[k]} onChange={e => setEf({ ...ef, [k]: e.target.value })} />
+              </div>
+            ))}
+            <div style={{ gridColumn: '1 / -1' }}>
+              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 4 }}>Descrição</div>
+              <textarea style={{ ...S.mInput, marginBottom: 0, resize: 'vertical', minHeight: 60 }} value={ef.description} onChange={e => setEf({ ...ef, description: e.target.value })} />
+            </div>
+          </div>
+          <p style={{ fontSize: 11, color: '#b45309', margin: '12px 0 8px' }}>
+            ⚠️ O e-mail é o login do time no portal — só altere se tiver certeza. Digite sua senha de login para confirmar as mudanças.
+          </p>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            <input
+              type="password" value={pwd} onChange={e => setPwd(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && saveEdit()}
+              placeholder="Sua senha de login"
+              style={{ ...S.mInput, marginBottom: 0, maxWidth: 220 }}
+            />
+            <button style={S.mActionBtn('#009c3b', true)} onClick={saveEdit} disabled={saving}>
+              {saving ? 'Salvando...' : 'Salvar alterações'}
+            </button>
+            <button style={S.mActionBtn('#64748b')} onClick={() => setEditing(false)} disabled={saving}>Cancelar</button>
+          </div>
+          {editErr && <div style={{ fontSize: 12.5, color: '#dc2626', fontWeight: 600, marginTop: 10 }}>❌ {editErr}</div>}
         </div>
       )}
     </ModalShell>
