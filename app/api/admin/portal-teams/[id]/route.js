@@ -37,7 +37,7 @@ export async function PATCH(req, { params }) {
   try {
     const { id } = await params;
     const { action, admin_notes } = await req.json();
-    if (!['approve', 'reject'].includes(action))
+    if (!['approve', 'reject', 'finalize', 'unfinalize'].includes(action))
       return NextResponse.json({ ok: false, message: 'Ação inválida.' }, { status: 400 });
 
     const supabase = getSupabaseAdmin();
@@ -48,6 +48,15 @@ export async function PATCH(req, { params }) {
       .single();
 
     if (!team) return NextResponse.json({ ok: false, message: 'Time não encontrado.' }, { status: 404 });
+
+    // Marcação manual de "Inscrição finalizada" (pós-análise de documentos) — sem e-mail
+    if (action === 'finalize' || action === 'unfinalize') {
+      const { error: upErr } = await supabase.from('portal_teams')
+        .update({ registration_finalized: action === 'finalize' })
+        .eq('id', id);
+      if (upErr) return NextResponse.json({ ok: false, message: upErr.message }, { status: 500 });
+      return NextResponse.json({ ok: true, registration_finalized: action === 'finalize' });
+    }
 
     const newStatus = action === 'approve' ? 'approved' : 'rejected';
     await supabase.from('portal_teams').update({
