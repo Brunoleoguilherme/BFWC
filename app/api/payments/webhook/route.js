@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { constructWebhookEvent } from '@/lib/stripe';
 import { getResend, fromEmail, emailLogoImg, notifyAdminsPayment } from '@/lib/email';
+import { notifyVagaGarantida } from '@/lib/vagaGarantida';
 
 // Garante runtime Node (precisamos do corpo bruto + crypto)
 export const runtime = 'nodejs';
@@ -53,6 +54,9 @@ async function markPaid(session) {
 
   // Aviso aos admins (best-effort)
   await notifyAdminsPayment({ club_name: current.club_name, number: instNum || null, amount_cents: charged, method: 'Cartão (Stripe)' });
+
+  // Vaga garantida (1ª parcela) → aviso interno MKT + organização (idempotente)
+  await notifyVagaGarantida(teamId);
 
   // E-mail de confirmação (best-effort, não bloqueia o webhook)
   try {

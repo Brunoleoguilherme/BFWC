@@ -4,6 +4,7 @@ import { getInvoice } from '@/lib/cora';
 import { getBtgCollection, isBtgCollectionPaid } from '@/lib/btg';
 import { getResend, fromEmail, emailLogoImg, notifyAdminsPayment } from '@/lib/email';
 import { totalCentsForTeam } from '@/lib/installments';
+import { notifyVagaGarantida } from '@/lib/vagaGarantida';
 
 export const runtime = 'nodejs';
 
@@ -62,6 +63,7 @@ export async function GET(request) {
           .eq('team_id', team.id).eq('number', inst.number);
 
         await notifyAdminsPayment({ club_name: team.club_name, number: inst.number, plan_size: inst.plan_size, amount_cents: inst.amount_cents, method: 'Pix' });
+        await notifyVagaGarantida(team.id);
         const firstConfirm = !teamConfirmed;
         teamConfirmed = true;
         if (!teamPaymentDate) teamPaymentDate = new Date().toISOString();
