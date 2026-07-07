@@ -38,9 +38,19 @@ export async function GET() {
     .from('team_athletes')
     .select('id, team_id, name, category, jersey_number, email, birth_date, document');
 
+  // contas de atletas no portal (inscrição individual finalizada = status 'active')
+  const { data: accounts } = await supabase
+    .from('portal_athletes')
+    .select('team_id, status');
+
   // contagem real de atletas por time
   const athCount = {};
   (roster || []).forEach(a => { athCount[a.team_id] = (athCount[a.team_id] || 0) + 1; });
+
+  const finCount = {};
+  (accounts || []).forEach(a => {
+    if (a.status === 'active') finCount[a.team_id] = (finCount[a.team_id] || 0) + 1;
+  });
 
   const instBy = {};
   (insts || []).forEach(i => { (instBy[i.team_id] ||= []).push(i); });
@@ -86,6 +96,20 @@ export async function GET() {
   const athletesTotal = [...inscritos, ...confirmados].reduce((s, t) => s + t.athletes, 0);
   const rosterAthletesTotal = withRoster.reduce((s, t) => s + t.athletes, 0);
 
+  // Meta por time: habilitados (plano) × cadastrados (roster) × finalizados (conta ativa)
+  const teamsMeta = {};
+  (teams || []).forEach(team => {
+    const numCats = (team.category || '').split(',').filter(s => s.trim()).length || 1;
+    const enabled = String(team.payment_option) === '2'
+      ? (team.athletes_paid_qty || 0)
+      : 20 * numCats;
+    teamsMeta[team.id] = {
+      enabled,
+      registered: athCount[team.id] || 0,
+      finalized: finCount[team.id] || 0,
+    };
+  });
+
   // Mapa time → dados de exibição (para lista por atleta)
   const teamMap = {};
   (teams || []).forEach(team => {
@@ -114,6 +138,7 @@ export async function GET() {
     confirmados,
     with_roster: withRoster,
     athletes,
+    teams_meta: teamsMeta,
     counts: {
       inscritos: inscritos.length,
       confirmados: confirmados.length,

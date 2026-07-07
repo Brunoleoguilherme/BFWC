@@ -30,6 +30,7 @@ export default function AthletesPage() {
   const sidebarCat = searchParams.get('category'); // vindo da sidebar
 
   const [athletes, setAthletes] = useState(null);
+  const [meta, setMeta] = useState({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('all');
@@ -58,7 +59,7 @@ export default function AthletesPage() {
   useEffect(() => {
     fetch('/api/admin/registrations')
       .then(r => r.json())
-      .then(d => { setAthletes(d.ok ? (d.athletes || []) : []); setLoading(false); })
+      .then(d => { setAthletes(d.ok ? (d.athletes || []) : []); setMeta(d.teams_meta || {}); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
 
@@ -204,9 +205,21 @@ export default function AthletesPage() {
                 <div style={{ fontSize: 11.5, color: '#64748b', marginBottom: 12 }}>
                   {[t.city, t.country].filter(Boolean).join(' · ') || '—'}
                 </div>
+                {(() => { const m = meta[t.team_id] || {}; return (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6, marginBottom: 10 }}>
+                    {[
+                      { label: 'Habilitados', value: m.enabled ?? '—', color: '#0D4BFF' },
+                      { label: 'Cadastrados', value: m.registered ?? t.athletes.length, color: '#ea580c' },
+                      { label: 'Finalizados', value: m.finalized ?? 0, color: '#009c3b' },
+                    ].map(s => (
+                      <div key={s.label} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 6px', textAlign: 'center' }}>
+                        <div style={{ fontSize: 19, fontWeight: 900, letterSpacing: -1, lineHeight: 1, color: s.color }}>{s.value}</div>
+                        <div style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: .6, textTransform: 'uppercase', color: '#94a3b8', marginTop: 4 }}>{s.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                ); })()}
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-                  <span style={{ fontSize: 20, fontWeight: 900, letterSpacing: -1, color: '#0f172a' }}>{t.athletes.length}</span>
-                  <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, marginRight: 6 }}>atletas</span>
                   {t.categories.map(c => (
                     <span key={c} style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 6, background: 'rgba(13,75,255,.1)', color: '#0D4BFF', border: '1px solid rgba(13,75,255,.2)' }}>{c}</span>
                   ))}
@@ -245,7 +258,10 @@ export default function AthletesPage() {
               ); })()}
             </div>
             <p style={{ fontSize: 12, color: '#64748b', margin: '4px 0 20px' }}>
-              {[openTeam.city, openTeam.country].filter(Boolean).join(' · ')} · {openList.length} atleta{openList.length !== 1 ? 's' : ''}
+              {[openTeam.city, openTeam.country].filter(Boolean).join(' · ')}
+              {(() => { const m = meta[openTeam.team_id] || {}; return (
+                <> · <strong style={{ color: '#0D4BFF' }}>{m.enabled ?? '—'} habilitados</strong> · <strong style={{ color: '#ea580c' }}>{m.registered ?? openList.length} cadastrados</strong> · <strong style={{ color: '#009c3b' }}>{m.finalized ?? 0} finalizaram</strong></>
+              ); })()}
             </p>
 
             <div style={{ border: '1px solid #e2e8f0', borderRadius: 16, overflow: 'hidden' }}>
