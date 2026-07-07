@@ -60,19 +60,29 @@ async function markPaid(session) {
       style: 'currency',
       currency: 'BRL',
     });
-    const parcelaTxt = instNum ? `parcela ${instNum}` : 'taxa de inscrição';
+    // Situação das parcelas após este pagamento
+    const { data: allInst } = await supabase
+      .from('payment_installments')
+      .select('number, status, plan_size')
+      .eq('team_id', teamId);
+    const planSize = allInst?.[0]?.plan_size || null;
+    const allPaid = !!allInst?.length && allInst.every(i => i.status === 'paid');
+    const parcelaTxt = instNum ? `parcela ${instNum}${planSize ? `/${planSize}` : ''}` : 'taxa de inscrição';
     await getResend().emails.send({
       from: fromEmail,
       to: current.email,
-      subject: `✅ Pagamento confirmado${instNum ? ` (parcela ${instNum})` : ''} — BFWC 2026`,
+      subject: allPaid
+        ? '🏁 Pagamento concluído — inscrição confirmada no BFWC 2026'
+        : `✅ Pagamento confirmado${instNum ? ` (${parcelaTxt})` : ''} — BFWC 2026`,
       html: `
         <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#0a1628">
           ${emailLogoImg(96, 'margin:0 0 14px')}
-          <h2 style="color:#0a7d28">Pagamento confirmado!</h2>
+          <h2 style="color:#0a7d28">${allPaid ? 'Pagamento concluído!' : 'Pagamento confirmado!'}</h2>
           <p>Olá, <strong>${current.club_name}</strong>.</p>
-          <p>Recebemos o pagamento da <strong>${parcelaTxt}</strong> no valor de <strong>${valor}</strong>.
-          Sua vaga está garantida no <strong>Brasil Flag World Championship 2026</strong>.</p>
-          <p>Acompanhe o resumo das parcelas no portal do clube.</p>
+          <p>Recebemos o pagamento da <strong>${parcelaTxt}</strong> no valor de <strong>${valor}</strong>.</p>
+          ${allPaid
+            ? '<p>🏆 <strong>Pagamento concluído!</strong> Sua inscrição está confirmada no <strong>Brasil Flag World Championship 2026</strong>. Agora é cadastrar os atletas e enviar a escalação pelo portal.</p>'
+            : '<p>🎉 Sua vaga está garantida no <strong>Brasil Flag World Championship 2026</strong>. Acompanhe o resumo das parcelas no portal do clube.</p>'}
           <p style="color:#667">Equipe BFWC 2026</p>
         </div>`,
     });

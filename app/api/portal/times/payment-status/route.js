@@ -73,10 +73,11 @@ export async function GET(request) {
         try {
           const parcelaTxt = `parcela ${inst.number}${inst.plan_size ? `/${inst.plan_size}` : ''}`;
           const valorTxt = ((inst.amount_cents || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+          const allPaidNow = list.every((i) => i.status === 'paid');
           await getResend().emails.send({
             from: fromEmail, to: team.email,
-            subject: `✅ Pagamento confirmado (${parcelaTxt}) — BFWC 2026`,
-            html: `<div style="font-family:Arial,sans-serif">${emailLogoImg(90, 'margin:0 0 12px')}<h2 style="color:#0a7d28">Pagamento confirmado!</h2><p>Olá, <strong>${team.club_name}</strong>. Recebemos o pagamento da <strong>${parcelaTxt}</strong> no valor de <strong>${valorTxt}</strong>.</p>${firstConfirm ? '<p>🎉 Sua vaga está garantida no <strong>BFWC 2026</strong>! A inscrição é concluída com o pagamento das demais parcelas.</p>' : '<p>Acompanhe o resumo das parcelas no portal do clube.</p>'}</div>`,
+            subject: allPaidNow ? '🏁 Pagamento concluído — inscrição confirmada no BFWC 2026' : `✅ Pagamento confirmado (${parcelaTxt}) — BFWC 2026`,
+            html: `<div style="font-family:Arial,sans-serif">${emailLogoImg(90, 'margin:0 0 12px')}<h2 style="color:#0a7d28">${allPaidNow ? 'Pagamento concluído!' : 'Pagamento confirmado!'}</h2><p>Olá, <strong>${team.club_name}</strong>. Recebemos o pagamento da <strong>${parcelaTxt}</strong> no valor de <strong>${valorTxt}</strong>.</p>${allPaidNow ? '<p>🏆 <strong>Pagamento concluído!</strong> Sua inscrição está confirmada no <strong>BFWC 2026</strong>. Agora é cadastrar os atletas e enviar a escalação pelo portal.</p>' : (firstConfirm ? '<p>🎉 Sua vaga está garantida no <strong>BFWC 2026</strong>! A inscrição é concluída com o pagamento das demais parcelas.</p>' : '<p>Acompanhe o resumo das parcelas no portal do clube.</p>')}</div>`,
           });
         } catch (e) { console.error('email error', e.message); }
       }
