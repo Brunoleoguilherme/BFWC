@@ -45,6 +45,7 @@ export function navItems(t) {
     { href: '/site/noticias', label: t.news },
     { href: '/site/parceiros', label: t.partners },
     { href: '/site/documentos', label: t.docs },
+    { href: '/site/vagas-sociais', label: t.social },
     { href: '/site/contato', label: t.contact },
   ];
 }

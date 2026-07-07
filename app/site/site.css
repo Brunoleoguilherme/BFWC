@@ -16,8 +16,7 @@
   display: flex;
   align-items: center;
   gap: 34px;
-  background: rgba(3, 16, 32, .92);
-  backdrop-filter: blur(18px);
+  background: #031020;
   border-bottom: 1px solid rgba(255,255,255,.08);
   position: sticky;
   top: 0;
@@ -40,6 +39,7 @@
   font-size: 13px;
   font-weight: 900;
   text-transform: uppercase;
+  color: #fff;
   opacity: .9;
   transition: .2s;
   position: relative;
@@ -908,6 +908,7 @@
   .mobileMenu a {
     padding: 14px 0;
     font-weight: 900;
+    color: #fff;
     border-bottom: 1px solid rgba(255,255,255,.08);
   }
 
