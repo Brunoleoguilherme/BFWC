@@ -65,16 +65,18 @@ export default function PublicRankingPage() {
         </div>
 
         <div style={{ background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 20, overflow: 'hidden' }}>
-          <div style={{ overflowX: 'auto' }}>
-            <div style={{ minWidth: 720 }}>
+          <div className="tabScroll">
+            <div style={{ minWidth: data === null || scorers.length === 0 ? 0 : 720 }}>
+              {data !== null && scorers.length > 0 && (
               <div style={{ display: 'grid', gridTemplateColumns: gridCols, padding: '12px 18px', borderBottom: '1px solid rgba(255,255,255,.08)', fontSize: 9.5, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: 'rgba(255,255,255,.4)' }}>
                 <span>#</span>
                 <span>Atleta / Time</span>
                 {STAT_COLS.map(col => <span key={col.k} title={col.t} style={{ textAlign: 'center' }}>{col.l}</span>)}
                 <span style={{ textAlign: 'right' }}>Pts</span>
               </div>
-              {data === null ? <div style={{ padding: 48, textAlign: 'center', color: 'rgba(255,255,255,.4)', fontSize: 13 }}>Carregando...</div>
-                : scorers.length === 0 ? <div style={{ padding: 48, textAlign: 'center', color: 'rgba(255,255,255,.4)', fontSize: 13 }}>Nenhuma pontuação registrada ainda.</div>
+              )}
+              {data === null ? <div style={{ padding: '48px 24px', textAlign: 'center', color: 'rgba(255,255,255,.4)', fontSize: 13 }}>Carregando...</div>
+                : scorers.length === 0 ? <div style={{ padding: '48px 24px', textAlign: 'center', color: 'rgba(255,255,255,.4)', fontSize: 13 }}>Nenhuma pontuação registrada ainda.</div>
                 : scorers.map((s, i) => (
                   <div key={(s.athlete_id || s.name) + i} style={{ display: 'grid', gridTemplateColumns: gridCols, padding: '13px 18px', alignItems: 'center', borderBottom: i < scorers.length - 1 ? '1px solid rgba(255,255,255,.05)' : 'none', background: i < 3 ? 'rgba(104,255,143,.05)' : 'transparent' }}>
                     <span style={{ fontSize: 15, fontWeight: 900, color: i < 3 ? '#68ff8f' : 'rgba(255,255,255,.4)' }}>{MEDAL[i] || i + 1}</span>

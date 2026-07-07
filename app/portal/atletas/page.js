@@ -220,7 +220,7 @@ function GuardianAuthUpload({ athleteId, url, onUpload, lang }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-        <a href={`/downloads/${t('guardianModelFile', lang)}`} download style={{ padding: '10px 16px', borderRadius: 10, border: `1px solid ${ACCENT}35`, background: `${ACCENT}0d`, color: ACCENT, fontSize: 12, fontWeight: 800, textDecoration: 'none' }}>⬇ {t('guardianDownload', lang)}</a>
+        <a href={`/docs/${t('guardianModelFile', lang)}`} download style={{ padding: '10px 16px', borderRadius: 10, border: `1px solid ${ACCENT}35`, background: `${ACCENT}0d`, color: ACCENT, fontSize: 12, fontWeight: 800, textDecoration: 'none' }}>⬇ {t('guardianDownload', lang)}</a>
         <button type="button" onClick={() => !loading && fileRef.current?.click()} style={{ padding: '10px 16px', borderRadius: 10, border: `1px solid ${GREEN}40`, background: `${GREEN}0d`, color: GREEN, fontSize: 12, fontWeight: 800, cursor: loading ? 'wait' : 'pointer', fontFamily: 'inherit' }}>
           {loading ? '...' : `📎 ${url ? t('guardianChange', lang) : t('guardianAdd', lang)}`}
         </button>
@@ -752,7 +752,7 @@ export default function AtletasPortalPage() {
       )}
 
       {/* ── Tabs ── */}
-      <div style={{ background: '#ffffff', borderBottom: '1px solid #e2e8f0', overflowX: 'auto' }}>
+      <div className="tabScroll" style={{ background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
         <div style={{ display: 'flex', maxWidth: 680, margin: '0 auto', alignItems: 'stretch' }}>
           {TABS.map(tb => (
             <button key={tb.key} onClick={() => setTab(tb.key)} style={{
@@ -809,9 +809,9 @@ export default function AtletasPortalPage() {
             {/* Foto */}
             <div style={glass({ padding: '22px' })}>
               <div style={sectionHead}>{t('photoSection', lang)}</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 14 : 24, flexWrap: isMobile ? 'wrap' : 'nowrap', justifyContent: isMobile ? 'center' : 'flex-start' }}>
                 <PhotoAvatar athleteId={athlete.id} photoUrl={profile.photo_url} onUpload={url => set('photo_url', url)} lang={lang} />
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ flex: 1, minWidth: isMobile ? '100%' : 0, textAlign: isMobile ? 'center' : 'left' }}>
                   <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>{t('photoTitle', lang)}</div>
                   <div style={{ fontSize: 13, color: 'rgba(15,23,42,.4)', lineHeight: 1.65, marginBottom: 10 }}>{t('photoDesc', lang)}</div>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -826,9 +826,9 @@ export default function AtletasPortalPage() {
             {/* Documento com foto */}
             <div style={glass({ padding: '22px' })}>
               <div style={sectionHead}>{t('docSection', lang)}</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 14 : 24, flexWrap: isMobile ? 'wrap' : 'nowrap', justifyContent: isMobile ? 'center' : 'flex-start' }}>
                 <DocumentUpload athleteId={athlete.id} documentUrl={profile.document_url} onUpload={url => set('document_url', url)} lang={lang} />
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ flex: 1, minWidth: isMobile ? '100%' : 0, textAlign: isMobile ? 'center' : 'left' }}>
                   <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>{t('docTitle', lang)}</div>
                   <div style={{ fontSize: 13, color: 'rgba(15,23,42,.4)', lineHeight: 1.65, marginBottom: 10 }}>{t('docDesc', lang)}</div>
                   {profile.document_url && (
@@ -1079,7 +1079,7 @@ export default function AtletasPortalPage() {
               </div>
 
               {/* Sub-tabs */}
-              <div style={{ display: 'flex', gap: 4, marginBottom: 20, overflowX: 'auto', paddingBottom: 2 }}>
+              <div className="tabScroll" style={{ display: 'flex', gap: 4, marginBottom: 20, paddingBottom: 2 }}>
                 {CAMP_TABS.map(ct => (
                   <button key={ct.k} onClick={() => setCampView(ct.k)} style={{
                     display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px',

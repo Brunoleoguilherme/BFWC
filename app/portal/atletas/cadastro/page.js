@@ -23,7 +23,7 @@ const TR = {
     phPassword: 'Mínimo 8 caracteres', phConfirm: 'Repita a senha',
     position: 'Posição *', positionDefault: 'Selecione sua posição',
     photoLabel: 'Foto do atleta *', photoHint: 'PNG ou JPG · Máx. 2 MB · Foto de rosto nítida',
-    photoBtn: 'Escolher foto', photoChange: 'Trocar foto',
+    photoBtn: 'Escolher foto', photoChange: 'Trocar foto', noPhoto: 'Nenhuma foto selecionada',
     historyLabel: 'Histórico esportivo *',
     historyPlaceholder: 'Conte sobre sua experiência com flag football: times que jogou, títulos, posições, tempo de prática...',
     termsSection: 'Termos e aceites', termsHint: 'Leia cada termo clicando sobre ele. Todos são obrigatórios.',
@@ -53,7 +53,7 @@ const TR = {
     minorBtn: 'Enviar autorização assinada', minorHint: 'PDF, JPG ou PNG · Máx. 5 MB',
     minorRequired: 'A autorização do responsável é obrigatória para menores de 18 anos',
     minorInvalidType: 'Use PDF, JPG ou PNG.', minorTooLarge: 'Máximo 5 MB.',
-    minorFile: 'autorizacao-menor-bfwc2026-pt.pdf',
+    minorFile: 'anexo-ii-termo-atleta-menor-bfwc2026-pt.pdf',
     logoInvalidType: 'Use PNG ou JPG.', logoTooLarge: 'Máximo 2 MB.',
   },
   en: {
@@ -71,7 +71,7 @@ const TR = {
     phPassword: 'Minimum 8 characters', phConfirm: 'Repeat the password',
     position: 'Position *', positionDefault: 'Select your position',
     photoLabel: 'Athlete photo *', photoHint: 'PNG or JPG · Max 2 MB · Clear face photo',
-    photoBtn: 'Choose photo', photoChange: 'Change photo',
+    photoBtn: 'Choose photo', photoChange: 'Change photo', noPhoto: 'No photo selected',
     historyLabel: 'Sports history *',
     historyPlaceholder: 'Tell us about your flag football experience: teams, titles, positions, years playing...',
     termsSection: 'Terms & agreements', termsHint: 'Read each term by clicking on it. All are required.',
@@ -101,7 +101,7 @@ const TR = {
     minorBtn: 'Upload signed authorization', minorHint: 'PDF, JPG or PNG · Max 5 MB',
     minorRequired: 'Guardian authorization is required for athletes under 18',
     minorInvalidType: 'Use PDF, JPG or PNG.', minorTooLarge: 'Max 5 MB.',
-    minorFile: 'autorizacao-menor-bfwc2026-en.pdf',
+    minorFile: 'anexo-ii-termo-atleta-menor-bfwc2026-pt.pdf',
     logoInvalidType: 'Use PNG or JPG.', logoTooLarge: 'Maximum 2 MB.',
   },
   es: {
@@ -119,7 +119,7 @@ const TR = {
     phPassword: 'Mínimo 8 caracteres', phConfirm: 'Repite la contraseña',
     position: 'Posición *', positionDefault: 'Selecciona tu posición',
     photoLabel: 'Foto del atleta *', photoHint: 'PNG o JPG · Máx. 2 MB · Foto de rostro nítida',
-    photoBtn: 'Elegir foto', photoChange: 'Cambiar foto',
+    photoBtn: 'Elegir foto', photoChange: 'Cambiar foto', noPhoto: 'Ninguna foto seleccionada',
     historyLabel: 'Historial deportivo *',
     historyPlaceholder: 'Cuéntanos sobre tu experiencia en flag football: equipos, títulos, posiciones, años jugando...',
     termsSection: 'Términos y aceptaciones', termsHint: 'Lee cada término haciendo clic. Todos son obligatorios.',
@@ -149,7 +149,7 @@ const TR = {
     minorBtn: 'Subir autorización firmada', minorHint: 'PDF, JPG o PNG · Máx. 5 MB',
     minorRequired: 'La autorización del responsable es obligatoria para menores de 18 años',
     minorInvalidType: 'Usa PDF, JPG o PNG.', minorTooLarge: 'Máximo 5 MB.',
-    minorFile: 'autorizacao-menor-bfwc2026-es.pdf',
+    minorFile: 'anexo-ii-termo-atleta-menor-bfwc2026-pt.pdf',
     logoInvalidType: 'Usa PNG o JPG.', logoTooLarge: 'Máximo 2 MB.',
   },
 };
@@ -220,7 +220,11 @@ function TermCard({ meta, t, accepted, onAccept }) {
 }
 
 /* ─── Main ───────────────────────────────────────────────────── */
+// Portal abre em 07/07/2026 às 10:00 (Brasília)
+const OPENS_AT = new Date('2026-07-07T10:00:00-03:00').getTime();
+
 export default function AtletasCadastroPage() {
+  const [locked, setLocked]         = useState(true);
   const [lang, setLang]             = useState('pt');
   const [langChosen, setLangChosen] = useState(false);
   const [step, setStep]             = useState(1);
@@ -265,6 +269,11 @@ export default function AtletasCadastroPage() {
         })
         .catch(() => {});
     }
+    // Trava até 07/07 10h (Brasília); libera sozinha quando chegar a hora
+    const check = () => setLocked(Date.now() < OPENS_AT);
+    check();
+    const iv = setInterval(check, 15000);
+    return () => clearInterval(iv);
   }, []);
 
   const t = TR[lang];
@@ -383,6 +392,23 @@ export default function AtletasCadastroPage() {
 
   const iStyle = { width: '100%', boxSizing: 'border-box' };
 
+  // Portal ainda não abriu: aviso trilíngue, sem acesso ao cadastro
+  if (locked) return (
+    <div style={{ minHeight: '100vh', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: "'Inter', sans-serif", overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: "url('/assets/hero-rio-athletes.png')", backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(3,13,31,.80), rgba(3,13,31,.93))', zIndex: 1 }} />
+      <div style={{ position: 'relative', zIndex: 2, width: '100%', maxWidth: 480, background: 'rgba(10,20,40,.72)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,.14)', borderRadius: 28, padding: '44px 34px', textAlign: 'center', boxShadow: '0 40px 120px rgba(0,0,0,.7)' }}>
+        <img src="/assets/bfwc-logo.jpg" alt="BFWC" width={92} height={92} style={{ borderRadius: 18, marginBottom: 20, objectFit: 'cover' }} />
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 9, fontWeight: 900, letterSpacing: 2.5, textTransform: 'uppercase', color: '#f4ff00', marginBottom: 14, padding: '5px 14px', borderRadius: 20, background: 'rgba(244,255,0,.08)', border: '1px solid rgba(244,255,0,.25)' }}>🔒 Em breve · Coming soon · Próximamente</div>
+        <h1 style={{ fontSize: 24, fontWeight: 900, color: '#fff', letterSpacing: -0.8, margin: '0 0 18px', lineHeight: 1.25 }}>Inscrições abrem dia 07/07 às 10h</h1>
+        <p style={{ fontSize: 14, color: 'rgba(255,255,255,.75)', margin: '0 0 10px', lineHeight: 1.6 }}>🇧🇷 O cadastro dos atletas estará disponível <strong style={{ color: '#f4ff00' }}>dia 07/07 às 10h</strong> (horário de Brasília).</p>
+        <p style={{ fontSize: 14, color: 'rgba(255,255,255,.75)', margin: '0 0 10px', lineHeight: 1.6 }}>🇺🇸 Athlete registration will be available on <strong style={{ color: '#f4ff00' }}>July 7 at 10 AM</strong> (Brasília time, GMT-3).</p>
+        <p style={{ fontSize: 14, color: 'rgba(255,255,255,.75)', margin: '0 0 24px', lineHeight: 1.6 }}>🇪🇸 El registro de atletas estará disponible el <strong style={{ color: '#f4ff00' }}>07/07 a las 10h</strong> (hora de Brasilia).</p>
+        <a href="/portal" style={{ fontSize: 13, color: 'rgba(255,255,255,.5)', textDecoration: 'none', fontWeight: 600 }}>← Voltar · Back · Volver</a>
+      </div>
+    </div>
+  );
+
   /* ── Escolha de idioma (entrada do cadastro de atletas) ── */
   if (!langChosen) return (
     <div style={{ minHeight: '100vh', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: "'Inter', sans-serif", overflow: 'hidden' }}>
@@ -495,7 +521,7 @@ export default function AtletasCadastroPage() {
                 </div>
               )}
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="formGrid2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div style={{ gridColumn: '1/-1' }}>
                   <label className="login-label">{t.name}</label>
                   <input className="login-input" style={iStyle} value={form.name}
@@ -565,7 +591,7 @@ export default function AtletasCadastroPage() {
               <input ref={fileRef} type="file" accept=".png,.jpg,.jpeg,image/png,image/jpeg"
                 style={{ display: 'none' }} onChange={handlePhoto} />
               <div style={{
-                display: 'flex', alignItems: 'center', gap: 14, padding: '12px 14px', borderRadius: 12,
+                display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', padding: '12px 14px', borderRadius: 12,
                 border: errors.photo ? '1px solid #fca5a5' : '1px solid #e2e8f0',
                 background: '#f8fafc', cursor: 'pointer', marginBottom: 4,
               }} onClick={() => fileRef.current?.click()}>
@@ -581,9 +607,9 @@ export default function AtletasCadastroPage() {
                     display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24,
                   }}>🧑</div>
                 )}
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: photoPreview ? '#0f172a' : '#94a3b8', marginBottom: 2 }}>
-                    {photoPreview ? photoFile?.name : 'Nenhuma foto selecionada'}
+                <div style={{ flex: 1, minWidth: 140 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: photoPreview ? '#0f172a' : '#94a3b8', marginBottom: 2, overflowWrap: 'anywhere' }}>
+                    {photoPreview ? photoFile?.name : t.noPhoto}
                   </div>
                   <div style={{ fontSize: 10, color: '#94a3b8', letterSpacing: '.4px' }}>{t.photoHint}</div>
                 </div>
@@ -625,6 +651,25 @@ export default function AtletasCadastroPage() {
                 {t.termsSection}
               </div>
               <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 14, lineHeight: 1.5 }}>{t.termsHint}</div>
+
+              {/* Documentos oficiais que regem a participação */}
+              <div style={{ padding: '12px 14px', borderRadius: 12, border: '1px solid #c7d7f5', background: '#f4f8ff', marginBottom: 14 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: '#1d4ed8', letterSpacing: '.5px', textTransform: 'uppercase', marginBottom: 8 }}>
+                  {lang === 'en' ? '📄 Official documents' : lang === 'es' ? '📄 Documentos oficiales' : '📄 Documentos oficiais'}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <a href="/docs/anexo-i-termo-atleta-bfwc2026-pt.pdf" target="_blank" rel="noopener noreferrer" style={{ fontSize: 12.5, fontWeight: 700, color: '#0D4BFF', textDecoration: 'none' }}>
+                    {lang === 'en' ? 'Adhesion, Responsibility and Participation Term (Annex I) →' : lang === 'es' ? 'Término de Adhesión, Responsabilidad y Participación (Anexo I) →' : 'Termo de Adesão, Responsabilidade e Participação (Anexo I) →'}
+                  </a>
+                  <a href="/docs/codigo-de-etica-bfwc2026-pt.pdf" target="_blank" rel="noopener noreferrer" style={{ fontSize: 12.5, fontWeight: 700, color: '#0D4BFF', textDecoration: 'none' }}>
+                    {lang === 'en' ? 'Code of Ethics, Integrity and Conduct →' : lang === 'es' ? 'Código de Ética, Integridad y Conducta →' : 'Código de Ética, Integridade e Conduta →'}
+                  </a>
+                </div>
+                <div style={{ fontSize: 10.5, color: '#64748b', marginTop: 8, lineHeight: 1.5 }}>
+                  {lang === 'en' ? 'The acceptances below summarize Annex I. In case of divergence, the official documents prevail (Portuguese version).' : lang === 'es' ? 'Las aceptaciones abajo resumen el Anexo I. En caso de divergencia, prevalecen los documentos oficiales (versión en portugués).' : 'Os aceites abaixo resumem o Anexo I. Em caso de divergência, prevalecem os documentos oficiais (versão em português).'}
+                </div>
+              </div>
+
               {TERMS_META.map(meta => (
                 <TermCard key={meta.key} meta={meta} t={t}
                   accepted={!!termsAccepted[meta.key]}
@@ -649,7 +694,7 @@ export default function AtletasCadastroPage() {
                 <div style={{ padding: '16px', borderRadius: 14, border: '1px solid #f4c76a', background: '#fffaf0', marginBottom: 20 }}>
                   <div style={{ fontSize: 13, fontWeight: 800, color: '#8a5a0a', marginBottom: 6 }}>🛡️ {t.minorTitle}</div>
                   <div style={{ fontSize: 12, color: '#7a6238', lineHeight: 1.55, marginBottom: 10 }}>{t.minorText}</div>
-                  <a href={`/downloads/${t.minorFile}`} download style={{ display: 'inline-block', fontSize: 12, fontWeight: 800, color: '#0D4BFF', textDecoration: 'none' }}>⬇ {t.minorDownload}</a>
+                  <a href={`/docs/${t.minorFile}`} download style={{ display: 'inline-block', fontSize: 12, fontWeight: 800, color: '#0D4BFF', textDecoration: 'none' }}>⬇ {t.minorDownload}</a>
                 </div>
               )}
 

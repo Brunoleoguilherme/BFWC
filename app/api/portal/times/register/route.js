@@ -3,7 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getResend, fromEmail, adminEmails, emailLogoImg } from '@/lib/email';
 import { randomUUID } from 'crypto';
 import { pbkdf2Sync, randomBytes } from 'crypto';
-import { isCadastroRestricted } from '@/lib/registrationWindow';
+import { isCadastroRestricted, isPortalTimesOpen, PORTAL_NOT_OPEN_MESSAGE } from '@/lib/registrationWindow';
 
 function hashPassword(password) {
   const salt = randomBytes(16).toString('hex');
@@ -79,6 +79,11 @@ function clientIp(req) {
 
 export async function POST(req) {
   try {
+    // Portal fechado até 07/07/2026 10:00 (Brasília)
+    if (!isPortalTimesOpen()) {
+      return NextResponse.json({ ok: false, code: 'NOT_OPEN', message: PORTAL_NOT_OPEN_MESSAGE }, { status: 403 });
+    }
+
     // Support both FormData (new) and JSON (legacy)
     const contentType = req.headers.get('content-type') || '';
     let club_name, country, city, contact_name, contact_role, email, whatsapp,

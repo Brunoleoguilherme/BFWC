@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, CalendarDays, Tag } from 'lucide-react';
+import '../noticia.css';
 
 export default function UnderArmourNewsPage() {
   return (
@@ -18,7 +19,7 @@ export default function UnderArmourNewsPage() {
 
       <div className="uaContent">
 
-        <Link href="/#news" className="uaBackBtn">
+        <Link href="/site#news" className="uaBackBtn">
           <ArrowLeft size={18} />
           Voltar para notícias
         </Link>

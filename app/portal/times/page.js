@@ -598,18 +598,28 @@ export default function TimesPortalPage() {
 
   const loadAthletes = useCallback(async (tid) => {
     setAthLoading(true);
-    const r = await fetch(`/api/portal/times/atletas?team_id=${tid}`);
-    const d = await r.json();
-    setAthletes(d.athletes || []);
-    setAthLoading(false);
+    try {
+      const r = await fetch(`/api/portal/times/atletas?team_id=${tid}`);
+      const d = await r.json();
+      setAthletes(d.athletes || []);
+    } catch {
+      setAthletes([]);
+    } finally {
+      setAthLoading(false);
+    }
   }, []);
 
   const loadGames = useCallback(async (tid) => {
     setGamesLoading(true);
-    const r = await fetch(`/api/portal/times/jogos?team_id=${tid}`);
-    const d = await r.json();
-    setGames(d.games || []);
-    setGamesLoading(false);
+    try {
+      const r = await fetch(`/api/portal/times/jogos?team_id=${tid}`);
+      const d = await r.json();
+      setGames(d.games || []);
+    } catch {
+      setGames([]);
+    } finally {
+      setGamesLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -812,11 +822,16 @@ export default function TimesPortalPage() {
     const ageErr = validateCategoryAge(newAth.birth_date, newAth.category);
     if (ageErr) { setAthError(ageErr); return; }
     setAthSaving(true); setAthError('');
-    const r = await fetch('/api/portal/times/atletas', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...newAth, team_id: team.id }),
-    });
-    const d = await r.json();
+    let d;
+    try {
+      const r = await fetch('/api/portal/times/atletas', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...newAth, team_id: team.id }),
+      });
+      d = await r.json();
+    } catch {
+      d = { ok: false, message: L('Erro de conexão. Tente novamente.', 'Connection error. Please try again.', 'Error de conexión. Inténtalo de nuevo.') };
+    }
     setAthSaving(false);
     if (d.ok) {
       setAthletes(prev => [...prev, d.athlete]);
@@ -837,19 +852,34 @@ export default function TimesPortalPage() {
   async function deleteAthlete(id) {
     if (!confirm(L('Remover atleta?', 'Remove athlete?', '¿Quitar atleta?'))) return;
     setDeletingId(id);
-    await fetch(`/api/portal/times/atletas/${id}?team_id=${team.id}`, { method: 'DELETE' });
-    setAthletes(prev => prev.filter(a => a.id !== id));
-    setDeletingId(null);
+    try {
+      const r = await fetch(`/api/portal/times/atletas/${id}?team_id=${team.id}`, { method: 'DELETE' });
+      const d = await r.json().catch(() => ({ ok: r.ok }));
+      if (d.ok !== false) {
+        setAthletes(prev => prev.filter(a => a.id !== id));
+      } else {
+        setAthError(d.message || L('Erro ao remover atleta.', 'Error removing athlete.', 'Error al quitar atleta.'));
+      }
+    } catch {
+      setAthError(L('Erro de conexão ao remover atleta.', 'Connection error while removing athlete.', 'Error de conexión al quitar atleta.'));
+    } finally {
+      setDeletingId(null);
+    }
   }
 
   async function submitLineup() {
     if (!confirm(L(`Confirmar envio da escalação com ${athletes.length} atleta${athletes.length !== 1 ? 's' : ''}?\n\nApós o envio, alterações no roster precisarão de aprovação da organização.`, `Confirm submission of the lineup with ${athletes.length} athlete${athletes.length !== 1 ? 's' : ''}?\n\nAfter submitting, roster changes will require organization approval.`, `¿Confirmar el envío de la alineación con ${athletes.length} atleta${athletes.length !== 1 ? 's' : ''}?\n\nTras el envío, los cambios en el roster necesitarán aprobación de la organización.`))) return;
     setSendingLineup(true); setLineupMsg(null);
-    const r = await fetch('/api/portal/times/enviar-escalacao', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ team_id: team.id }),
-    });
-    const d = await r.json();
+    let d;
+    try {
+      const r = await fetch('/api/portal/times/enviar-escalacao', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ team_id: team.id }),
+      });
+      d = await r.json();
+    } catch {
+      d = { ok: false, message: L('Erro de conexão. Tente novamente.', 'Connection error. Please try again.', 'Error de conexión. Inténtalo de nuevo.') };
+    }
     setSendingLineup(false);
     if (d.ok) {
       setLineupSubmitted(true);
@@ -1002,7 +1032,7 @@ export default function TimesPortalPage() {
       </div>
 
       {/* ── Tabs ── */}
-      <div style={{ background: 'rgba(255,255,255,.88)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderBottom: '1px solid #e2e8f0', overflowX: 'auto' }}>
+      <div className="tabScroll" style={{ background: 'rgba(255,255,255,.88)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderBottom: '1px solid #e2e8f0' }}>
         <div style={{ display: 'flex', maxWidth: 960, margin: '0 auto', alignItems: 'stretch' }}>
           {TABS.map(t => (
             <button key={t.key} onClick={() => setTab(t.key)} style={{
@@ -1878,7 +1908,7 @@ export default function TimesPortalPage() {
         {/* ══════ TAB CAMPEONATO ══════ */}
         {tab === 'campeonato' && (
           <div style={{ ...card(), padding: cpad }}>
-            <div style={{ display: 'flex', gap: 6, marginBottom: 16, overflowX: 'auto', paddingBottom: 2 }}>
+            <div className="tabScroll" style={{ display: 'flex', gap: 6, marginBottom: 16, paddingBottom: 2 }}>
               {[{ key: 'schedule', label: L('Próximos', 'Upcoming', 'Próximos') }, { key: 'results', label: L('Resultados', 'Results', 'Resultados') }, { key: 'venue', label: L('Venue', 'Venue', 'Sede') }].map(t => (
                 <button key={t.key} onClick={() => setGamesTab(t.key)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px', borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: isMobile ? 12 : 13, fontWeight: 700, whiteSpace: 'nowrap', background: gamesTab === t.key ? ACCENT : 'rgba(15,23,42,.05)', color: gamesTab === t.key ? '#fff' : 'rgba(15,23,42,.4)', transition: 'all .15s' }}><TabIcon name={t.key} size={15} /> {t.label}</button>
               ))}

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { isPortalTimesOpen, PORTAL_NOT_OPEN_MESSAGE } from '@/lib/registrationWindow';
 
 const TERMS_VERSION = '2026-07-06';
 const EVENT_DATE = '2026-10-31';
@@ -48,6 +49,11 @@ async function uploadPhoto(supabase, file, athleteId) {
 
 export async function POST(req) {
   try {
+    // Portal fechado até 07/07/2026 10:00 (Brasília)
+    if (!isPortalTimesOpen()) {
+      return NextResponse.json({ ok: false, code: 'NOT_OPEN', message: PORTAL_NOT_OPEN_MESSAGE }, { status: 403 });
+    }
+
     // Accept FormData (new) or JSON (legacy)
     const ct = req.headers.get('content-type') || '';
     let name, email, password, language, birthdate, nationality, whatsapp,

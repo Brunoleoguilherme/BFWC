@@ -49,7 +49,12 @@
   color: var(--yellow);
 }
 
-.premiumTop nav a:first-child::after {
+.premiumTop nav a.on {
+  color: var(--yellow);
+  opacity: 1;
+}
+
+.premiumTop nav a.on::after {
   content: '';
   height: 3px;
   width: 28px;
@@ -107,6 +112,59 @@
 .mobileBtn,
 .mobileMenu {
   display: none;
+}
+
+.mobileMenu a.on {
+  color: var(--yellow);
+}
+
+/* HERO compacto das subpáginas */
+
+.pageHero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(48px, 8vw, 88px) var(--band) clamp(36px, 6vw, 64px);
+  background: #031020;
+}
+
+.pageHero .heroPhoto {
+  object-fit: cover;
+  object-position: center;
+}
+
+.pageHeroInner {
+  position: relative;
+  z-index: 2;
+  max-width: 1132px;
+  margin: 0 auto;
+}
+
+.pageHeroKicker {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--yellow);
+  margin-bottom: 12px;
+}
+
+.pageHeroInner h1 {
+  font-size: clamp(30px, 5.4vw, 54px);
+  font-weight: 950;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+  color: #fff;
+  margin: 0;
+}
+
+.pageHeroInner p {
+  font-size: clamp(14px, 1.5vw, 17px);
+  color: rgba(220, 230, 255, .75);
+  line-height: 1.6;
+  max-width: 640px;
+  margin: 14px 0 0;
 }
 
 /* HERO */
@@ -609,6 +667,34 @@
   max-width: 223px;
 }
 
+/* Prefeitura de Leme — brasão + nome (nome absoluto para o brasão
+   ficar centralizado na mesma linha do logo da embaixada) */
+.logoPrefeituraWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-10px);
+}
+
+.partnerGroupLogos img.logoPrefeitura {
+  height: 78px !important;
+}
+
+.logoPrefeituraWrap span {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 10px;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.75);
+}
+
 .partnerDivider {
   width: 1px;
   height: 80px;
@@ -805,15 +891,40 @@
 
   .mobileMenu {
     display: grid;
-    padding: 16px 24px;
+    padding: 8px 24px 16px;
     background: #031020;
     border-bottom: 1px solid rgba(255,255,255,.08);
+    /* Ancorado ao header sticky: abre sob o topo em qualquer posição de scroll */
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 49;
+    max-height: calc(100vh - 82px);
+    overflow-y: auto;
+    box-shadow: 0 24px 48px rgba(0,0,0,.5);
   }
 
   .mobileMenu a {
     padding: 14px 0;
     font-weight: 900;
     border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+
+  .mobileMenu a:last-child {
+    border-bottom: 0;
+  }
+}
+
+/* Card de notícia (teaser da home): empilha no mobile (logo abaixo do texto) */
+@media (max-width: 640px) {
+  .newsTeaserCard {
+    grid-template-columns: 1fr !important;
+  }
+
+  .newsTeaserCard img {
+    justify-self: start;
+    margin-top: 4px;
   }
 }
 
@@ -930,6 +1041,10 @@
     max-width: 260px !important;
   }
 
+  .partnerGroupLogos img.logoPrefeitura {
+    height: 68px !important;
+  }
+
   .partnerGroup {
     padding: 14px 12px;
     width: 100%;
@@ -1044,6 +1159,19 @@
   .partnerGroupLogos img.logoEmbaixada {
     height: 90px !important;
     max-width: 220px !important;
+  }
+
+  .partnerGroupLogos img.logoPrefeitura {
+    height: 54px !important;
+  }
+
+  .logoPrefeituraWrap {
+    transform: none;
+  }
+
+  .logoPrefeituraWrap span {
+    margin-top: 6px;
+    font-size: 10px;
   }
 
   /* Footer: single column */

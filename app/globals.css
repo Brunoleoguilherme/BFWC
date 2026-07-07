@@ -52,3 +52,39 @@ textarea,
 select{
   font-family:inherit;
 }
+
+/* ===== Mobile / UX global ===== */
+
+/* Barras de abas com swipe horizontal sem scrollbar visível */
+.tabScroll{
+  overflow-x:auto;
+  scrollbar-width:none;        /* Firefox */
+  -ms-overflow-style:none;     /* IE/Edge legado */
+  -webkit-overflow-scrolling:touch;
+}
+.tabScroll::-webkit-scrollbar{
+  display:none;                /* Chrome/Safari */
+}
+
+@media (max-width:640px){
+  /* iOS dá zoom automático em inputs com fonte <16px */
+  input,
+  select,
+  textarea{
+    font-size:16px !important;
+  }
+
+  /* Grids de formulário 2 colunas empilham no mobile */
+  .formGrid2{
+    grid-template-columns:1fr !important;
+  }
+
+  /* Blocos mídia+texto (upload de foto/documento) empilham no mobile */
+  .stackMobile{
+    flex-direction:column !important;
+    align-items:stretch !important;
+  }
+  .stackMobile > *{
+    max-width:100% !important;
+  }
+}
