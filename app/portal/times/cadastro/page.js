@@ -221,6 +221,10 @@ const T = {
     contactRole: 'Cargo / Função',
     email: 'E-mail *',
     whatsapp: 'WhatsApp',
+    instagram: 'Instagram do time',
+    description: 'Breve descrição do time',
+    phInstagram: '@seutime',
+    phDescription: 'Conte um pouco da história do time: quando surgiu, títulos, comunidade... (usamos nas divulgações do campeonato)',
     logoLabel: 'Logo do clube',
     logoHint: 'PNG, JPG ou JPEG · Máx. 2 MB',
     logoBtn: 'Escolher arquivo',
@@ -279,6 +283,10 @@ const T = {
     contactRole: 'Role / Position',
     email: 'Email *',
     whatsapp: 'WhatsApp',
+    instagram: 'Team Instagram',
+    description: 'Short team description',
+    phInstagram: '@yourteam',
+    phDescription: 'Tell us a bit about your team: history, titles, community... (we use it in championship media)',
     logoLabel: 'Club logo',
     logoHint: 'PNG, JPG or JPEG · Max 2 MB',
     logoBtn: 'Choose file',
@@ -337,6 +345,10 @@ const T = {
     contactRole: 'Cargo / Función',
     email: 'Correo electrónico *',
     whatsapp: 'WhatsApp',
+    instagram: 'Instagram del equipo',
+    description: 'Breve descripción del equipo',
+    phInstagram: '@tuequipo',
+    phDescription: 'Cuéntanos sobre tu equipo: historia, títulos, comunidad... (lo usamos en la difusión del campeonato)',
     logoLabel: 'Logo del club',
     logoHint: 'PNG, JPG o JPEG · Máx. 2 MB',
     logoBtn: 'Elegir archivo',
@@ -403,6 +415,7 @@ export default function CadastroPage() {
     club_name: '', country: '', city: '',
     contact_name: '', contact_role: '',
     email: '', whatsapp: '',
+    instagram: '', description: '',
     categories: [],
     athletes_per_category: {},
     password: '', confirmPassword: '',
@@ -525,6 +538,8 @@ export default function CadastroPage() {
       fd.append('contact_role', form.contact_role);
       fd.append('email', form.email);
       fd.append('whatsapp', form.whatsapp);
+      fd.append('instagram', form.instagram);
+      fd.append('description', form.description);
       fd.append('category', form.categories.map(c => {
         const n = form.athletes_per_category[c];
         return n ? `${c} (${n})` : c;
@@ -703,6 +718,23 @@ export default function CadastroPage() {
                 <div>
                   <label className="login-label">{t.whatsapp}</label>
                   <input className="login-input" style={inputStyle} value={form.whatsapp} onChange={e => set('whatsapp', e.target.value)} placeholder={t.phWhatsapp} />
+                </div>
+                <div>
+                  <label className="login-label">{t.instagram}</label>
+                  <input className="login-input" style={inputStyle} value={form.instagram} onChange={e => set('instagram', e.target.value)} placeholder={t.phInstagram} />
+                </div>
+
+                {/* Breve descrição */}
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label className="login-label">{t.description}</label>
+                  <textarea
+                    className="login-input"
+                    style={{ ...inputStyle, minHeight: 88, resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.5 }}
+                    value={form.description}
+                    onChange={e => set('description', e.target.value)}
+                    placeholder={t.phDescription}
+                    maxLength={600}
+                  />
                 </div>
 
                 {/* Logo upload */}

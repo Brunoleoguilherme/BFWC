@@ -75,6 +75,8 @@ export async function GET() {
       email: t.email || '',
       contact_name: t.contact_name || '',
       whatsapp: t.whatsapp || '',
+      instagram: t.instagram || '',
+      description: t.description || '',
       logo_url: t.logo_url || null,
       option: String(t.payment_option || '1') === '2' ? '2' : '1',
       athletes: athCount[t.id] || 0,

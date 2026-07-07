@@ -89,7 +89,7 @@ export async function POST(req) {
     // Support both FormData (new) and JSON (legacy)
     const contentType = req.headers.get('content-type') || '';
     let club_name, country, city, contact_name, contact_role, email, whatsapp,
-        category, athletes_count, password, language, logoFile;
+        instagram, description, category, athletes_count, password, language, logoFile;
 
     if (contentType.includes('multipart/form-data')) {
       const fd = await req.formData();
@@ -100,6 +100,8 @@ export async function POST(req) {
       contact_role  = fd.get('contact_role');
       email         = fd.get('email');
       whatsapp      = fd.get('whatsapp');
+      instagram     = fd.get('instagram');
+      description   = fd.get('description');
       category      = fd.get('category');
       athletes_count= fd.get('athletes_count');
       password      = fd.get('password');
@@ -109,7 +111,7 @@ export async function POST(req) {
     } else {
       const body = await req.json();
       ({ club_name, country, city, contact_name, contact_role, email, whatsapp,
-         category, athletes_count, password, language = 'pt' } = body);
+         instagram, description, category, athletes_count, password, language = 'pt' } = body);
     }
 
     const required = { club_name, contact_name, email, password };
@@ -138,7 +140,10 @@ export async function POST(req) {
     const { data: team, error } = await supabase.from('portal_teams').insert({
       club_name, country, city, contact_name, contact_role,
       email: email.toLowerCase().trim(),
-      whatsapp, category, athletes_count: athletes_count ? parseInt(athletes_count) : null,
+      whatsapp,
+      instagram: (instagram || '').trim().slice(0, 100) || null,
+      description: (description || '').trim().slice(0, 600) || null,
+      category, athletes_count: athletes_count ? parseInt(athletes_count) : null,
       password_hash,
       email_verification_token: verification_token,
       email_token_expires_at: token_expires,

@@ -63,7 +63,7 @@ function totalCents(team) {
 
 const teams = await sb('portal_teams?select=*&vaga_notified_at=is.null&order=created_at');
 const insts = await sb('payment_installments?select=team_id,number,status,amount_cents,plan_size');
-const interests = await sb('club_interests?select=email,created_at');
+const interests = await sb('club_interests?select=email,created_at,competitive_history,notes');
 const notified = await sb('portal_teams?select=id,country&vaga_notified_at=not.is.null');
 
 const instBy = {};
@@ -109,6 +109,10 @@ for (const team of pendentes) {
     ['Plano', `Opção ${option}${option === '2' && team.athletes_paid_qty ? ` · ${team.athletes_paid_qty} atletas contratados` : ''}${planSize ? ` · ${planSize}x` : ''}`],
     ['Pagamento', `${BRL(pago)} de ${BRL(total)} (${paid.length}${planSize ? `/${planSize}` : ''} parcela${paid.length !== 1 ? 's' : ''} paga${paid.length !== 1 ? 's' : ''})`],
     ['Atletas no portal', String(roster)],
+    ['Instagram', team.instagram ? `<a href="https://instagram.com/${String(team.instagram).replace(/^@/, '')}" style="color:#7fb2ff">${team.instagram}</a>` : '—'],
+    ['Descrição do time', team.description || '—'],
+    ...(pre?.competitive_history ? [['Histórico (pré-inscrição)', pre.competitive_history]] : []),
+    ...(pre?.notes ? [['Observações (pré-inscrição)', pre.notes]] : []),
     ['Contato', team.contact_name || '—'],
     ['E-mail', team.email || '—'],
     ['WhatsApp', team.whatsapp || '—'],
