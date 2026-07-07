@@ -4,8 +4,6 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getResend, fromEmail, adminEmails, emailLogoImg } from '@/lib/email';
 import { randomUUID } from 'crypto';
 import { pbkdf2Sync, randomBytes } from 'crypto';
-import { isCadastroRestricted, isPortalTimesOpen, PORTAL_NOT_OPEN_MESSAGE } from '@/lib/registrationWindow';
-
 function hashPassword(password) {
   const salt = randomBytes(16).toString('hex');
   const hash = pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
@@ -182,13 +180,4 @@ export async function POST(req) {
         from: fromEmail,
         to,
         subject: `[BFWC Portal] Novo clube aguardando aprovação: ${club_name}`,
-        html: adminNewTeamHtml({ club_name, contact_name, email, country, city, category, logo_url, approveUrl }),
-      })),
-    ]);
-
-    return NextResponse.json({ ok: true });
-  } catch (err) {
-    console.error('portal register error', err);
-    return NextResponse.json({ ok: false, message: err.message || 'Erro interno' }, { status: 500 });
-  }
-}
+        html: adminNewTeamHtml({ club_name, contact_name, ema
