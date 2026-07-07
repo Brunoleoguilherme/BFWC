@@ -50,7 +50,7 @@ export function navItems(t) {
 }
 
 /* Inscrições abrem em 07/07/2026 às 10:00 (Brasília) */
-export const REG_OPENS_AT = new Date('2026-07-07T10:00:00-03:00').getTime();
+export const REG_OPENS_AT = new Date('2026-07-07T09:50:00-03:00').getTime();
 
 /* Faixa amarela: countdown até a abertura; vira "inscrições abertas" sozinha às 10h */
 export function TopBanner({ lang }) {

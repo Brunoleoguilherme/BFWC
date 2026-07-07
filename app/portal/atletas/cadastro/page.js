@@ -221,7 +221,7 @@ function TermCard({ meta, t, accepted, onAccept }) {
 
 /* ─── Main ───────────────────────────────────────────────────── */
 // Portal abre em 07/07/2026 às 10:00 (Brasília)
-const OPENS_AT = new Date('2026-07-07T10:00:00-03:00').getTime();
+const OPENS_AT = new Date('2026-07-07T09:50:00-03:00').getTime();
 
 export default function AtletasCadastroPage() {
   const [locked, setLocked]         = useState(true);
