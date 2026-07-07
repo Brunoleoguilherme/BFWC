@@ -87,6 +87,8 @@ export async function GET() {
       paid_count: paidCount,
       fully_paid: fully,
       checkout_started: checkoutStarted,
+      exempted: !!t.exempted_at,
+      exemption_reason: t.exemption_reason || null,
       lineup_submitted: !!t.lineup_submitted,
       finalized: !!t.registration_finalized,
       status: t.status || '',
@@ -97,7 +99,7 @@ export async function GET() {
     if (t.status === 'rejected') cols.rejeitados.push(card);
     else if (card.finalized) cols.finalizada.push(card);
     else if (card.lineup_submitted) cols.atletas.push(card);
-    else if (fully) cols.pago.push(card);
+    else if (fully || card.exempted) cols.pago.push(card);
     else if (paidCount >= 1 || t.payment_confirmed) cols.vaga.push(card);
     else cols.cadastro.push(card);
   });
@@ -133,6 +135,7 @@ export async function GET() {
   Object.values(cols).forEach(list => list.sort(byDate));
 
   const counts = Object.fromEntries(Object.entries(cols).map(([k, v]) => [k, v.length]));
+  counts.isencoes = portal.filter(t => t.exempted_at && t.status !== 'rejected').length;
 
   return NextResponse.json({ ok: true, cols, counts });
 }

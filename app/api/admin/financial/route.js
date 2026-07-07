@@ -32,7 +32,7 @@ export async function GET() {
 
   const { data: teams, error: tErr } = await supabase
     .from('portal_teams')
-    .select('id, club_name, email, country, category, status, payment_confirmed, payment_option, athletes_paid_qty, payment_plan, amount_paid_cents, stripe_payment_intent, payment_date');
+    .select('id, club_name, email, country, category, status, payment_confirmed, payment_option, athletes_paid_qty, payment_plan, amount_paid_cents, stripe_payment_intent, payment_date, exempted_at, exemption_reason');
   if (tErr) return NextResponse.json({ error: tErr.message }, { status: 500 });
 
   const { data: installments, error: iErr } = await supabase
@@ -61,11 +61,20 @@ export async function GET() {
   const overdue = [];
   const teamRows = [];
 
+  let isencoesCount = 0;
+  let isencoesWaived = 0;
+
   (teams || []).forEach(team => {
+    const exempt = !!team.exempted_at && team.status !== 'rejected';
     const paid = team.amount_paid_cents || 0;
-    const total = totalCentsForTeam(team);
-    const committed = !!team.payment_confirmed;
+    // Isento: o "esperado" vira só o que já entrou — nada a receber, nada em atraso
+    const total = exempt ? paid : totalCentsForTeam(team);
+    const committed = !!team.payment_confirmed || exempt;
     arrecadado += paid;
+    if (exempt) {
+      isencoesCount += 1;
+      isencoesWaived += Math.max(0, totalCentsForTeam(team) - paid);
+    }
 
     const insts = instByTeam[team.id] || [];
     const paidInsts = insts.filter(i => i.status === 'paid');
@@ -91,8 +100,8 @@ export async function GET() {
         if (team.category?.includes(c)) byCategory[idx].paid_teams += 1;
       });
 
-      // parcelas em atraso: pendentes com vencimento passado
-      insts.filter(i => i.status !== 'paid' && i.due_date && i.due_date < today).forEach(i => {
+      // parcelas em atraso: pendentes com vencimento passado (isentos não têm atraso)
+      insts.filter(i => !exempt && i.status !== 'paid' && i.due_date && i.due_date < today).forEach(i => {
         overdue.push({
           team_id: team.id, club_name: team.club_name,
           number: i.number, amount_cents: i.amount_cents, due_date: i.due_date,
@@ -108,7 +117,8 @@ export async function GET() {
         plan_size: planSize, paid_count: paidCount,
         method, status: team.status,
         payment_confirmed: committed,
-        fully_paid: (paid >= total && total > 0) || (!!planSize && paidCount >= planSize),
+        exempted: exempt,
+        fully_paid: exempt || (paid >= total && total > 0) || (!!planSize && paidCount >= planSize),
       });
     }
   });
@@ -128,6 +138,8 @@ export async function GET() {
       esperado_cents: esperado,
       a_receber_cents: aReceber,
       pct,
+      isencoes_count: isencoesCount,
+      isencoes_waived_cents: isencoesWaived,
     },
     byMethod: { pix_cents: pixCents, card_cents: cardCents },
     byCategory,

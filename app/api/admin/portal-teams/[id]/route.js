@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getResend, fromEmail, emailLogoImg } from '@/lib/email';
 import { requireAdmin, verifyPassword } from '@/lib/authAdmin';
+import { notifyVagaGarantida } from '@/lib/vagaGarantida';
 
 function approvedHtml({ club_name, contact_name }) {
   return `
@@ -36,8 +37,8 @@ function rejectedHtml({ club_name, contact_name, admin_notes }) {
 export async function PATCH(req, { params }) {
   try {
     const { id } = await params;
-    const { action, admin_notes, password, fields } = await req.json();
-    if (!['approve', 'reject', 'finalize', 'unfinalize', 'edit'].includes(action))
+    const { action, admin_notes, password, fields, reason } = await req.json();
+    if (!['approve', 'reject', 'finalize', 'unfinalize', 'edit', 'exempt', 'unexempt'].includes(action))
       return NextResponse.json({ ok: false, message: 'Ação inválida.' }, { status: 400 });
 
     const supabase = getSupabaseAdmin();
@@ -48,6 +49,37 @@ export async function PATCH(req, { params }) {
       .single();
 
     if (!team) return NextResponse.json({ ok: false, message: 'Time não encontrado.' }, { status: 404 });
+
+    // Marcar como pago por isenção (ou outro motivo) — senha + justificativa obrigatórias.
+    // O time passa a contar como "pagamento total", mas NÃO entra no "a receber" do financeiro.
+    if (action === 'exempt' || action === 'unexempt') {
+      const { profile, error: authErr } = await requireAdmin();
+      if (authErr) return authErr;
+      const okPwd = await verifyPassword(profile.email, password);
+      if (!okPwd) return NextResponse.json({ ok: false, message: 'Senha incorreta.' }, { status: 401 });
+
+      if (action === 'exempt') {
+        const just = (reason || '').trim();
+        if (just.length < 5)
+          return NextResponse.json({ ok: false, message: 'Justificativa obrigatória (mínimo 5 caracteres).' }, { status: 400 });
+        const { error: upErr } = await supabase.from('portal_teams').update({
+          exemption_reason: just.slice(0, 500),
+          exempted_at: new Date().toISOString(),
+          exempted_by: profile.name || profile.email,
+          payment_confirmed: true,
+        }).eq('id', id);
+        if (upErr) return NextResponse.json({ ok: false, message: upErr.message }, { status: 500 });
+        // Vaga garantida via isenção → aviso interno MKT + organização
+        await notifyVagaGarantida(id);
+        return NextResponse.json({ ok: true, exempted: true });
+      }
+
+      const { error: upErr } = await supabase.from('portal_teams').update({
+        exemption_reason: null, exempted_at: null, exempted_by: null,
+      }).eq('id', id);
+      if (upErr) return NextResponse.json({ ok: false, message: upErr.message }, { status: 500 });
+      return NextResponse.json({ ok: true, exempted: false });
+    }
 
     // Edição manual dos dados do time (confirmação por senha de login do admin)
     if (action === 'edit') {

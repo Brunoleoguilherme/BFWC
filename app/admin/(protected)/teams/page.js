@@ -58,7 +58,7 @@ function stageIndex(t) {
   if (t.kind === 'interest') return 0;
   if (t.finalized) return 5;
   if (t.lineup_submitted) return 4;
-  if (t.fully_paid) return 3;
+  if (t.fully_paid || t.exempted) return 3;
   if (t.paid_count >= 1) return 2;
   return 1;
 }
@@ -121,7 +121,8 @@ function PortalCard({ t, color, onClick }) {
       <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 10 }}>
         {t.category && <Tag label={t.category.split(',')[0].trim()} color="#0D4BFF" />}
         <Tag label={`${t.athletes} atletas`} color="#64748b" />
-        {t.checkout_started && t.paid_count === 0 && <Tag label="💳 Chegou ao checkout" color="#ea580c" />}
+        {t.exempted && <Tag label="🎁 Isento" color="#a855f7" />}
+        {t.checkout_started && t.paid_count === 0 && !t.exempted && <Tag label="💳 Chegou ao checkout" color="#ea580c" />}
         {t.lineup_submitted && <Tag label="✓ Escalação" color="#14b8a6" />}
         {!t.pre_inscrito && t.status !== 'rejected' && <Tag label="⚠ Novo" color="#d97706" />}
         {t.status === 'rejected' && <Tag label="✕ Rejeitado" color="#ff4444" />}
@@ -299,6 +300,25 @@ function PortalModal({ team: t, onClose, onUpdate, readOnly }) {
   const [pwd, setPwd] = useState('');
   const [saving, setSaving] = useState(false);
   const [editErr, setEditErr] = useState('');
+  const [exempting, setExempting] = useState(false);
+  const [exReason, setExReason] = useState('');
+  const [exPwd, setExPwd] = useState('');
+  const [exBusy, setExBusy] = useState(false);
+  const [exErr, setExErr] = useState('');
+
+  async function submitExempt(action) {
+    if (!exPwd) { setExErr('Digite sua senha de login para confirmar.'); return; }
+    if (action === 'exempt' && exReason.trim().length < 5) { setExErr('Escreva a justificativa da isenção.'); return; }
+    setExBusy(true); setExErr('');
+    const res = await fetch(`/api/admin/portal-teams/${t.id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, password: exPwd, reason: exReason }),
+    });
+    const d = await res.json().catch(() => ({}));
+    setExBusy(false);
+    if (d.ok) { onUpdate(); onClose(); }
+    else setExErr(d.message || 'Erro ao salvar.');
+  }
   const idx = stageIndex(t);
   const rejected = t.status === 'rejected';
 
@@ -362,7 +382,10 @@ function PortalModal({ team: t, onClose, onUpdate, readOnly }) {
     ['Categorias', t.category],
     ['Atletas cadastrados', `${t.athletes}${t.athletes_paid_qty ? ` / ${t.athletes_paid_qty} contratados` : ''}`],
     ['Plano', `Opção ${t.option}${t.plan_size ? ` · ${t.plan_size}x` : ''}`],
-    ['Pago', `${BRL(t.paid_cents)} de ${BRL(t.total_cents)}${t.plan_size ? ` (${t.paid_count}/${t.plan_size} parcelas)` : ''}`],
+    ['Pago', t.exempted
+      ? `🎁 Isento — ${BRL(t.paid_cents)} pago`
+      : `${BRL(t.paid_cents)} de ${BRL(t.total_cents)}${t.plan_size ? ` (${t.paid_count}/${t.plan_size} parcelas)` : ''}`],
+    ['Justificativa da isenção', t.exempted ? (t.exemption_reason || '—') : null],
     ['Checkout', t.paid_count > 0 ? '✓ Pagamento iniciado' : t.checkout_started ? '💳 Chegou ao checkout, não pagou' : 'Não chegou ao checkout'],
     ['Escalação', t.lineup_submitted ? '✓ Enviada' : 'Não enviada'],
     ['Cadastro em', new Date(t.created_at).toLocaleString('pt-BR')],
@@ -430,6 +453,16 @@ function PortalModal({ team: t, onClose, onUpdate, readOnly }) {
                 {busy ? 'Salvando...' : '🏁 Marcar inscrição finalizada'}
               </button>
             )}
+            {!t.exempted && !t.fully_paid && (
+              <button style={S.mActionBtn('#a855f7')} onClick={() => { setExempting(true); setExReason(''); setExPwd(''); setExErr(''); }}>
+                🎁 Marcar como pago (isenção)
+              </button>
+            )}
+            {t.exempted && (
+              <button style={S.mActionBtn('#64748b')} onClick={() => { setExempting(true); setExReason(t.exemption_reason || ''); setExPwd(''); setExErr(''); }}>
+                ↩ Remover isenção
+              </button>
+            )}
             <button style={S.mActionBtn('#d97706')} onClick={startEdit}>✏️ Editar dados</button>
             <a href="/admin/portal-teams" style={{ ...S.mActionBtn('#0D4BFF'), textDecoration: 'none', display: 'inline-block' }}>
               Abrir em Aprovações →
@@ -440,6 +473,39 @@ function PortalModal({ team: t, onClose, onUpdate, readOnly }) {
               Marque como finalizada após validar os documentos do time.
             </p>
           )}
+        </div>
+      )}
+
+      {exempting && (
+        <div style={{ marginBottom: 10, padding: '20px 22px', borderRadius: 16, background: 'rgba(168,85,247,.06)', border: '1px solid rgba(168,85,247,.3)' }}>
+          <div style={{ ...S.label, color: '#7e22ce' }}>
+            {t.exempted ? '↩ Remover isenção' : '🎁 Marcar como pago por isenção'}
+          </div>
+          {!t.exempted && (
+            <>
+              <p style={{ fontSize: 12.5, color: '#64748b', margin: '0 0 10px', lineHeight: 1.6 }}>
+                O time passa a contar como <strong>pagamento total</strong> (vaga confirmada), mas o valor <strong>não entra no "a receber"</strong> do financeiro. A justificativa fica registrada.
+              </p>
+              <textarea
+                style={{ ...S.mInput, resize: 'vertical', minHeight: 70 }}
+                value={exReason} onChange={e => setExReason(e.target.value)}
+                placeholder="Justificativa (ex: vaga social Sub-12 — projeto aprovado na análise de 08/07)"
+              />
+            </>
+          )}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            <input
+              type="password" value={exPwd} onChange={e => setExPwd(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && submitExempt(t.exempted ? 'unexempt' : 'exempt')}
+              placeholder="Sua senha de login"
+              style={{ ...S.mInput, marginBottom: 0, maxWidth: 220 }}
+            />
+            <button style={S.mActionBtn('#a855f7', true)} onClick={() => submitExempt(t.exempted ? 'unexempt' : 'exempt')} disabled={exBusy}>
+              {exBusy ? 'Salvando...' : t.exempted ? 'Confirmar remoção' : 'Confirmar isenção'}
+            </button>
+            <button style={S.mActionBtn('#64748b')} onClick={() => setExempting(false)} disabled={exBusy}>Cancelar</button>
+          </div>
+          {exErr && <div style={{ fontSize: 12.5, color: '#dc2626', fontWeight: 600, marginTop: 10 }}>❌ {exErr}</div>}
         </div>
       )}
 
@@ -551,7 +617,7 @@ export default function TeamsPage() {
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", color: '#0f172a' }}>
       <style>{`
-        .pipe-stats { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-bottom: 26px; }
+        .pipe-stats { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; margin-bottom: 26px; }
         .pipe-board { display: flex; overflow-x: auto; align-items: flex-start; padding-bottom: 32px; gap: 13px; }
         .pipe-col { width: 246px; flex-shrink: 0; }
         @media (max-width: 1100px) {
@@ -575,7 +641,7 @@ export default function TeamsPage() {
 
       {/* Stats */}
       <div className="pipe-stats">
-        {COLS.map(c => (
+        {[...COLS, { key: 'isencoes', label: 'Isenções', sub: 'pagos por isenção', color: '#a855f7' }].map(c => (
           <div key={c.key} style={{
             padding: '14px 16px', background: '#ffffff',
             border: '1px solid #e2e8f0', borderRadius: 16,
