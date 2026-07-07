@@ -1399,12 +1399,12 @@ export default function TimesPortalPage() {
                           <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 10 }}>
                             <button onClick={() => setCatChoice(p => ({ ...p, [c]: '1' }))} style={{ flex: 1, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', padding: '14px', borderRadius: 14, border: `2px solid ${o === '1' ? YELLOW : 'rgba(15,23,42,.1)'}`, background: o === '1' ? YELLOW + '10' : '#fff' }}>
                               <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: YELLOW, marginBottom: 6 }}>{L('Opção 1 · Pacote', 'Option 1 · Package', 'Opción 1 · Paquete')}</div>
-                              <div style={{ fontSize: 20, fontWeight: 900, color: '#0f172a', letterSpacing: -0.5 }}>R$ 2.000</div>
+                              <div style={{ fontSize: 20, fontWeight: 900, color: '#0f172a', letterSpacing: -0.5 }}>{L('3x de R$ 667', '3x R$ 667', '3x de R$ 667')}</div>
                               <div style={{ fontSize: 11.5, color: 'rgba(15,23,42,.55)', marginTop: 4, lineHeight: 1.45 }}>{L('Atletas inclusos.', 'Athletes included.', 'Atletas incluidos.')}</div>
                             </button>
                             <button onClick={() => setCatChoice(p => ({ ...p, [c]: '2' }))} style={{ flex: 1, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', padding: '14px', borderRadius: 14, border: `2px solid ${o === '2' ? ACCENT : 'rgba(15,23,42,.1)'}`, background: o === '2' ? ACCENT + '0c' : '#fff' }}>
                               <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: ACCENT, marginBottom: 6 }}>{L('Opção 2 · Por atleta', 'Option 2 · Per athlete', 'Opción 2 · Por atleta')}</div>
-                              <div style={{ fontSize: 20, fontWeight: 900, color: '#0f172a', letterSpacing: -0.5 }}>R$ 800 <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>{L('+ R$ 90/atleta', '+ R$ 90/athlete', '+ R$ 90/atleta')}</span></div>
+                              <div style={{ fontSize: 20, fontWeight: 900, color: '#0f172a', letterSpacing: -0.5 }}>{L('3x de R$ 267', '3x R$ 267', '3x de R$ 267')} <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>{L('+ R$ 90/atleta', '+ R$ 90/athlete', '+ R$ 90/atleta')}</span></div>
                               <div style={{ fontSize: 11.5, color: 'rgba(15,23,42,.55)', marginTop: 4, lineHeight: 1.45 }}>{L('Você escolhe a quantidade de atletas (12 a 20).', 'You choose the number of athletes (12 to 20).', 'Tú eliges la cantidad de atletas (12 a 20).')}</div>
                             </button>
                           </div>
@@ -2125,14 +2125,14 @@ export default function TimesPortalPage() {
               <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 12 }}>
                 <button onClick={() => { setCatChoice(Object.fromEntries(registeredCats.map(c => [c, '1']))); setTab('pagamento'); }} style={{ flex: 1, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', padding: '16px', borderRadius: 14, border: `1px solid ${YELLOW}40`, background: YELLOW + '0a' }}>
                   <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: YELLOW, marginBottom: 6 }}>{L('Opção 1 · Pacote', 'Option 1 · Package', 'Opción 1 · Paquete')}</div>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: '#0f172a' }}>R$ 2.000 <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>{L('/categoria', '/category', '/categoría')}</span></div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: '#0f172a' }}>{L('3x de R$ 667', '3x R$ 667', '3x de R$ 667')} <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>{L('/categoria', '/category', '/categoría')}</span></div>
                   <div style={{ fontSize: 12, color: 'rgba(15,23,42,.55)', marginTop: 6, lineHeight: 1.5 }}>{L('Atletas inclusos. Valor por categoria inscrita.', 'Athletes included. Price per registered category.', 'Atletas incluidos. Valor por categoría inscrita.')}</div>
                   <div style={{ marginTop: 10, fontSize: 12, fontWeight: 800, color: YELLOW }}>{L('Inscrever com esta opção →', 'Register with this option →', 'Inscribirse con esta opción →')}</div>
                 </button>
                 <button onClick={() => { setCatChoice(Object.fromEntries(registeredCats.map(c => [c, '2']))); setTab('pagamento'); }} style={{ flex: 1, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', padding: '16px', borderRadius: 14, border: `1px solid ${ACCENT}40`, background: ACCENT + '0a' }}>
                   <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: ACCENT, marginBottom: 6 }}>{L('Opção 2 · Por atleta', 'Option 2 · Per athlete', 'Opción 2 · Por atleta')}</div>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: '#0f172a' }}>R$ 800 <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>{L('/categoria + R$90/atleta', '/category + R$90/athlete', '/categoría + R$90/atleta')}</span></div>
-                  <div style={{ fontSize: 12, color: 'rgba(15,23,42,.55)', marginTop: 6, lineHeight: 1.5 }}>{L('R$ 800 por categoria + R$ 90 por atleta (você escolhe a quantidade).', 'R$ 800 per category + R$ 90 per athlete (you choose the amount).', 'R$ 800 por categoría + R$ 90 por atleta (tú eliges la cantidad).')}</div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: '#0f172a' }}>{L('3x de R$ 267', '3x R$ 267', '3x de R$ 267')} <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(15,23,42,.5)' }}>{L('/categoria + R$90/atleta', '/category + R$90/athlete', '/categoría + R$90/atleta')}</span></div>
+                  <div style={{ fontSize: 12, color: 'rgba(15,23,42,.55)', marginTop: 6, lineHeight: 1.5 }}>{L('3x de R$ 267 por categoria + R$ 90 por atleta (você escolhe a quantidade).', '3x R$ 267 per category + R$ 90 per athlete (you choose the amount).', '3x de R$ 267 por categoría + R$ 90 por atleta (tú eliges la cantidad).')}</div>
                   <div style={{ marginTop: 10, fontSize: 12, fontWeight: 800, color: ACCENT }}>{L('Inscrever com esta opção →', 'Register with this option →', 'Inscribirse con esta opción →')}</div>
                 </button>
               </div>
