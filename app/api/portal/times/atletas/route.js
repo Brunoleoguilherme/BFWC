@@ -44,10 +44,29 @@ export async function GET(req) {
   return NextResponse.json({ ok: true, athletes: enriched });
 }
 
+// Elegibilidade por idade nas categorias de base (Regulamento 5.4, critério ano-base):
+//   Sub-12 → nascidos em 2014 ou depois · Sub-15 → nascidos em 2011 ou depois
+const MIN_BIRTH_YEAR = { 'Sub-12': 2014, 'Sub-15': 2011 };
+
+function eligibilityError(category, birth_date) {
+  if (!category || !birth_date) return null;
+  const key = Object.keys(MIN_BIRTH_YEAR).find(k => category.includes(k));
+  if (!key) return null;
+  const year = parseInt(String(birth_date).slice(0, 4), 10);
+  if (!year) return null;
+  if (year < MIN_BIRTH_YEAR[key]) {
+    return `Atleta nascido em ${year} não é elegível para o ${key}: a categoria aceita nascidos em ${MIN_BIRTH_YEAR[key]} ou depois (Regulamento Oficial, item 5.4). / Athlete born in ${year} is not eligible for ${key}: born ${MIN_BIRTH_YEAR[key]} or later required.`;
+  }
+  return null;
+}
+
 export async function POST(req) {
   const body = await req.json();
   const { team_id, name, email, category, jersey_number, birth_date, document } = body;
   if (!team_id || !name) return NextResponse.json({ ok: false, message: 'team_id e name obrigatórios' }, { status: 400 });
+
+  const eligErr = eligibilityError(category, birth_date);
+  if (eligErr) return NextResponse.json({ ok: false, message: eligErr }, { status: 400 });
 
   const supabase = getSupabaseAdmin();
 
