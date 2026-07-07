@@ -36,8 +36,8 @@ function rejectedHtml({ club_name, contact_name, admin_notes }) {
 export async function PATCH(req, { params }) {
   try {
     const { id } = await params;
-    const { action, admin_notes } = await req.json();
-    if (!['approve', 'reject', 'finalize', 'unfinalize'].includes(action))
+    const { action, admin_notes, password, fields } = await req.json();
+    if (!['approve', 'reject', 'finalize', 'unfinalize', 'edit'].includes(action))
       return NextResponse.json({ ok: false, message: 'Ação inválida.' }, { status: 400 });
 
     const supabase = getSupabaseAdmin();
@@ -48,6 +48,38 @@ export async function PATCH(req, { params }) {
       .single();
 
     if (!team) return NextResponse.json({ ok: false, message: 'Time não encontrado.' }, { status: 404 });
+
+    // Edição manual dos dados do time (confirmação por senha de login do admin)
+    if (action === 'edit') {
+      const { profile, error: authErr } = await requireAdmin();
+      if (authErr) return authErr;
+      const okPwd = await verifyPassword(profile.email, password);
+      if (!okPwd) return NextResponse.json({ ok: false, message: 'Senha incorreta.' }, { status: 401 });
+
+      const allowed = ['club_name', 'city', 'country', 'contact_name', 'contact_role', 'email', 'whatsapp', 'instagram', 'description', 'category'];
+      const updates = {};
+      for (const k of allowed) {
+        if (fields && fields[k] !== undefined) {
+          const v = typeof fields[k] === 'string' ? fields[k].trim() : fields[k];
+          updates[k] = v === '' ? null : v;
+        }
+      }
+      if (updates.email) updates.email = String(updates.email).toLowerCase().trim();
+      if (!updates.club_name) delete updates.club_name; // nome não pode ficar vazio
+      if (!Object.keys(updates).length)
+        return NextResponse.json({ ok: false, message: 'Nada para atualizar.' }, { status: 400 });
+
+      // E-mail é o login do time: bloqueia colisão com outro cadastro
+      if (updates.email) {
+        const { data: clash } = await supabase
+          .from('portal_teams').select('id').ilike('email', updates.email).neq('id', id).maybeSingle();
+        if (clash) return NextResponse.json({ ok: false, message: 'Já existe outro time com este e-mail.' }, { status: 409 });
+      }
+
+      const { error: upErr } = await supabase.from('portal_teams').update(updates).eq('id', id);
+      if (upErr) return NextResponse.json({ ok: false, message: upErr.message }, { status: 500 });
+      return NextResponse.json({ ok: true, updated: Object.keys(updates) });
+    }
 
     // Marcação manual de "Inscrição finalizada" (pós-análise de documentos) — sem e-mail
     if (action === 'finalize' || action === 'unfinalize') {
