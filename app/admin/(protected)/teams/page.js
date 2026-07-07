@@ -112,7 +112,12 @@ function PortalCard({ t, color, onClick }) {
       onClick={() => onClick(t)} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-        <span style={{ fontSize: 13, fontWeight: 800, color: '#0f172a' }}>{t.club_name}</span>
+        <span style={{ fontSize: 13, fontWeight: 800, color: '#0f172a' }}>
+          {t.checkout_started && t.paid_count === 0 && !t.exempted && (
+            <span title="Chegou ao checkout" style={{ marginRight: 5 }}>⭐</span>
+          )}
+          {t.club_name}
+        </span>
         <span style={{ fontSize: 10, fontWeight: 800, color: t.option === '2' ? '#a855f7' : '#0D4BFF', flexShrink: 0 }}>Opção {t.option}</span>
       </div>
       <div style={{ fontSize: 11, color: '#64748b', margin: '3px 0 8px' }}>

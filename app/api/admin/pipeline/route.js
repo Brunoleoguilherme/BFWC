@@ -133,6 +133,10 @@ export async function GET() {
 
   const byDate = (a, b) => new Date(b.created_at) - new Date(a.created_at);
   Object.values(cols).forEach(list => list.sort(byDate));
+  // Cadastro realizado: quem chegou ao checkout sobe para o topo
+  cols.cadastro.sort((a, b) =>
+    ((b.checkout_started ? 1 : 0) - (a.checkout_started ? 1 : 0)) ||
+    (new Date(b.created_at) - new Date(a.created_at)));
 
   const counts = Object.fromEntries(Object.entries(cols).map(([k, v]) => [k, v.length]));
   counts.isencoes = portal.filter(t => t.exempted_at && t.status !== 'rejected').length;
