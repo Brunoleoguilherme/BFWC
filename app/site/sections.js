@@ -148,6 +148,17 @@ export function NewsSection({ lang, showHeading = true }) {
       <div style={{ display: 'grid', gap: 16 }}>
         {[
           {
+            href: '/noticias/inscricoes-abertas',
+            badge: lang === 'en' ? 'Registration open' : lang === 'es' ? 'Inscripciones abiertas' : 'Inscrições abertas',
+            title: lang === 'en'
+              ? 'Registration for the Brasil Flag World Championship 2026 is officially open'
+              : lang === 'es'
+              ? 'Las inscripciones para el Brasil Flag World Championship 2026 están oficialmente abiertas'
+              : 'As inscrições para o Brasil Flag World Championship 2026 estão oficialmente abertas',
+            date: lang === 'en' ? 'July 7, 2026' : lang === 'es' ? '7 de julio de 2026' : '7 de julho de 2026',
+            media: <img src="/assets/hero-rio-athletes.png" alt="Inscrições abertas — BFWC 2026" style={{ width: 120, height: 140, objectFit: 'cover', borderRadius: 12, border: '1px solid rgba(255,255,255,.15)' }} />,
+          },
+          {
             href: '/noticias/prefeitura-leme',
             badge: lang === 'en' ? 'Official support' : lang === 'es' ? 'Apoyo oficial' : 'Apoio oficial',
             title: lang === 'en'
