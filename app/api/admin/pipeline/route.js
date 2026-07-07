@@ -32,7 +32,7 @@ export async function GET() {
 
   const [intRes, portalRes, instRes, rosterRes] = await Promise.all([
     supabase.from('club_interests')
-      .select('id, club_name, city, country, email, category, athletes_count, status, contact_name, travel_support, flagged_suspect, created_at'),
+      .select('id, club_name, city, country, email, category, athletes_count, status, contact_name, travel_support, flagged_suspect, email_opened_at, email_clicked_at, created_at'),
     supabase.from('portal_teams').select('*'),
     supabase.from('payment_installments').select('team_id, plan_size, status'),
     supabase.from('team_athletes').select('team_id'),
@@ -117,6 +117,8 @@ export async function GET() {
       athletes_count: i.athletes_count || null,
       travel_support: i.travel_support || null,
       flagged_suspect: !!i.flagged_suspect,
+      email_opened_at: i.email_opened_at || null,
+      email_clicked_at: i.email_clicked_at || null,
       status: i.status || '',
       created_at: i.created_at,
     };

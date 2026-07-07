@@ -29,6 +29,14 @@ export default function CRMPage() {
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState(null);
+  const [blasts, setBlasts] = useState(null);
+  const [openBlast, setOpenBlast] = useState(null);
+
+  function fetchBlasts() {
+    fetch('/api/admin/blasts').then(r => r.json()).then(d => {
+      if (d.ok) setBlasts(d.blasts || []);
+    }).catch(() => {});
+  }
 
   useEffect(() => {
     fetch('/api/admin/me').then(r => r.json()).then(d => setRole(d.role || 'viewer'));
@@ -36,6 +44,7 @@ export default function CRMPage() {
       if (d.ok) setAudiences(d.audiences);
       setLoading(false);
     }).catch(() => setLoading(false));
+    fetchBlasts();
   }, []);
 
   // Lista de destinatários combinada pelas audiências ativas (dedup por email)
@@ -75,7 +84,7 @@ export default function CRMPage() {
     });
     const d = await r.json();
     setSending(false);
-    if (d.ok) { setResult({ ok: true, sent: d.sent, failed: d.failed?.length || 0 }); setSelected([]); }
+    if (d.ok) { setResult({ ok: true, sent: d.sent, failed: d.failed?.length || 0 }); setSelected([]); fetchBlasts(); }
     else setResult({ ok: false, error: d.error || 'Erro ao enviar.' });
   }
 
@@ -201,6 +210,110 @@ export default function CRMPage() {
           )}
         </div>
       </div>
+
+      {/* ── Disparos realizados ─────────────────────────────────────────── */}
+      <div style={{ marginTop: 28, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 20, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
+        <div style={{ padding: '16px 22px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 13, fontWeight: 800 }}>Disparos realizados</span>
+          <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 9px', borderRadius: 20, background: '#f1f5f9', color: '#64748b' }}>{blasts ? blasts.length : '·'}</span>
+          <span style={{ marginLeft: 'auto', fontSize: 11, color: '#94a3b8' }}>clique para ver os destinatários</span>
+        </div>
+
+        {!blasts ? (
+          <div style={{ padding: 32, textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>Carregando...</div>
+        ) : blasts.length === 0 ? (
+          <div style={{ padding: 32, textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>
+            Nenhum disparo registrado ainda.
+          </div>
+        ) : (
+          blasts.map((b, i) => (
+            <div
+              key={b.id}
+              onClick={() => setOpenBlast(b)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 16, padding: '15px 22px', cursor: 'pointer',
+                borderBottom: i < blasts.length - 1 ? '1px solid #f1f5f9' : 'none',
+                background: i % 2 === 0 ? 'transparent' : '#f8fafc',
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.subject}</div>
+                <div style={{ fontSize: 11, color: '#94a3b8' }}>
+                  {new Date(b.sent_at).toLocaleString('pt-BR')}{b.description ? ` · ${b.description}` : ''}
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexShrink: 0, alignItems: 'center' }}>
+                <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 6, background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0' }}>✉ {b.counts.total}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 6, background: 'rgba(13,75,255,.08)', color: '#0D4BFF', border: '1px solid rgba(13,75,255,.2)' }}>📬 {b.counts.opened}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 6, background: 'rgba(0,156,59,.08)', color: '#009c3b', border: '1px solid rgba(0,156,59,.2)' }}>🔗 {b.counts.clicked}</span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Modal: destinatários do disparo */}
+      {openBlast && (
+        <div
+          onClick={e => e.target === e.currentTarget && setOpenBlast(null)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(6px)',
+            zIndex: 1000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+            padding: '32px 16px', overflowY: 'auto', fontFamily: "'Inter', sans-serif",
+          }}
+        >
+          <div style={{
+            width: '100%', maxWidth: 780, position: 'relative', padding: '34px 36px',
+            background: '#fff', border: '1px solid #e2e8f0', borderRadius: 24,
+            boxShadow: '0 20px 60px rgba(0,0,0,.15)',
+          }}>
+            <button style={{
+              position: 'absolute', top: 18, right: 18, width: 34, height: 34, borderRadius: 10,
+              background: '#f1f5f9', border: '1px solid #e2e8f0', color: '#64748b',
+              fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit',
+            }} onClick={() => setOpenBlast(null)}>✕</button>
+
+            <h2 style={{ fontSize: 19, fontWeight: 900, letterSpacing: -.5, color: '#0f172a', margin: '0 0 4px', paddingRight: 40 }}>{openBlast.subject}</h2>
+            <p style={{ fontSize: 12, color: '#64748b', margin: '0 0 18px' }}>
+              {new Date(openBlast.sent_at).toLocaleString('pt-BR')} · {openBlast.counts.total} destinatário{openBlast.counts.total !== 1 ? 's' : ''} · {openBlast.counts.opened} abriram · {openBlast.counts.clicked} clicaram
+            </p>
+
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: 14, overflow: 'hidden' }}>
+              <div style={{
+                display: 'grid', gridTemplateColumns: '1.3fr 1.3fr 70px 130px',
+                padding: '10px 18px', borderBottom: '1px solid #e2e8f0',
+                fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#94a3b8',
+              }}>
+                <span>Time / Contato</span><span>E-mail</span><span>Idioma</span><span style={{ textAlign: 'right' }}>Abertura</span>
+              </div>
+              <div style={{ maxHeight: 440, overflowY: 'auto' }}>
+                {openBlast.recipients.map((r, i) => (
+                  <div key={r.id} style={{
+                    display: 'grid', gridTemplateColumns: '1.3fr 1.3fr 70px 130px',
+                    padding: '11px 18px', alignItems: 'center',
+                    borderBottom: i < openBlast.recipients.length - 1 ? '1px solid #f1f5f9' : 'none',
+                    background: i % 2 === 0 ? 'transparent' : '#f8fafc',
+                  }}>
+                    <span style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 12.5, fontWeight: 700, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.club_name || r.name || '—'}</div>
+                      {r.name && r.club_name && <div style={{ fontSize: 10.5, color: '#94a3b8' }}>{r.name}</div>}
+                    </span>
+                    <span style={{ fontSize: 12, color: '#475569', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.email}>{r.email}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>{r.language || '—'}</span>
+                    <span style={{ textAlign: 'right', fontSize: 11, fontWeight: 700 }}>
+                      {r.clicked_at
+                        ? <span style={{ color: '#009c3b' }}>🔗 Clicou</span>
+                        : r.opened_at
+                        ? <span style={{ color: '#0D4BFF' }}>📬 Abriu</span>
+                        : <span style={{ color: '#cbd5e1' }}>—</span>}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

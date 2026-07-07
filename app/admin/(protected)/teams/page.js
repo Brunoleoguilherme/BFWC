@@ -91,6 +91,9 @@ function InterestCard({ t, onClick }) {
       <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>
         {t.category && <Tag label={t.category.split(',')[0].trim()} color="#0D4BFF" />}
         {t.athletes_count && <Tag label={`${t.athletes_count} atletas`} color="#64748b" />}
+        {(t.email_clicked_at || t.email_opened_at) && (
+          <Tag label={t.email_clicked_at ? '🔗 Clicou no e-mail' : '📬 Abriu o e-mail'} color={t.email_clicked_at ? '#009c3b' : '#0D4BFF'} />
+        )}
         {t.status === 'rejeitado' && <Tag label="✕ Rejeitado" color="#ff4444" />}
         {t.flagged_suspect && <Tag label="⚠ Suspeito" color="#ff4444" />}
       </div>
@@ -208,6 +211,11 @@ function InterestModal({ team, onClose, onUpdate, readOnly }) {
     ['Contato', t.contact_name], ['E-mail', t.email], ['WhatsApp', t.whatsapp],
     ['Categorias', t.category], ['Atletas', t.athletes_count],
     ['Apoio viagem', t.travel_support], ['Observações', t.notes],
+    ['E-mails enviados', team.email_clicked_at
+      ? `🔗 Clicou no link em ${new Date(team.email_clicked_at).toLocaleString('pt-BR')}`
+      : team.email_opened_at
+      ? `📬 Abriu em ${new Date(team.email_opened_at).toLocaleString('pt-BR')}`
+      : 'Sem registro de abertura'],
   ].filter(([, v]) => v != null && v !== '');
 
   return (

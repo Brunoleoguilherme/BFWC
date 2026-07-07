@@ -309,31 +309,35 @@ function Panel({ title, badge, badgeColor, total, totalLabel, cats, catKey, load
 // ── Page ───────────────────────────────────────────────────────────────────
 const BRL = (cents) => (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
+// Mesmas etapas da aba Times › Inscrições
+const PIPE_COLS = [
+  { key: 'pre',        label: 'Pré-inscritos',        sub: 'ainda não se cadastraram',  color: '#a855f7' },
+  { key: 'cadastro',   label: 'Cadastro realizado',   sub: 'sem parcela paga',          color: '#0D4BFF' },
+  { key: 'vaga',       label: 'Vaga garantida',       sub: '≥ 1 parcela paga',          color: '#ea580c' },
+  { key: 'pago',       label: 'Pagamento total',      sub: 'todas as parcelas',         color: '#009c3b' },
+  { key: 'atletas',    label: 'Atletas inscritos',    sub: 'escalação enviada',         color: '#14b8a6' },
+  { key: 'finalizada', label: 'Inscrição finalizada', sub: 'documentos validados',      color: '#031020' },
+  { key: 'rejeitados', label: 'Rejeitados',           sub: 'pré-inscrição ou cadastro', color: '#ff4444' },
+];
+
 export default function DashboardPage() {
-  const [teams, setTeams] = useState(null);
-  const [fin, setFin]     = useState(null);
+  const [pipe, setPipe] = useState(null);
+  const [fin, setFin]   = useState(null);
 
   useEffect(() => {
-    fetch('/api/admin/teams').then(r => r.json()).then(d => setTeams(d.teams || []));
+    fetch('/api/admin/pipeline').then(r => r.json()).then(d => { if (d.ok) setPipe(d); }).catch(() => {});
     fetch('/api/admin/financial').then(r => r.json()).then(d => { if (d.ok) setFin(d); }).catch(() => {});
   }, []);
 
-  const loading = teams === null;
+  const loading = pipe === null;
+  const cols = pipe?.cols || {};
+  const counts = pipe?.counts || {};
+  const portalTeams = ['cadastro', 'vaga', 'pago', 'atletas', 'finalizada'].flatMap(k => cols[k] || []);
+  const rosterAthletes = portalTeams.reduce((s, t) => s + (t.athletes || 0), 0);
+  const teamsWithRoster = portalTeams.filter(t => (t.athletes || 0) > 0).length;
 
-  const preInscritos = (teams || []).filter(t => !['spam_descartado', 'rejeitado'].includes(t.status));
-  const confirmados  = (teams || []).filter(t => t.status === 'inscricao_confirmada');
-  const pendentes    = (teams || []).filter(t => t.status === 'pendente_analise').length;
-  const rejeitados   = (teams || []).filter(t => t.status === 'rejeitado').length;
-  const emRevisao    = (teams || []).filter(t => t.status === 'em_revisao').length;
-  const aguardando   = (teams || []).filter(t => t.status === 'aguardando_validacao').length;
-
-  const preCats  = catBreakdown(preInscritos);
-  const confCats = catBreakdown(confirmados);
-
-  const allAthletes   = [...preInscritos, ...confirmados];
-  const totalAthletes = allAthletes.reduce((s, t) => s + (parseInt(t.athletes_count) || 0), 0);
-
-  const countries = groupByCountry([...preInscritos, ...confirmados]);
+  // Países: pré-inscritos ativos + todos os times do portal (linha do tempo, sem rejeitados)
+  const countries = groupByCountry([...(cols.pre || []), ...portalTeams]);
 
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", color: '#0f172a' }}>
@@ -341,12 +345,15 @@ export default function DashboardPage() {
         .dash-grid-2    { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
         .dash-grid-3    { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 28px; }
         .dash-grid-cats { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+        .dash-pipe      { display: grid; grid-template-columns: repeat(7,1fr); gap: 8px; }
+        @media (max-width: 1100px) { .dash-pipe { grid-template-columns: repeat(4,1fr); } }
         .dash-ctr { cursor: default; transition: background .15s; }
         .dash-ctr:hover { background: #f8fafc !important; }
         @media (max-width: 640px) {
           .dash-grid-2    { grid-template-columns: 1fr !important; }
           .dash-grid-3    { grid-template-columns: 1fr 1fr !important; }
           .dash-grid-cats { grid-template-columns: repeat(2,1fr) !important; }
+          .dash-pipe      { grid-template-columns: repeat(2,1fr) !important; }
           .dash-title     { font-size: 32px !important; letter-spacing: -1px !important; }
           .hide-sm        { display: none !important; }
         }
@@ -362,40 +369,66 @@ export default function DashboardPage() {
         </h1>
       </div>
 
-      {/* Pré-inscritos + Confirmados */}
-      <div className="dash-grid-2">
-        <Panel title="Times Pré-inscritos" badge="Pré-inscritos" badgeColor="#a855f7"
-          total={preInscritos.length} totalLabel="times registrados"
-          cats={preCats} catKey="teams" loading={loading} />
-        <Panel title="Times Confirmados" badge="Confirmados" badgeColor="#009c3b"
-          total={confirmados.length} totalLabel="inscrições confirmadas"
-          cats={confCats} catKey="teams" loading={loading} />
-      </div>
+      {/* Linha do tempo das inscrições — mesma da aba Times */}
+      <a href="/admin/teams" style={{ textDecoration: 'none', color: 'inherit' }}>
+        <div style={{
+          background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 22,
+          padding: '26px 28px', marginBottom: 16, boxShadow: '0 1px 4px rgba(0,0,0,.06)',
+          cursor: 'pointer', transition: 'border-color .2s',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+            <span style={{
+              fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase',
+              padding: '4px 10px', borderRadius: 6,
+              background: 'rgba(13,75,255,.12)', color: '#0D4BFF', border: '1px solid rgba(13,75,255,.3)',
+            }}>Times</span>
+            <span style={{ fontSize: 15, fontWeight: 800, color: '#0f172a' }}>Linha do tempo das inscrições</span>
+            <span style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700, color: '#0D4BFF' }}>Abrir Inscrições →</span>
+          </div>
+          <div className="dash-pipe">
+            {PIPE_COLS.map(c => (
+              <div key={c.key} style={{
+                background: '#f8fafc', border: '1px solid #e2e8f0',
+                borderRadius: 14, padding: '14px 14px', borderTop: `3px solid ${c.color}`,
+              }}>
+                <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: '#64748b', marginBottom: 8, lineHeight: 1.3 }}>{c.label}</div>
+                <div style={{ fontSize: 30, fontWeight: 900, letterSpacing: -2, lineHeight: 1, color: loading ? '#e2e8f0' : ((counts[c.key] ?? 0) > 0 ? '#0f172a' : '#cbd5e1') }}>
+                  {loading ? '—' : (counts[c.key] ?? 0)}
+                </div>
+                <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 6, lineHeight: 1.3 }}>{c.sub}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </a>
 
       {/* Atletas */}
-      <div style={{
-        background: '#ffffff',
-        border: '1px solid rgba(13,75,255,.22)', borderRadius: 22, padding: '28px 30px', marginBottom: 16,
-        boxShadow: '0 1px 4px rgba(0,0,0,.06)',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 22 }}>
-          <span style={{
-            fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase',
-            padding: '4px 10px', borderRadius: 6,
-            background: 'rgba(13,75,255,.15)', color: '#4d8aff', border: '1px solid rgba(13,75,255,.35)',
-          }}>Atletas</span>
-          <span style={{ fontSize: 15, fontWeight: 800, color: '#0f172a' }}>Total de Atletas Registrados</span>
-        </div>
+      <a href="/admin/athletes" style={{ textDecoration: 'none', color: 'inherit' }}>
         <div style={{
-          fontSize: 72, fontWeight: 900, letterSpacing: -4, lineHeight: 1,
-          color: loading ? '#e2e8f0' : (totalAthletes > 0 ? '#4d8aff' : '#cbd5e1'),
+          background: '#ffffff',
+          border: '1px solid rgba(13,75,255,.22)', borderRadius: 22, padding: '28px 30px', marginBottom: 16,
+          boxShadow: '0 1px 4px rgba(0,0,0,.06)', cursor: 'pointer',
         }}>
-          {loading ? '—' : totalAthletes}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 22 }}>
+            <span style={{
+              fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase',
+              padding: '4px 10px', borderRadius: 6,
+              background: 'rgba(13,75,255,.15)', color: '#4d8aff', border: '1px solid rgba(13,75,255,.35)',
+            }}>Atletas</span>
+            <span style={{ fontSize: 15, fontWeight: 800, color: '#0f172a' }}>Atletas no roster dos times</span>
+            <span style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700, color: '#4d8aff' }}>Ver por time →</span>
+          </div>
+          <div style={{
+            fontSize: 72, fontWeight: 900, letterSpacing: -4, lineHeight: 1,
+            color: loading ? '#e2e8f0' : (rosterAthletes > 0 ? '#4d8aff' : '#cbd5e1'),
+          }}>
+            {loading ? '—' : rosterAthletes}
+          </div>
+          <div style={{ fontSize: 11, color: '#64748b', marginTop: 6 }}>
+            atletas cadastrados em {loading ? '—' : teamsWithRoster} time{teamsWithRoster !== 1 ? 's' : ''} no portal
+          </div>
         </div>
-        <div style={{ fontSize: 11, color: '#64748b', marginTop: 6 }}>
-          atletas entre pré-inscritos e confirmados
-        </div>
-      </div>
+      </a>
 
       {/* ── Resumo Financeiro ─────────────────────────────────────────────── */}
       <a href="/admin/financeiro" style={{ textDecoration: 'none', color: 'inherit' }}>
@@ -433,36 +466,6 @@ export default function DashboardPage() {
           )}
         </div>
       </a>
-
-      {/* Aguardando Validação + Pendentes + Em Revisão + Rejeitados */}
-      <div className="dash-grid-3">
-        {[
-          { label: 'Aguardando Validação', value: aguardando, color: '#d97706', href: '/admin/teams?status=aguardando_validacao' },
-          { label: 'Pendentes de Análise', value: pendentes,  color: '#009c3b', href: '/admin/teams?status=pendente_analise' },
-          { label: 'Em Revisão',           value: emRevisao,  color: '#a855f7', href: '/admin/teams?status=em_revisao'       },
-          { label: 'Rejeitados',           value: rejeitados, color: '#ff4444', href: '/admin/teams?status=rejeitado'        },
-        ].map(s => (
-          <a key={s.label} href={s.href} style={{ textDecoration: 'none' }}>
-            <div style={{
-              padding: '24px 26px',
-              background: '#ffffff',
-              border: `1px solid ${s.value > 0 ? s.color + '30' : '#e2e8f0'}`,
-              borderRadius: 18, cursor: 'pointer', transition: 'border-color .2s',
-              boxShadow: '0 1px 4px rgba(0,0,0,.06)',
-            }}>
-              <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#64748b', marginBottom: 10 }}>
-                {s.label}
-              </div>
-              <div style={{
-                fontSize: 48, fontWeight: 900, letterSpacing: -3, lineHeight: 1,
-                color: loading ? '#e2e8f0' : (s.value > 0 ? s.color : '#cbd5e1'),
-              }}>
-                {loading ? '—' : s.value}
-              </div>
-            </div>
-          </a>
-        ))}
-      </div>
 
       {/* ── Países ──────────────────────────────────────────────────────────── */}
       <div style={{
@@ -614,8 +617,9 @@ export default function DashboardPage() {
       }}>
         <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>Acesso rápido →</span>
         {[
-          { href: '/admin/teams', label: 'Ver CRM'      },
-          { href: '/admin/crm',   label: 'Comunicação'  },
+          { href: '/admin/teams',    label: 'Inscrições'  },
+          { href: '/admin/athletes', label: 'Atletas'     },
+          { href: '/admin/crm',      label: 'Comunicação' },
         ].map(b => (
           <a key={b.href} href={b.href} style={{
             padding: '7px 16px', borderRadius: 9, fontSize: 12, fontWeight: 700,

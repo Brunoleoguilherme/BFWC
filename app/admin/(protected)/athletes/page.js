@@ -14,15 +14,15 @@ const CAT_CHIPS = [
   { key: 'sub12', label: 'Sub-12' },
 ];
 const STAGE_INFO = {
-  confirmado: { color: '#009c3b', label: 'Confirmado' },
-  inscrito:   { color: '#ea580c', label: 'Inscrito' },
-  pendente:   { color: '#64748b', label: 'Pré-inscrito' },
+  confirmado: { color: '#009c3b', label: 'Pagamento total' },
+  inscrito:   { color: '#ea580c', label: 'Vaga garantida' },
+  pendente:   { color: '#64748b', label: 'Sem pagamento' },
 };
 const STAGE_CHIPS = [
   { key: 'all', label: 'Todos' },
-  { key: 'confirmado', label: 'Confirmados' },
-  { key: 'inscrito', label: 'Inscritos' },
-  { key: 'pendente', label: 'Pré-inscritos' },
+  { key: 'confirmado', label: 'Pagamento total' },
+  { key: 'inscrito', label: 'Vaga garantida' },
+  { key: 'pendente', label: 'Sem pagamento' },
 ];
 
 export default function AthletesPage() {
@@ -34,6 +34,7 @@ export default function AthletesPage() {
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('all');
   const [stageFilter, setStageFilter] = useState('all');
+  const [openTeam, setOpenTeam] = useState(null); // { team_id, club_name, ... }
   const [delTarget, setDelTarget] = useState(null);
   const [delPwd, setDelPwd] = useState('');
   const [deleting, setDeleting] = useState(false);
@@ -66,7 +67,8 @@ export default function AthletesPage() {
     if (sidebarCat && CAT_MATCH[sidebarCat]) setCatFilter(sidebarCat);
   }, [sidebarCat]);
 
-  const list = useMemo(() => {
+  // Atletas após filtros de categoria / estágio / busca
+  const filteredAthletes = useMemo(() => {
     let rows = athletes || [];
     if (catFilter !== 'all' && CAT_MATCH[catFilter]) {
       rows = rows.filter(a => a.category?.includes(CAT_MATCH[catFilter]));
@@ -84,7 +86,37 @@ export default function AthletesPage() {
     return rows;
   }, [athletes, catFilter, stageFilter, search]);
 
-  const teamsCount = useMemo(() => new Set(list.map(a => a.team_id)).size, [list]);
+  // Agrupa por time
+  const teams = useMemo(() => {
+    const map = new Map();
+    filteredAthletes.forEach(a => {
+      if (!map.has(a.team_id)) {
+        map.set(a.team_id, {
+          team_id: a.team_id,
+          club_name: a.club_name || '—',
+          city: a.city || '',
+          country: a.country || '',
+          stage: a.stage || 'pendente',
+          categories: new Set(),
+          athletes: [],
+        });
+      }
+      const t = map.get(a.team_id);
+      if (a.category) t.categories.add(a.category);
+      t.athletes.push(a);
+    });
+    const arr = [...map.values()].map(t => ({ ...t, categories: [...t.categories] }));
+    const rank = { confirmado: 0, inscrito: 1, pendente: 2 };
+    arr.sort((a, b) => (rank[a.stage] - rank[b.stage]) || (b.athletes.length - a.athletes.length) || a.club_name.localeCompare(b.club_name));
+    return arr;
+  }, [filteredAthletes]);
+
+  // Atletas do time aberto (respeitando filtros atuais)
+  const openList = useMemo(() => {
+    if (!openTeam) return [];
+    const t = teams.find(x => x.team_id === openTeam.team_id);
+    return (t?.athletes || []).slice().sort((a, b) => (a.category || '').localeCompare(b.category || '') || (a.name || '').localeCompare(b.name || ''));
+  }, [openTeam, teams]);
 
   const chipStyle = (on, color = '#009c3b') => ({
     padding: '7px 14px', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
@@ -95,18 +127,18 @@ export default function AthletesPage() {
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", color: '#0f172a' }}>
       <div style={{ marginBottom: 24 }}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: '#009c3b', marginBottom: 8 }}>CRM</div>
-        <h1 style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1.5, color: '#0f172a' }}>Atletas Registrados</h1>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: '#009c3b', marginBottom: 8 }}>Atletas</div>
+        <h1 style={{ fontSize: 36, fontWeight: 900, letterSpacing: -1.5, color: '#0f172a' }}>Atletas por Time</h1>
         <p style={{ fontSize: 12.5, color: '#64748b', marginTop: 6 }}>
-          Atletas cadastrados no roster dos clubes. O status indica o estágio de pagamento do time.
+          Clique em um time para ver o roster completo. O status indica o estágio de pagamento do time.
         </p>
       </div>
 
       {/* Stats */}
       <div style={{ display: 'flex', gap: 14, marginBottom: 24, flexWrap: 'wrap' }}>
         {[
-          { label: 'Atletas', value: list.length },
-          { label: 'Times', value: teamsCount },
+          { label: 'Times', value: teams.length },
+          { label: 'Atletas', value: filteredAthletes.length },
         ].map(s => (
           <div key={s.label} style={{
             padding: '20px 26px', minWidth: 150,
@@ -125,7 +157,7 @@ export default function AthletesPage() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
         <input
           value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="Buscar por atleta, e-mail, documento, clube ou categoria..."
+          placeholder="Buscar por time, atleta, e-mail, documento ou categoria..."
           style={{ width: '100%', padding: '12px 16px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
         />
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -135,71 +167,134 @@ export default function AthletesPage() {
           ))}
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-          <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: '#94a3b8', marginRight: 2 }}>Estágio</span>
+          <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: '#94a3b8', marginRight: 2 }}>Pagamento</span>
           {STAGE_CHIPS.map(c => (
             <button key={c.key} onClick={() => setStageFilter(c.key)} style={chipStyle(stageFilter === c.key, c.key === 'all' ? '#009c3b' : (STAGE_INFO[c.key]?.color || '#009c3b'))}>{c.label}</button>
           ))}
         </div>
       </div>
 
-      {/* Tabela por atleta */}
-      <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 20, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
-        <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 1.2fr 0.9fr 110px 92px 110px 44px',
-          padding: '12px 22px', borderBottom: '1px solid #e2e8f0',
-          fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#94a3b8',
-        }}>
-          <span>Atleta</span><span>E-mail / Documento</span><span>Time</span><span>Categoria</span><span>Nascimento</span><span style={{ textAlign: 'right' }}>Status</span><span></span>
+      {/* Lista de times */}
+      {loading ? (
+        <div style={{ padding: 40, textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>Carregando...</div>
+      ) : teams.length === 0 ? (
+        <div style={{ padding: 40, textAlign: 'center', color: '#94a3b8', fontSize: 13, background: '#fff', border: '1px dashed #e2e8f0', borderRadius: 20 }}>
+          Nenhum time com atletas cadastrados
         </div>
-
-        {loading ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>Carregando...</div>
-        ) : list.length === 0 ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>
-            Nenhum atleta encontrado
-          </div>
-        ) : (
-          <div style={{ maxHeight: 600, overflowY: 'auto' }}>
-            {list.map((a, i) => {
-              const st = STAGE_INFO[a.stage] || STAGE_INFO.pendente;
-              return (
-                <div key={a.id} style={{
-                  display: 'grid', gridTemplateColumns: '1fr 1.2fr 0.9fr 110px 92px 110px 44px',
-                  padding: '14px 22px', alignItems: 'center',
-                  borderBottom: i < list.length - 1 ? '1px solid #f1f5f9' : 'none',
-                  background: i % 2 === 0 ? 'transparent' : '#f8fafc',
-                }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>
-                    {a.jersey_number != null && a.jersey_number !== '' && (
-                      <span style={{ display: 'inline-block', minWidth: 22, marginRight: 8, fontSize: 11, fontWeight: 800, color: '#94a3b8' }}>#{a.jersey_number}</span>
-                    )}
-                    {a.name || '—'}
-                  </span>
-                  <span style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 12, color: '#475569', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={a.email || ''}>{a.email || <span style={{ color: '#cbd5e1' }}>sem e-mail</span>}</div>
-                    {a.document && <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{a.document}</div>}
-                  </span>
-                  <span style={{ fontSize: 12.5, color: '#475569', fontWeight: 600 }}>{a.club_name || '—'}</span>
-                  <span>
-                    {a.category ? (
-                      <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 6, background: 'rgba(13,75,255,.1)', color: '#0D4BFF', border: '1px solid rgba(13,75,255,.2)' }}>{a.category}</span>
-                    ) : <span style={{ color: '#cbd5e1' }}>—</span>}
-                  </span>
-                  <span style={{ fontSize: 12, color: '#475569', fontWeight: 600 }}>
-                    {a.birth_date ? new Date(a.birth_date + 'T12:00:00').toLocaleDateString('pt-BR') : <span style={{ color: '#cbd5e1' }}>—</span>}
-                  </span>
-                  <span style={{ textAlign: 'right' }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: .5, textTransform: 'uppercase', padding: '3px 9px', borderRadius: 6, background: st.color + '18', color: st.color, border: `1px solid ${st.color}30` }}>{st.label}</span>
-                  </span>
-                  <span style={{ textAlign: 'right' }}>
-                    <button onClick={() => { setDelTarget(a); setDelPwd(''); setDelErr(''); }} title="Excluir atleta" style={{ width: 30, height: 30, borderRadius: 8, border: '1px solid rgba(255,68,68,.2)', background: 'rgba(255,68,68,.07)', color: '#ff4444', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>🗑</button>
-                  </span>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 14 }}>
+          {teams.map(t => {
+            const st = STAGE_INFO[t.stage] || STAGE_INFO.pendente;
+            return (
+              <div
+                key={t.team_id}
+                onClick={() => setOpenTeam(t)}
+                style={{
+                  padding: '18px 20px', background: '#ffffff',
+                  border: '1px solid #e2e8f0', borderRadius: 18, cursor: 'pointer',
+                  boxShadow: '0 1px 4px rgba(0,0,0,.06)', transition: 'transform .15s, box-shadow .15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,.1)'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,.06)'; }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 4 }}>
+                  <span style={{ fontSize: 15, fontWeight: 800, color: '#0f172a' }}>{t.club_name}</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: .5, textTransform: 'uppercase', padding: '3px 9px', borderRadius: 6, background: st.color + '18', color: st.color, border: `1px solid ${st.color}30`, flexShrink: 0 }}>{st.label}</span>
                 </div>
-              );
-            })}
+                <div style={{ fontSize: 11.5, color: '#64748b', marginBottom: 12 }}>
+                  {[t.city, t.country].filter(Boolean).join(' · ') || '—'}
+                </div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <span style={{ fontSize: 20, fontWeight: 900, letterSpacing: -1, color: '#0f172a' }}>{t.athletes.length}</span>
+                  <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, marginRight: 6 }}>atletas</span>
+                  {t.categories.map(c => (
+                    <span key={c} style={{ fontSize: 10.5, fontWeight: 700, padding: '3px 9px', borderRadius: 6, background: 'rgba(13,75,255,.1)', color: '#0D4BFF', border: '1px solid rgba(13,75,255,.2)' }}>{c}</span>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Modal: roster do time */}
+      {openTeam && (
+        <div
+          onClick={e => e.target === e.currentTarget && setOpenTeam(null)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', backdropFilter: 'blur(6px)',
+            zIndex: 900, display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+            padding: '32px 16px', overflowY: 'auto', fontFamily: "'Inter', sans-serif",
+          }}
+        >
+          <div style={{
+            width: '100%', maxWidth: 900, position: 'relative', padding: '36px 38px',
+            background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 24,
+            boxShadow: '0 20px 60px rgba(0,0,0,.15)',
+          }}>
+            <button style={{
+              position: 'absolute', top: 18, right: 18, width: 34, height: 34, borderRadius: 10,
+              background: '#f1f5f9', border: '1px solid #e2e8f0', color: '#64748b',
+              fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit',
+            }} onClick={() => setOpenTeam(null)}>✕</button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 2 }}>
+              <h2 style={{ fontSize: 24, fontWeight: 900, letterSpacing: -1, color: '#0f172a', margin: 0 }}>{openTeam.club_name}</h2>
+              {(() => { const st = STAGE_INFO[openTeam.stage] || STAGE_INFO.pendente; return (
+                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: .5, textTransform: 'uppercase', padding: '3px 9px', borderRadius: 6, background: st.color + '18', color: st.color, border: `1px solid ${st.color}30` }}>{st.label}</span>
+              ); })()}
+            </div>
+            <p style={{ fontSize: 12, color: '#64748b', margin: '4px 0 20px' }}>
+              {[openTeam.city, openTeam.country].filter(Boolean).join(' · ')} · {openList.length} atleta{openList.length !== 1 ? 's' : ''}
+            </p>
+
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: 16, overflow: 'hidden' }}>
+              <div style={{
+                display: 'grid', gridTemplateColumns: '1.2fr 1.4fr 100px 90px 44px',
+                padding: '11px 18px', borderBottom: '1px solid #e2e8f0',
+                fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#94a3b8',
+              }}>
+                <span>Atleta</span><span>E-mail / Documento</span><span>Categoria</span><span>Nascimento</span><span></span>
+              </div>
+              <div style={{ maxHeight: 480, overflowY: 'auto' }}>
+                {openList.map((a, i) => (
+                  <div key={a.id} style={{
+                    display: 'grid', gridTemplateColumns: '1.2fr 1.4fr 100px 90px 44px',
+                    padding: '12px 18px', alignItems: 'center',
+                    borderBottom: i < openList.length - 1 ? '1px solid #f1f5f9' : 'none',
+                    background: i % 2 === 0 ? 'transparent' : '#f8fafc',
+                  }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>
+                      {a.jersey_number != null && a.jersey_number !== '' && (
+                        <span style={{ display: 'inline-block', minWidth: 22, marginRight: 8, fontSize: 11, fontWeight: 800, color: '#94a3b8' }}>#{a.jersey_number}</span>
+                      )}
+                      {a.name || '—'}
+                    </span>
+                    <span style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 12, color: '#475569', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={a.email || ''}>{a.email || <span style={{ color: '#cbd5e1' }}>sem e-mail</span>}</div>
+                      {a.document && <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{a.document}</div>}
+                    </span>
+                    <span>
+                      {a.category ? (
+                        <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 6, background: 'rgba(13,75,255,.1)', color: '#0D4BFF', border: '1px solid rgba(13,75,255,.2)' }}>{a.category}</span>
+                      ) : <span style={{ color: '#cbd5e1' }}>—</span>}
+                    </span>
+                    <span style={{ fontSize: 12, color: '#475569', fontWeight: 600 }}>
+                      {a.birth_date ? new Date(a.birth_date + 'T12:00:00').toLocaleDateString('pt-BR') : <span style={{ color: '#cbd5e1' }}>—</span>}
+                    </span>
+                    <span style={{ textAlign: 'right' }}>
+                      <button onClick={() => { setDelTarget(a); setDelPwd(''); setDelErr(''); }} title="Excluir atleta" style={{ width: 30, height: 30, borderRadius: 8, border: '1px solid rgba(255,68,68,.2)', background: 'rgba(255,68,68,.07)', color: '#ff4444', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>🗑</button>
+                    </span>
+                  </div>
+                ))}
+                {openList.length === 0 && (
+                  <div style={{ padding: 30, textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>Nenhum atleta com os filtros atuais</div>
+                )}
+              </div>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Modal: excluir atleta (confirmação por senha) */}
       {delTarget && (

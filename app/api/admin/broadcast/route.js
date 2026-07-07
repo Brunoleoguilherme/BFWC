@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getResend, fromEmail, emailShell } from '@/lib/email';
 import { requireWriter } from '@/lib/authAdmin';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
 // Envia uma mensagem personalizada (assunto + corpo) para uma lista de
 // destinatários. Suporta placeholders {nome} e {clube} por destinatário.
@@ -20,6 +21,7 @@ export async function POST(request) {
 
   let sent = 0;
   const failed = [];
+  const sentRows = [];
 
   // Corpo em parágrafos a partir das quebras de linha
   const bodyHtml = (msg) => msg
@@ -44,11 +46,40 @@ export async function POST(request) {
       innerHtml: inner,
     });
     try {
-      const { error: sendErr } = await resend.emails.send({ from: fromEmail, to: r.email, subject, html });
+      const { data: sendData, error: sendErr } = await resend.emails.send({ from: fromEmail, to: r.email, subject, html });
       if (sendErr) failed.push({ email: r.email, error: sendErr.message });
-      else sent++;
+      else {
+        sent++;
+        sentRows.push({
+          email: r.email.toLowerCase().trim(),
+          name: r.name || null,
+          club_name: r.club || null,
+          resend_id: sendData?.id || null,
+        });
+      }
     } catch (e) {
       failed.push({ email: r.email, error: e.message });
+    }
+  }
+
+  // Registra o disparo no histórico (não bloqueia o envio em caso de erro)
+  if (sentRows.length > 0) {
+    try {
+      const supabase = getSupabaseAdmin();
+      const { data: blast } = await supabase.from('email_blasts')
+        .insert({
+          subject,
+          description: `Comunicação do painel — por ${profile?.name || 'admin'}`,
+          source: 'painel',
+        })
+        .select('id')
+        .single();
+      if (blast?.id) {
+        await supabase.from('email_blast_recipients')
+          .insert(sentRows.map(r => ({ ...r, blast_id: blast.id })));
+      }
+    } catch (e) {
+      console.error('blast log error', e);
     }
   }
 
