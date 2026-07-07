@@ -142,21 +142,29 @@ export default function AthletesPage() {
       {/* Stats */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
         {[
-          { label: 'Times', value: teams.length, color: '#0f172a' },
-          { label: 'Atletas', value: filteredAthletes.length, color: '#0f172a' },
-          { label: 'Masculino', value: filteredAthletes.filter(a => a.category?.includes('Masculino')).length, color: '#0D4BFF' },
-          { label: 'Feminino', value: filteredAthletes.filter(a => a.category?.includes('Feminino')).length, color: '#e84dff' },
-          { label: 'Sub-15', value: filteredAthletes.filter(a => a.category?.includes('Sub-15')).length, color: '#009c3b' },
-          { label: 'Sub-12', value: filteredAthletes.filter(a => a.category?.includes('Sub-12')).length, color: '#d97706' },
+          { label: 'Times', value: teams.length, sub: `${filteredAthletes.length} atletas`, color: '#0f172a' },
+          ...['Masculino', 'Feminino', 'Sub-15', 'Sub-12'].map((cat, i) => {
+            const catTeams = teams.filter(t => t.categories.includes(cat)).length;
+            const catAth = filteredAthletes.filter(a => a.category?.includes(cat)).length;
+            return {
+              label: cat,
+              value: catTeams,
+              sub: `${catAth} atleta${catAth !== 1 ? 's' : ''}`,
+              color: ['#0D4BFF', '#e84dff', '#009c3b', '#d97706'][i],
+            };
+          }),
         ].map(s => (
           <div key={s.label} style={{
-            padding: '18px 22px', minWidth: 118, flex: '1 1 118px',
+            padding: '18px 22px', minWidth: 130, flex: '1 1 130px',
             background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 18,
             boxShadow: '0 1px 4px rgba(0,0,0,.06)',
           }}>
             <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#64748b', marginBottom: 8 }}>{s.label}</div>
             <div style={{ fontSize: 36, fontWeight: 900, letterSpacing: -2, lineHeight: 1, color: loading ? '#e2e8f0' : s.color }}>
               {loading ? '—' : s.value}
+            </div>
+            <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 6, fontWeight: 600 }}>
+              {loading ? '' : (s.label === 'Times' ? s.sub : `time${s.value !== 1 ? 's' : ''} · ${s.sub}`)}
             </div>
           </div>
         ))}
