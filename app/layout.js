@@ -1,5 +1,6 @@
 import './globals.css';
 import { Analytics } from '@vercel/analytics/next';
+import SwRegister from './SwRegister';
 
 export const metadata = {
   title: 'Brasil Flag World Championship 2026',
@@ -25,6 +26,7 @@ export default function RootLayout({ children }) {
     <html lang="pt-BR" data-scroll-behavior="smooth">
       <body>
         {children}
+        <SwRegister />
         <Analytics />
       </body>
     </html>
