@@ -29,6 +29,14 @@ const GROUPS = [
         matchStatus: null,
         color: '#0D4BFF',
       },
+      {
+        href: '/admin/portal-teams',
+        label: 'Aprovações',
+        icon: '✓',
+        matchPath: '/admin/portal-teams',
+        matchStatus: null,
+        color: '#009c3b',
+      },
     ],
   },
   {
@@ -77,12 +85,6 @@ const GROUPS = [
     section: 'Dados',
     items: [
       { href: '/admin/import', label: 'Importar Time', icon: '＋', matchPath: '/admin/import', matchStatus: null },
-    ],
-  },
-  {
-    section: 'Portal',
-    items: [
-      { href: '/admin/portal-teams', label: 'Clubes do Portal', icon: '🏟', matchPath: '/admin/portal-teams', matchStatus: null, color: '#0D4BFF' },
     ],
   },
   {

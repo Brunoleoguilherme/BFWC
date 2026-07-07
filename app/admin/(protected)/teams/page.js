@@ -331,6 +331,7 @@ function PortalModal({ team: t, onClose, onUpdate, readOnly }) {
 
   const fields = [
     ['Contato', t.contact_name], ['E-mail', t.email], ['WhatsApp', t.whatsapp],
+    ['Instagram', t.instagram || null], ['Descrição', t.description || null],
     ['Categorias', t.category],
     ['Atletas cadastrados', `${t.athletes}${t.athletes_paid_qty ? ` / ${t.athletes_paid_qty} contratados` : ''}`],
     ['Plano', `Opção ${t.option}${t.plan_size ? ` · ${t.plan_size}x` : ''}`],
@@ -403,7 +404,7 @@ function PortalModal({ team: t, onClose, onUpdate, readOnly }) {
               </button>
             )}
             <a href="/admin/portal-teams" style={{ ...S.mActionBtn('#0D4BFF'), textDecoration: 'none', display: 'inline-block' }}>
-              Abrir em Clubes do Portal →
+              Abrir em Aprovações →
             </a>
           </div>
           {!t.finalized && (

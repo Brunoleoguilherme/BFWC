@@ -117,15 +117,16 @@ export default function PortalTeamsPage() {
 
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: '#009c3b', marginBottom: 8 }}>Times</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 900, color: '#0f172a', margin: 0 }}>Clubes do Portal</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 900, color: '#0f172a', margin: 0 }}>Aprovações</h1>
           {pendingCount > 0 && (
             <span style={{ padding: '3px 10px', borderRadius: 20, background: 'rgba(244,255,0,.12)', color: '#009c3b', fontSize: 11, fontWeight: 900, border: '1px solid rgba(244,255,0,.25)' }}>
               {pendingCount} aguardando
             </span>
           )}
         </div>
-        <p style={{ fontSize: 13, color: '#64748b', margin: 0 }}>Gerencie as contas de clubes cadastrados no portal.</p>
+        <p style={{ fontSize: 13, color: '#64748b', margin: 0 }}>Aprove ou recuse os cadastros dos times no portal.</p>
       </div>
 
       {/* Filter tabs */}
