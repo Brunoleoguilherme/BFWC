@@ -85,7 +85,7 @@ export function TopBanner({ lang }) {
   return (
     <a href="/portal/times/cadastro" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 12, background: '#f4ff00', color: '#031020', textAlign: 'center', padding: '13px 16px', textDecoration: 'none', lineHeight: 1.3 }}>
       <span style={{ fontWeight: 950, fontStyle: 'italic', textTransform: 'uppercase', fontSize: 'clamp(14px, 1.6vw, 19px)', letterSpacing: '.2px' }}>
-        {lang === 'en' ? 'Registration open for pre-registered teams' : lang === 'es' ? 'Inscripciones abiertas para pre-inscritos' : 'Inscrições abertas para pré-inscritos'}
+        {lang === 'en' ? 'Registration is open' : lang === 'es' ? 'Inscripciones abiertas' : 'Inscrições abertas'}
       </span>
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#031020', color: '#f4ff00', fontWeight: 900, padding: '8px 18px', borderRadius: 8, textTransform: 'uppercase', fontSize: 'clamp(12px, 1.3vw, 15px)', whiteSpace: 'nowrap' }}>
         {lang === 'en' ? 'Click here →' : lang === 'es' ? 'Clic aquí →' : 'Clique aqui →'}
