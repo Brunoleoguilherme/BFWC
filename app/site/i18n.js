@@ -56,7 +56,7 @@ export const langs = {
     viewAll: 'VER TODAS',
 
     partnersTitle: 'PARCEIROS',
-    partnerSponsor: 'PATROCINADORES',
+    partnerSponsor: 'PATROCINADORES/PARCEIROS',
     partnerOrganizer: 'REALIZAÇÃO',
     partnerSupport: 'APOIO',
     newsletterTitle: 'NÃO PERCA NENHUMA NOVIDADE!',
@@ -128,7 +128,7 @@ export const langs = {
     stayUpdated: 'STAY UPDATED',
     viewAll: 'VIEW ALL',
     partnersTitle: 'PARTNERS',
-    partnerSponsor: 'SPONSORS',
+    partnerSponsor: 'SPONSORS/PARTNERS',
     partnerOrganizer: 'ORGANIZER',
     partnerSupport: 'SUPPORT',
     newsletterTitle: "DON'T MISS ANY NEWS!",
@@ -200,7 +200,7 @@ export const langs = {
     viewAll: 'VER TODAS',
 
     partnersTitle: 'SOCIOS',
-    partnerSponsor: 'PATROCINADORES',
+    partnerSponsor: 'PATROCINADORES/SOCIOS',
     partnerOrganizer: 'ORGANIZACIÓN',
     partnerSupport: 'APOYO',
     newsletterTitle: '¡NO TE PIERDAS NINGUNA NOTICIA!',
