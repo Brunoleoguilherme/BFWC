@@ -54,6 +54,47 @@ const COLS = [
 // Etapas do stepper no modal (sem a coluna de rejeitados)
 const STAGES = COLS.slice(0, 6);
 
+// Categorias fixas do cadastro (mesmos valores salvos no campo `category`)
+const CAT_DEFS = [
+  { key: 'Masculino', label: 'Masculino', re: /masculino/i,      color: '#0D4BFF' },
+  { key: 'Feminino',  label: 'Feminino',  re: /feminino/i,       color: '#ec4899' },
+  { key: 'Sub-15',    label: 'Sub-15',    re: /sub[\s-]*15/i,    color: '#ea580c' },
+  { key: 'Sub-12',    label: 'Sub-12',    re: /sub[\s-]*12/i,    color: '#14b8a6' },
+];
+
+// Etapas do funil consideradas na contagem por categoria (rejeitados de fora)
+const CAT_BUCKETS = ['pre', 'cadastro', 'vaga', 'pago', 'atletas', 'finalizada'];
+
+// Agrega, por categoria, quantos times a escolheram e o total de atletas informados.
+// Um time com várias categorias é contado em cada uma delas (por isso a soma dos
+// cards é maior que o total de times distintos).
+function computeCategoryStats(cols) {
+  const stats = {};
+  CAT_DEFS.forEach(c => { stats[c.key] = { teams: 0, athletes: 0 }; });
+  let teamsWithCat = 0;
+  CAT_BUCKETS.forEach(b => {
+    (cols?.[b] || []).forEach(t => {
+      if (!t.category) return;
+      let matchedAny = false;
+      t.category.split(',').forEach(part => {
+        const s = part.trim();
+        if (!s) return;
+        const numMatch = s.match(/\((\d+)\)/);
+        const n = numMatch ? parseInt(numMatch[1], 10) : 0;
+        CAT_DEFS.forEach(c => {
+          if (c.re.test(s)) {
+            stats[c.key].teams += 1;
+            stats[c.key].athletes += n;
+            matchedAny = true;
+          }
+        });
+      });
+      if (matchedAny) teamsWithCat += 1;
+    });
+  });
+  return { stats, teamsWithCat };
+}
+
 function stageIndex(t) {
   if (t.kind === 'interest') return 0;
   if (t.finalized) return 5;
@@ -622,7 +663,8 @@ export default function TeamsPage() {
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", color: '#0f172a' }}>
       <style>{`
-        .pipe-stats { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; margin-bottom: 26px; }
+        .pipe-stats { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; margin-bottom: 14px; }
+        .pipe-cats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 8px; }
         .pipe-board { display: flex; overflow-x: auto; align-items: flex-start; padding-bottom: 32px; gap: 13px; }
         .pipe-col { width: 246px; flex-shrink: 0; }
         @media (max-width: 1100px) {
@@ -630,6 +672,7 @@ export default function TeamsPage() {
         }
         @media (max-width: 640px) {
           .pipe-stats { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+          .pipe-cats { grid-template-columns: repeat(2, 1fr); gap: 8px; }
           .pipe-stat-num { font-size: 26px !important; }
           .pipe-board { flex-direction: column; overflow-x: visible; padding-bottom: 16px; }
           .pipe-col { width: 100% !important; margin-bottom: 8px; }
@@ -660,6 +703,44 @@ export default function TeamsPage() {
           </div>
         ))}
       </div>
+
+      {/* Categorias */}
+      {(() => {
+        const { stats, teamsWithCat } = data ? computeCategoryStats(data.cols) : { stats: null, teamsWithCat: 0 };
+        return (
+          <div style={{ marginBottom: 26 }}>
+            <div style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: '#94a3b8', margin: '0 2px 8px' }}>
+              Por categoria
+            </div>
+            <div className="pipe-cats">
+              {CAT_DEFS.map(c => {
+                const s = stats ? stats[c.key] : null;
+                return (
+                  <div key={c.key} style={{
+                    padding: '13px 15px', background: '#ffffff',
+                    border: '1px solid #e2e8f0', borderRadius: 16,
+                    boxShadow: '0 1px 4px rgba(0,0,0,.06)', borderLeft: `4px solid ${c.color}`,
+                  }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: .8, textTransform: 'uppercase', color: c.color, marginBottom: 7 }}>{c.label}</div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                      <span style={{ fontSize: 28, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1, color: '#0f172a' }}>
+                        {s ? s.teams : '—'}
+                      </span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>times</span>
+                    </div>
+                    <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 6 }}>
+                      {s && s.athletes > 0 ? `${s.athletes} atletas informados` : 'atletas não informados'}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ fontSize: 10.5, color: '#94a3b8', margin: '8px 2px 0', lineHeight: 1.4 }}>
+              Times ativos por categoria (exceto rejeitados). Um time pode entrar em mais de uma categoria, então a soma dos cards é maior que o total de times{data ? ` — ${teamsWithCat} times com categoria informada` : ''}.
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Toolbar */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 22, alignItems: 'center', flexWrap: 'wrap' }}>
