@@ -30,7 +30,7 @@ export default function UnderArmourNewsPage() {
         </div>
 
         <h1 className="uaTitle">
-          Under Armour é a patrocinadora oficial do Brasil Flag World Championship 2026
+          Under Armour é apoiadora oficial do Brasil Flag World Championship 2026
         </h1>
 
         <div className="uaDate">
@@ -43,7 +43,7 @@ export default function UnderArmourNewsPage() {
         <div className="uaText">
           <p>
             O Brasil Flag World Championship tem o orgulho de anunciar a chegada da
-            Under Armour como patrocinadora oficial do evento.
+            Under Armour como apoiadora oficial do evento.
           </p>
 
           <p>

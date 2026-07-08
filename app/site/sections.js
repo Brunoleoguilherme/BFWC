@@ -184,10 +184,10 @@ export function NewsSection({ lang, showHeading = true }) {
             href: '/noticias/under-armour',
             badge: lang === 'en' ? 'Official announcement' : lang === 'es' ? 'Anuncio oficial' : 'Anúncio oficial',
             title: lang === 'en'
-              ? 'Under Armour is the official sponsor of the Brasil Flag World Championship 2026'
+              ? 'Under Armour is an official supporter of the Brasil Flag World Championship 2026'
               : lang === 'es'
-              ? 'Under Armour es el patrocinador oficial del Brasil Flag World Championship 2026'
-              : 'Under Armour é a patrocinadora oficial do Brasil Flag World Championship 2026',
+              ? 'Under Armour es apoyador oficial del Brasil Flag World Championship 2026'
+              : 'Under Armour é apoiadora oficial do Brasil Flag World Championship 2026',
             date: lang === 'en' ? 'May 18, 2026' : lang === 'es' ? '18 de mayo de 2026' : '18 de maio de 2026',
             media: <Image src="/assets/underarmour-white.png" alt="Under Armour" width={140} height={70} style={{ opacity: .9 }} />,
           },
