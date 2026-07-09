@@ -9,8 +9,86 @@ const NUM = (v) => Number(v || 0).toLocaleString('pt-BR');
 
 const TAB_COLORS = {
   'RESUMO': '#009c3b', 'TRANSMISSÃO': '#0D4BFF', 'TORNEIO': '#a855f7',
+  'TABELA': '#db2777',
   'CAMPOS': '#ea580c', 'ÁRBITROS': '#0891b2', 'CUSTOS': '#eab308',
 };
+
+// Ordem das abas exibidas. TABELA é uma aba virtual (chaveamento/grupos),
+// posicionada entre TORNEIO e CAMPOS — não é uma planilha do GRID.
+const TABS = ['RESUMO', 'TRANSMISSÃO', 'TORNEIO', 'TABELA', 'CAMPOS', 'ÁRBITROS', 'CUSTOS'];
+
+// Categorias do chaveamento e a célula da premissa (nº de times) na aba TORNEIO.
+const TABELA_CATS = [
+  { cell: 'B3', label: 'Masculino', emoji: '⚡', color: '#0D4BFF' },
+  { cell: 'B4', label: 'Feminino',  emoji: '🌸', color: '#db2777' },
+  { cell: 'B5', label: 'Sub-15',    emoji: '🌟', color: '#f59e0b' },
+  { cell: 'B6', label: 'Sub-12',    emoji: '🌱', color: '#10b981' },
+];
+
+// Monta os grupos a partir do nº de times e do tamanho do grupo.
+// Ex.: 12 times, 4/grupo -> Grupo 1: 1-A,1-B,1-C,1-D · Grupo 2: 2-A... · Grupo 3: 3-A...
+function buildGroups(nTeams, perGroup) {
+  const teams = Math.max(0, Math.floor(Number(nTeams) || 0));
+  const size = Math.max(1, Math.floor(Number(perGroup) || 1));
+  const nGroups = Math.ceil(teams / size);
+  const groups = [];
+  let placed = 0;
+  for (let g = 1; g <= nGroups; g++) {
+    const slots = [];
+    for (let sIdx = 0; sIdx < size && placed < teams; sIdx++) {
+      slots.push(g + '-' + String.fromCharCode(65 + sIdx));
+      placed++;
+    }
+    groups.push({ n: g, slots });
+  }
+  return groups;
+}
+
+// Vista do chaveamento: 4 categorias, cada uma dividida em grupos com vagas (N-A, N-B...).
+// Recalcula sozinha a partir das premissas da aba TORNEIO (somente leitura).
+function GruposTabela({ ctx }) {
+  const perGroup = Number(ctx.get('TORNEIO', 'B7')) || 0;
+  return (
+    <div>
+      <div style={{ fontSize: 12.5, color: '#64748b', marginBottom: 18, lineHeight: 1.5 }}>
+        Chaveamento gerado automaticamente a partir das premissas da aba <strong>TORNEIO</strong>
+        {perGroup ? ` — ${perGroup} times por grupo` : ''}. Edite os números lá que a tabela se refaz sozinha.
+      </div>
+      {TABELA_CATS.map((cat) => {
+        const nTeams = Number(ctx.get('TORNEIO', cat.cell)) || 0;
+        const groups = buildGroups(nTeams, perGroup);
+        return (
+          <div key={cat.cell} style={{ marginBottom: 26 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '8px 0 12px', padding: '9px 14px', borderRadius: 10, background: cat.color + '14', border: `1px solid ${cat.color}30` }}>
+              <span style={{ fontSize: 14 }}>{cat.emoji}</span>
+              <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: .5, textTransform: 'uppercase', color: cat.color }}>{cat.label}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', marginLeft: 6 }}>{nTeams} times · {groups.length} grupo{groups.length === 1 ? '' : 's'}</span>
+            </div>
+            {groups.length === 0 ? (
+              <div style={{ fontSize: 12, color: '#94a3b8', padding: '4px 6px' }}>Defina a quantidade de times na aba TORNEIO.</div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(168px, 1fr))', gap: 12 }}>
+                {groups.map((g) => (
+                  <div key={g.n} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
+                    <div style={{ padding: '8px 12px', background: cat.color + '12', borderBottom: `1px solid ${cat.color}25`, fontSize: 11.5, fontWeight: 800, letterSpacing: .5, textTransform: 'uppercase', color: cat.color }}>Grupo {g.n}</div>
+                    <div style={{ padding: '6px 8px' }}>
+                      {g.slots.map((slot) => (
+                        <div key={slot} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 8px', borderBottom: '1px solid #f8fafc' }}>
+                          <span style={{ minWidth: 38, textAlign: 'center', fontWeight: 800, color: cat.color, background: cat.color + '14', borderRadius: 6, padding: '3px 4px', fontSize: 11.5 }}>{slot}</span>
+                          <span style={{ color: '#cbd5e1', fontSize: 12.5 }}>a definir</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 function numToCol(n) { let s = ''; while (n > 0) { const r = (n - 1) % 26; s = String.fromCharCode(65 + r) + s; n = (n - r - 1) / 26; } return s; }
 const cell = (sheet, co) => (GRID[sheet] || {})[co];
@@ -78,10 +156,11 @@ export default function CustosPage() {
     setInputs({}); save({});
   }
 
-  const sheet = SHEET_ORDER[tab];
+  const sheet = TABS[tab];
   const color = TAB_COLORS[sheet] || '#009c3b';
-  const { rows, cols } = META[sheet];
-  const title = cellStr(sheet, 'A1') || sheet;
+  const isTabela = sheet === 'TABELA';
+  const { rows, cols } = isTabela ? { rows: 0, cols: 0 } : META[sheet];
+  const title = isTabela ? 'BFWC 2026 — CHAVEAMENTO / GRUPOS' : (cellStr(sheet, 'A1') || sheet);
   const isResumo = sheet === 'RESUMO';
 
   // faixa de KPIs do RESUMO (linha 4 = valores calculados, linha 5 = rótulos)
@@ -191,7 +270,7 @@ export default function CustosPage() {
       </div>
 
       <div className="cst-tabs">
-        {SHEET_ORDER.map((s, i) => {
+        {TABS.map((s, i) => {
           const c = TAB_COLORS[s] || '#009c3b';
           const active = i === tab;
           return (
@@ -214,7 +293,7 @@ export default function CustosPage() {
       )}
 
       <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 18, padding: '18px 20px', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
-        {body}
+        {isTabela ? <GruposTabela ctx={ctx} /> : body}
       </div>
     </div>
   );
