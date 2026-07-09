@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { constructWebhookEvent } from '@/lib/stripe';
-import { getResend, fromEmail, emailLogoImg, notifyAdminsPayment } from '@/lib/email';
+import { getResend, fromEmail, emailLogoImg, notifyAdminsPayment, notifyAdminsPaymentFailed, translateDeclineReason } from '@/lib/email';
 import { notifyVagaGarantida } from '@/lib/vagaGarantida';
 
 // Garante runtime Node (precisamos do corpo bruto + crypto)
@@ -95,6 +95,39 @@ async function markPaid(session) {
   }
 }
 
+// Cartão recusado / falhou: NÃO cobra nada. Só avisa os admins com o motivo.
+async function notifyCardFailed(pi) {
+  try {
+    const teamId = pi?.metadata?.team_id || null;
+    const err = pi?.last_payment_error || {};
+    const reason = translateDeclineReason({ decline_code: err.decline_code, code: err.code, message: err.message });
+    let club_name = null;
+    let email = pi?.receipt_email || null;
+    if (teamId) {
+      const supabase = getSupabaseAdmin();
+      const { data: team } = await supabase
+        .from('portal_teams')
+        .select('club_name, email')
+        .eq('id', teamId)
+        .single();
+      club_name = team?.club_name || null;
+      email = email || team?.email || null;
+    }
+    const instNum = parseInt(pi?.metadata?.installment_number, 10) || 0;
+    await notifyAdminsPaymentFailed({
+      club_name,
+      email,
+      amount_cents: pi?.amount ?? null,
+      reason,
+      method: 'Cartão (Stripe)',
+      extra: instNum ? `Parcela ${instNum}` : null,
+    });
+    console.warn('card payment failed', teamId, reason);
+  } catch (e) {
+    console.error('notifyCardFailed error', e.message);
+  }
+}
+
 export async function POST(req) {
   const payload = await req.text();
   const sig = req.headers.get('stripe-signature');
@@ -120,8 +153,37 @@ export async function POST(req) {
         await markPaid(event.data.object);
         break;
       }
+      // Cartao recusado / falha na cobranca (nao cobra nada; avisa admins)
+      case 'payment_intent.payment_failed': {
+        await notifyCardFailed(event.data.object);
+        break;
+      }
+      // Pix nao concluido (expirado ou nao pago): avisa admins
       case 'checkout.session.async_payment_failed': {
-        console.warn('PIX falhou/expirou para', event.data.object?.metadata?.team_id);
+        const session = event.data.object;
+        const teamId = session?.metadata?.team_id || null;
+        let club_name = session?.metadata?.club_name || null;
+        let email = session?.customer_email || null;
+        try {
+          if (teamId && (!club_name || !email)) {
+            const supabase = getSupabaseAdmin();
+            const { data: team } = await supabase
+              .from('portal_teams')
+              .select('club_name, email')
+              .eq('id', teamId)
+              .single();
+            club_name = club_name || team?.club_name || null;
+            email = email || team?.email || null;
+          }
+        } catch (e) { console.error('pix fail lookup', e.message); }
+        await notifyAdminsPaymentFailed({
+          club_name,
+          email,
+          amount_cents: session?.amount_total ?? null,
+          reason: 'Pix nao concluido (expirado ou nao pago)',
+          method: 'Pix',
+        });
+        console.warn('PIX falhou/expirou para', teamId);
         break;
       }
       default:
