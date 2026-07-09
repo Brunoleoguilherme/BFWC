@@ -1,185 +1,221 @@
 'use client';
 
-import { useState } from 'react';
-import { SHEETS } from './data';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { GRID, META, SHEET_ORDER } from './grid';
+import { computeAll, isEditable } from './engine';
 
-// Valores da planilha estão em reais (R$), não em centavos.
-const BRL = (v) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-const NUM = (v) => Number(v).toLocaleString('pt-BR');
+const BRL = (v) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const NUM = (v) => Number(v || 0).toLocaleString('pt-BR');
 
-// Cor de destaque por aba
 const TAB_COLORS = {
-  'RESUMO':      '#009c3b',
-  'TRANSMISSÃO': '#0D4BFF',
-  'TORNEIO':     '#a855f7',
-  'CAMPOS':      '#ea580c',
-  'ÁRBITROS':    '#0891b2',
-  'CUSTOS':      '#eab308',
+  'RESUMO': '#009c3b', 'TRANSMISSÃO': '#0D4BFF', 'TORNEIO': '#a855f7',
+  'CAMPOS': '#ea580c', 'ÁRBITROS': '#0891b2', 'CUSTOS': '#eab308',
 };
 
-const isStr = (v) => typeof v === 'string';
-const nonEmpty = (row) => row.filter(c => c !== null && c !== '' && c !== undefined);
-const isSection = (row) => isStr(row[0]) && row[0].trim().startsWith('▌');
-const isNote    = (row) => isStr(row[0]) && row[0].startsWith('💙');
-const isTotal   = (row) => isStr(row[0]) && /(^|\b)(TOTAL|SUBTOTAL|TOTAL GERAL)/i.test(row[0]);
-// Linha de cabeçalho de tabela: todas as células preenchidas são texto e há >= 3 delas
-const isHeader  = (row) => {
-  const ne = nonEmpty(row);
-  return ne.length >= 3 && ne.every(isStr) && !isSection(row) && !isNote(row) && !isTotal(row);
-};
+function numToCol(n) { let s = ''; while (n > 0) { const r = (n - 1) % 26; s = String.fromCharCode(65 + r) + s; n = (n - r - 1) / 26; } return s; }
+const cell = (sheet, co) => (GRID[sheet] || {})[co];
+const cellStr = (sheet, co) => { const c = cell(sheet, co); return c && 's' in c ? c.s : null; };
+const isFormula = (sheet, co) => { const c = cell(sheet, co); return !!(c && 'f' in c); };
 
-// Formata uma célula conforme o rótulo da coluna ativa
-function fmt(val, colLabel) {
-  if (val === null || val === undefined || val === '') return '';
-  if (typeof val === 'number') {
-    if (colLabel && /R\$/.test(colLabel)) return BRL(val);
-    if (colLabel && colLabel.includes('%')) return (val * 100).toFixed(1).replace('.', ',') + '%';
-    return NUM(val);
-  }
-  return String(val);
+const isSectionRow = (sheet, r) => { const s = cellStr(sheet, 'A' + r); return !!s && s.trim().startsWith('▌'); };
+const isNoteRow = (sheet, r) => { const s = cellStr(sheet, 'A' + r); return !!s && s.startsWith('💙'); };
+const isTotalRow = (sheet, r) => { const s = cellStr(sheet, 'A' + r); return !!s && /(TOTAL|SUBTOTAL)/i.test(s); };
+function isHeaderRow(sheet, r, cols) {
+  let strs = 0, nums = 0;
+  for (let c = 1; c <= cols; c++) { const cc = cell(sheet, numToCol(c) + r); if (!cc) continue; if ('s' in cc) strs++; else nums++; }
+  return strs >= 3 && nums === 0 && !isSectionRow(sheet, r) && !isNoteRow(sheet, r) && !isTotalRow(sheet, r);
+}
+function rowIsEmpty(sheet, r, cols) {
+  for (let c = 1; c <= cols; c++) if (cell(sheet, numToCol(c) + r)) return false;
+  return true;
 }
 
-function SheetView({ sheet, color }) {
-  const rows = sheet.rows;
-  const cols = sheet.cols;
-  const title = isStr(rows[0]?.[0]) ? rows[0][0] : sheet.name;
+// formata célula calculada conforme o rótulo da coluna ativa
+function fmtComputed(val, colLabel) {
+  if (colLabel && /R\$/.test(colLabel)) return BRL(val);
+  if (colLabel && colLabel.includes('%')) return (val * 100).toFixed(1).replace('.', ',') + '%';
+  return NUM(val);
+}
 
-  // RESUMO: faixa de KPIs (linha de valores r4 + rótulos r5)
-  const isResumo = sheet.name === 'RESUMO';
-  const kpiVals = isResumo ? rows[3] : null;
-  const kpiLabels = isResumo ? rows[4] : null;
-  const startIdx = isResumo ? 5 : 1;
-  const subtitle = (!isResumo && isStr(rows[1]?.[0]) && !isSection(rows[1])) ? rows[1][0] : (isResumo && isStr(rows[1]?.[0]) ? rows[1][0] : null);
-  const subStart = (!isResumo && subtitle) ? 2 : startIdx;
+export default function CustosPage() {
+  const [tab, setTab] = useState(0);
+  const [inputs, setInputs] = useState({});
+  const [loaded, setLoaded] = useState(false);
+  const [saveState, setSaveState] = useState('idle'); // idle | saving | saved | error
+  const timer = useRef(null);
 
+  useEffect(() => {
+    fetch('/api/admin/custos')
+      .then(r => r.json())
+      .then(d => { if (d && d.ok && d.inputs) setInputs(d.inputs); })
+      .catch(() => {})
+      .finally(() => setLoaded(true));
+  }, []);
+
+  const ctx = useMemo(() => computeAll(inputs), [inputs]);
+
+  function save(next) {
+    setSaveState('saving');
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/admin/custos', {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ inputs: next }),
+        });
+        const d = await res.json().catch(() => ({}));
+        setSaveState(d.ok ? 'saved' : 'error');
+      } catch (_) { setSaveState('error'); }
+    }, 700);
+  }
+
+  function onEdit(key, value) {
+    setInputs(prev => { const next = { ...prev, [key]: value }; save(next); return next; });
+  }
+
+  function resetAll() {
+    if (!window.confirm('Restaurar todos os valores da planilha original? As edições salvas serão apagadas.')) return;
+    setInputs({}); save({});
+  }
+
+  const sheet = SHEET_ORDER[tab];
+  const color = TAB_COLORS[sheet] || '#009c3b';
+  const { rows, cols } = META[sheet];
+  const title = cellStr(sheet, 'A1') || sheet;
+  const isResumo = sheet === 'RESUMO';
+
+  // faixa de KPIs do RESUMO (linha 4 = valores calculados, linha 5 = rótulos)
+  const kpis = isResumo
+    ? Array.from({ length: cols }, (_, i) => ({
+        label: cellStr(sheet, numToCol(i + 1) + '5') || '',
+        value: ctx.get(sheet, numToCol(i + 1) + '4'),
+      })).filter(k => k.label)
+    : null;
+
+  function inputBox(key, defVal) {
+    const has = Object.prototype.hasOwnProperty.call(inputs, key);
+    const val = has ? inputs[key] : (defVal === undefined || defVal === null ? '' : defVal);
+    return (
+      <input
+        type="number" inputMode="decimal" value={val}
+        onChange={e => onEdit(key, e.target.value)}
+        style={{
+          width: '100%', maxWidth: 130, textAlign: 'right', padding: '5px 8px',
+          fontSize: 12.5, fontFamily: 'inherit', color: '#0f172a', fontWeight: 600,
+          background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 7, outline: 'none',
+        }}
+      />
+    );
+  }
+
+  // renderiza o corpo de uma aba (linhas 1..rows)
+  const body = [];
   let activeHeader = [];
-  const out = [];
-
-  for (let i = subStart; i < rows.length; i++) {
-    const row = rows[i];
-    if (!row || nonEmpty(row).length === 0) { continue; }
-
-    if (isSection(row)) {
+  const startRow = isResumo ? 6 : 2; // RESUMO: pula título/subtítulo/KPIs (1-5)
+  for (let r = startRow; r <= rows; r++) {
+    if (rowIsEmpty(sheet, r, cols)) continue;
+    if (isSectionRow(sheet, r)) {
       activeHeader = [];
-      out.push(
-        <div key={i} style={{
-          margin: '22px 0 10px', padding: '9px 14px', borderRadius: 10,
-          background: color + '14', border: `1px solid ${color}30`,
-          fontSize: 12, fontWeight: 800, letterSpacing: .8, textTransform: 'uppercase', color,
-        }}>{row[0].replace(/^▌\s*/, '')}</div>
-      );
+      body.push(<div key={r} style={{ margin: '22px 0 10px', padding: '9px 14px', borderRadius: 10, background: color + '14', border: `1px solid ${color}30`, fontSize: 12, fontWeight: 800, letterSpacing: .8, textTransform: 'uppercase', color }}>{cellStr(sheet, 'A' + r).replace(/^▌\s*/, '')}</div>);
       continue;
     }
-    if (isNote(row)) {
-      out.push(
-        <div key={i} style={{ margin: '14px 0 2px', fontSize: 11, color: '#94a3b8', lineHeight: 1.5 }}>{row[0]}</div>
-      );
+    if (isNoteRow(sheet, r)) {
+      body.push(<div key={r} style={{ margin: '14px 0 2px', fontSize: 11, color: '#94a3b8', lineHeight: 1.5 }}>{cellStr(sheet, 'A' + r)}</div>);
       continue;
     }
-    if (isHeader(row)) {
-      activeHeader = row.slice();
-      out.push(
-        <div key={i} className="cst-row cst-head" style={{ gridTemplateColumns: `1.6fr repeat(${cols - 1}, 1fr)` }}>
-          {Array.from({ length: cols }).map((_, c) => (
-            <div key={c} style={{ textAlign: c === 0 ? 'left' : 'right' }}>{row[c] != null ? String(row[c]) : ''}</div>
-          ))}
+    const gridTemplate = `1.7fr repeat(${cols - 1}, 1fr)`;
+    if (isHeaderRow(sheet, r, cols)) {
+      activeHeader = Array.from({ length: cols }, (_, c) => cellStr(sheet, numToCol(c + 1) + r) || '');
+      body.push(
+        <div key={r} className="cst-row cst-head" style={{ gridTemplateColumns: gridTemplate }}>
+          {activeHeader.map((h, c) => <div key={c} style={{ textAlign: c === 0 ? 'left' : 'right' }}>{h}</div>)}
         </div>
       );
       continue;
     }
-    const total = isTotal(row);
-    out.push(
-      <div key={i} className={'cst-row' + (total ? ' cst-total' : '')}
-        style={{ gridTemplateColumns: `1.6fr repeat(${cols - 1}, 1fr)`, ...(total ? { background: color + '12', borderColor: color + '30' } : {}) }}>
-        {Array.from({ length: cols }).map((_, c) => {
-          const v = row[c];
-          const num = typeof v === 'number';
+    const total = isTotalRow(sheet, r);
+    body.push(
+      <div key={r} className={'cst-row' + (total ? ' cst-total' : '')} style={{ gridTemplateColumns: gridTemplate, ...(total ? { background: color + '12', borderColor: color + '30' } : {}) }}>
+        {Array.from({ length: cols }, (_, ci) => {
+          const col = numToCol(ci + 1);
+          const co = col + r;
+          const c = cell(sheet, co);
+          const label = activeHeader[ci];
+          const editable = isEditable(sheet, col, r);
+          let content = null, align = ci === 0 ? 'left' : 'right';
+          if (c && 's' in c) { content = c.s; align = 'left'; }
+          else if (editable) { content = inputBox(sheet + '!' + co, c && 'v' in c ? c.v : ''); }
+          else if (c && 'f' in c) { content = fmtComputed(ctx.get(sheet, co), label); }
+          else { content = ''; }
           return (
-            <div key={c} style={{
-              textAlign: c === 0 ? 'left' : (num ? 'right' : 'left'),
-              fontWeight: total ? 800 : (c === 0 ? 600 : 400),
-              color: total ? color : (c === 0 ? '#0f172a' : '#475569'),
+            <div key={ci} style={{
+              textAlign: align,
+              fontWeight: total ? 800 : (ci === 0 ? 600 : 400),
+              color: total ? color : (ci === 0 ? '#0f172a' : '#475569'),
               fontVariantNumeric: 'tabular-nums',
-            }}>{fmt(v, activeHeader[c])}</div>
+              display: 'flex', justifyContent: align === 'right' ? 'flex-end' : 'flex-start', alignItems: 'center',
+            }}>{content}</div>
           );
         })}
       </div>
     );
   }
 
-  return (
-    <div>
-      <div style={{ fontSize: 12.5, color: '#64748b', marginBottom: isResumo && kpiVals ? 18 : 14 }}>{title}</div>
+  const saveLabel = { idle: '', saving: '💾 Salvando…', saved: '✓ Salvo', error: '⚠ Erro ao salvar' }[saveState];
+  const saveColor = saveState === 'error' ? '#dc2626' : saveState === 'saved' ? '#009c3b' : '#94a3b8';
 
-      {isResumo && kpiVals && (
+  return (
+    <div style={{ fontFamily: "'Inter', sans-serif", color: '#0f172a' }}>
+      <style>{`
+        .cst-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 22px; }
+        .cst-tab { padding: 9px 16px; border-radius: 10px; font-size: 12px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; cursor: pointer; border: 1px solid #e2e8f0; background: #fff; color: #64748b; font-family: inherit; transition: all .15s; }
+        .cst-row { display: grid; gap: 10px; padding: 8px 10px; align-items: center; font-size: 12.5px; }
+        .cst-row:not(:last-child) { border-bottom: 1px solid #f1f5f9; }
+        .cst-head { font-size: 9.5px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #94a3b8; border-bottom: 1px solid #e2e8f0 !important; }
+        .cst-total { border-radius: 8px; border: 1px solid transparent; margin-top: 2px; }
+        .cst-kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 22px; }
+        @media (max-width: 1000px) { .cst-kpis { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 640px) { .cst-kpis { grid-template-columns: repeat(2, 1fr); } .cst-row { font-size: 11px; gap: 6px; } }
+      `}</style>
+
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 22, flexWrap: 'wrap' }}>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: '#009c3b', marginBottom: 8 }}>BFWC 2026 · Financeiro</div>
+          <h1 style={{ fontSize: 42, fontWeight: 900, letterSpacing: -2, lineHeight: 1, color: '#0f172a', margin: 0 }}>Custos do Evento</h1>
+          <p style={{ fontSize: 13, color: '#64748b', marginTop: 8 }}>Planilha viva — edite as células amarelas (entradas) que os totais se calculam e salvam sozinhos.</p>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: saveColor, minWidth: 90, textAlign: 'right' }}>{loaded ? saveLabel : 'carregando…'}</span>
+          <button onClick={resetAll} style={{ padding: '9px 14px', borderRadius: 10, fontSize: 11.5, fontWeight: 700, cursor: 'pointer', background: '#f1f5f9', border: '1px solid #e2e8f0', color: '#475569', fontFamily: 'inherit' }}>↺ Restaurar planilha</button>
+        </div>
+      </div>
+
+      <div className="cst-tabs">
+        {SHEET_ORDER.map((s, i) => {
+          const c = TAB_COLORS[s] || '#009c3b';
+          const active = i === tab;
+          return (
+            <button key={s} className="cst-tab" onClick={() => setTab(i)} style={active ? { background: c + '18', color: c, borderColor: c + '40' } : {}}>{s}</button>
+          );
+        })}
+      </div>
+
+      <div style={{ fontSize: 12.5, color: '#64748b', marginBottom: (isResumo && kpis) ? 18 : 14 }}>{title}</div>
+
+      {isResumo && kpis && (
         <div className="cst-kpis">
-          {kpiLabels.map((lab, idx) => (
-            <div key={idx} style={{
-              background: '#fff', border: '1px solid #e2e8f0', borderRadius: 16,
-              padding: '15px 16px', boxShadow: '0 1px 4px rgba(0,0,0,.06)', borderTop: `3px solid ${color}`,
-            }}>
-              <div style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: '#64748b', marginBottom: 8, lineHeight: 1.3 }}>{lab}</div>
-              <div style={{ fontSize: 26, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1, color: '#0f172a' }}>
-                {/R\$/.test(lab) ? BRL(kpiVals[idx] || 0) : NUM(kpiVals[idx] || 0)}
-              </div>
+          {kpis.map((k, i) => (
+            <div key={i} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 16, padding: '15px 16px', boxShadow: '0 1px 4px rgba(0,0,0,.06)', borderTop: `3px solid ${color}` }}>
+              <div style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: '#64748b', marginBottom: 8, lineHeight: 1.3 }}>{k.label}</div>
+              <div style={{ fontSize: 26, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1, color: '#0f172a' }}>{/R\$/.test(k.label) ? BRL(k.value) : NUM(k.value)}</div>
             </div>
           ))}
         </div>
       )}
 
       <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 18, padding: '18px 20px', boxShadow: '0 1px 4px rgba(0,0,0,.06)' }}>
-        {out}
+        {body}
       </div>
-    </div>
-  );
-}
-
-export default function CustosPage() {
-  const [tab, setTab] = useState(0);
-  const sheet = SHEETS[tab];
-  const color = TAB_COLORS[sheet.name] || '#009c3b';
-
-  return (
-    <div style={{ fontFamily: "'Inter', sans-serif", color: '#0f172a' }}>
-      <style>{`
-        .cst-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 22px; }
-        .cst-tab { padding: 9px 16px; border-radius: 10px; font-size: 12px; font-weight: 800; letter-spacing: .5px;
-          text-transform: uppercase; cursor: pointer; border: 1px solid #e2e8f0; background: #fff; color: #64748b;
-          font-family: inherit; transition: all .15s; }
-        .cst-row { display: grid; gap: 10px; padding: 9px 10px; align-items: center; font-size: 12.5px; }
-        .cst-row:not(:last-child) { border-bottom: 1px solid #f1f5f9; }
-        .cst-head { font-size: 9.5px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #94a3b8; border-bottom: 1px solid #e2e8f0 !important; }
-        .cst-total { border-radius: 8px; border: 1px solid transparent; margin-top: 2px; }
-        .cst-kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 22px; }
-        @media (max-width: 1000px) { .cst-kpis { grid-template-columns: repeat(3, 1fr); } }
-        @media (max-width: 640px) {
-          .cst-kpis { grid-template-columns: repeat(2, 1fr); }
-          .cst-row { font-size: 11px; gap: 6px; }
-        }
-      `}</style>
-
-      {/* Header */}
-      <div style={{ marginBottom: 22 }}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: '#009c3b', marginBottom: 8 }}>BFWC 2026 · Financeiro</div>
-        <h1 style={{ fontSize: 42, fontWeight: 900, letterSpacing: -2, lineHeight: 1, color: '#0f172a', margin: 0 }}>Custos do Evento</h1>
-        <p style={{ fontSize: 13, color: '#64748b', marginTop: 8 }}>Painel de operação e custos — planilha completa por aba.</p>
-      </div>
-
-      {/* Tabs */}
-      <div className="cst-tabs">
-        {SHEETS.map((s, i) => {
-          const c = TAB_COLORS[s.name] || '#009c3b';
-          const active = i === tab;
-          return (
-            <button key={s.name} className="cst-tab" onClick={() => setTab(i)}
-              style={active ? { background: c + '18', color: c, borderColor: c + '40' } : {}}>
-              {s.name}
-            </button>
-          );
-        })}
-      </div>
-
-      <SheetView sheet={sheet} color={color} />
     </div>
   );
 }
