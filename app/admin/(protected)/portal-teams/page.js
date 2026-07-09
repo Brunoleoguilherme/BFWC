@@ -74,6 +74,17 @@ export default function PortalTeamsPage() {
     }
   }
 
+  async function resendVerification(id) {
+    setActing(id + 'resend');
+    const res = await fetch(`/api/admin/portal-teams/${id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'resend_verification' }),
+    });
+    const data = await res.json();
+    setActing(null);
+    showToast(data.ok ? '📧 E-mail de verificação reenviado.' : 'Erro: ' + (data.message || 'falha'));
+  }
+
   async function confirmDelete() {
     if (!delTarget || !delPwd) return;
     setDeleting(true); setDelErr('');
@@ -190,6 +201,15 @@ export default function PortalTeamsPage() {
 
               {/* Actions */}
               <div style={{ display: 'flex', gap: 8, flexShrink: 0, alignItems: 'center' }}>
+                {team.status === 'pending_email' && (
+                  <button onClick={() => resendVerification(team.id)} disabled={!!acting} style={{
+                    padding: '7px 14px', borderRadius: 9, fontSize: 11.5, fontWeight: 700,
+                    background: 'rgba(168,85,247,.1)', color: '#a855f7', border: '1px solid rgba(168,85,247,.25)', cursor: 'pointer', fontFamily: 'inherit',
+                    opacity: acting ? .5 : 1,
+                  }}>
+                    {acting === team.id + 'resend' ? 'Enviando...' : '📧 Reenviar e-mail'}
+                  </button>
+                )}
                 {isPending && (
                   <>
                     <button onClick={() => act(team.id, 'approve')} disabled={!!acting} style={{
