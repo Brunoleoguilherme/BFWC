@@ -71,7 +71,7 @@ export default function PreInscricoesNewsPage() {
           <p>
             E o próximo passo já tem data: encerradas as pré-inscrições, abre-se
             o período do cadastro oficial no portal — de 07 a 12/07 com
-            prioridade para os times pré-inscritos, e de 13 a 20/07 aberto a
+            prioridade para os times pré-inscritos, e a partir de 13/07 aberto a
             todas as equipes, enquanto houver vagas na categoria.
           </p>
 

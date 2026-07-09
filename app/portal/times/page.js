@@ -2117,7 +2117,7 @@ export default function TimesPortalPage() {
                   <div style={{ fontSize: 12.5, color: 'rgba(15,23,42,.6)', lineHeight: 1.5 }} dangerouslySetInnerHTML={{ __html: L('Prioridade para times <strong>já pré-inscritos</strong> confirmarem a inscrição.', 'Priority for <strong>already pre-registered</strong> teams to confirm.', 'Prioridad para equipos <strong>ya pre-inscritos</strong> para confirmar.') }} />
                 </div>
                 <div style={{ flex: 1, background: '#fff', border: '1px solid #dbeafe', borderRadius: 12, padding: '12px 14px' }}>
-                  <div style={{ fontSize: 14, fontWeight: 900, color: '#1e3a8a', marginBottom: 3 }}>{L('13/07 a 20/07', 'Jul 13–20', '13/07 al 20/07')}</div>
+                  <div style={{ fontSize: 14, fontWeight: 900, color: '#1e3a8a', marginBottom: 3 }}>{L('A partir de 13/07', 'From Jul 13', 'A partir del 13/07')}</div>
                   <div style={{ fontSize: 12.5, color: 'rgba(15,23,42,.6)', lineHeight: 1.5 }} dangerouslySetInnerHTML={{ __html: L('Aberto para <strong>qualquer time</strong> confirmar a inscrição.', 'Open for <strong>any team</strong> to confirm.', 'Abierto para <strong>cualquier equipo</strong> para confirmar.') }} />
                 </div>
               </div>

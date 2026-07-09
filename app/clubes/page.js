@@ -349,9 +349,9 @@ export default function ClubInterestPage() {
 
   // ── Pré-inscrições encerradas em 01/07/2026 ──
   const closedCopy = {
-    pt: { badge: 'Pré-inscrições encerradas', title: 'As pré-inscrições foram encerradas em 01/07.', text: 'As inscrições oficiais dos times abrem dia 07/07 às 10h (horário de Brasília) e vão até 20/07 ou enquanto houver vagas. De 07 a 12/07 a prioridade é dos times pré-inscritos; a partir de 13/07, abertas a todas as equipes.', cta: 'Ir para o cadastro oficial →', back: '← Voltar ao site' },
-    en: { badge: 'Pre-registration closed', title: 'Pre-registration closed on July 1st.', text: 'Official team registration opens July 7 at 10 AM (Brasília time, GMT-3) and runs until July 20 or while spots last. July 7–12 is priority for pre-registered teams; from July 13 it is open to all teams.', cta: 'Go to official registration →', back: '← Back to site' },
-    es: { badge: 'Preinscripciones cerradas', title: 'Las preinscripciones cerraron el 01/07.', text: 'Las inscripciones oficiales abren el 07/07 a las 10h (hora de Brasilia) y van hasta el 20/07 o mientras haya cupos. Del 07 al 12/07 la prioridad es de los equipos preinscritos; desde el 13/07, abiertas a todos los equipos.', cta: 'Ir a la inscripción oficial →', back: '← Volver al sitio' },
+    pt: { badge: 'Pré-inscrições encerradas', title: 'As pré-inscrições foram encerradas em 01/07.', text: 'As inscrições oficiais dos times abrem dia 07/07 às 10h (horário de Brasília) e ficam abertas enquanto houver vagas. De 07 a 12/07 a prioridade é dos times pré-inscritos; a partir de 13/07, abertas a todas as equipes.', cta: 'Ir para o cadastro oficial →', back: '← Voltar ao site' },
+    en: { badge: 'Pre-registration closed', title: 'Pre-registration closed on July 1st.', text: 'Official team registration opens July 7 at 10 AM (Brasília time, GMT-3) and stay open while spots last. July 7–12 is priority for pre-registered teams; from July 13 it is open to all teams.', cta: 'Go to official registration →', back: '← Back to site' },
+    es: { badge: 'Preinscripciones cerradas', title: 'Las preinscripciones cerraron el 01/07.', text: 'Las inscripciones oficiales abren el 07/07 a las 10h (hora de Brasilia) y permanecen abiertas mientras haya cupos. Del 07 al 12/07 la prioridad es de los equipos preinscritos; desde el 13/07, abiertas a todos los equipos.', cta: 'Ir a la inscripción oficial →', back: '← Volver al sitio' },
   };
   const cc = closedCopy[lang] || closedCopy.pt;
 

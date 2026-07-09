@@ -55,8 +55,7 @@ export default function InscricoesAbertasNewsPage() {
           </p>
 
           <p>
-            As inscrições ficam abertas <strong>até o dia 20 de julho</strong> ou
-            enquanto houver vagas. De 07 a 12/07, a prioridade é das equipes
+            As inscrições ficam abertas <strong>enquanto houver vagas</strong>. De 07 a 12/07, a prioridade é das equipes
             pré-inscritas; a partir de 13/07, qualquer equipe pode se inscrever. As
             vagas são limitadas por categoria — Masculino, Feminino, Sub-15 e
             Sub-12 — e preenchidas por ordem de pagamento da primeira parcela.
