@@ -130,7 +130,7 @@ function InterestCard({ t, onClick }) {
         {[t.city, t.country].filter(Boolean).join(' · ')}
       </div>
       <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>
-        {t.category && <Tag label={t.category.split(',')[0].trim()} color="#0D4BFF" />}
+        {t.category && t.category.split(',').map((c, i) => c.trim() ? <Tag key={i} label={c.trim()} color="#0D4BFF" /> : null)}
         {t.athletes_count && <Tag label={`${t.athletes_count} atletas`} color="#64748b" />}
         {(t.email_clicked_at || t.email_opened_at) && (
           <Tag label={t.email_clicked_at ? '🔗 Clicou no e-mail' : '📬 Abriu o e-mail'} color={t.email_clicked_at ? '#009c3b' : '#0D4BFF'} />
@@ -165,7 +165,7 @@ function PortalCard({ t, color, onClick }) {
         {[t.city, t.country].filter(Boolean).join(' · ')}
       </div>
       <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 10 }}>
-        {t.category && <Tag label={t.category.split(',')[0].trim()} color="#0D4BFF" />}
+        {t.category && t.category.split(',').map((c, i) => c.trim() ? <Tag key={i} label={c.trim()} color="#0D4BFF" /> : null)}
         <Tag label={`${t.athletes} atletas`} color="#64748b" />
         {t.exempted && <Tag label="🎁 Isento" color="#a855f7" />}
         {t.checkout_started && t.paid_count === 0 && !t.exempted && <Tag label="💳 Chegou ao checkout" color="#ea580c" />}
