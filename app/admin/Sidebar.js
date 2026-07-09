@@ -37,6 +37,7 @@ const GROUPS = [
         matchStatus: null,
         color: '#009c3b',
       },
+      { href: '/admin/vagas-sociais', label: 'Vagas Sociais', icon: '🤝', matchPath: '/admin/vagas-sociais', matchStatus: null, color: '#009c3b' },
     ],
   },
   {
