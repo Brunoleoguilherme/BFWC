@@ -19,10 +19,10 @@ const TABS = ['RESUMO', 'TRANSMISSÃO', 'TORNEIO', 'TABELA', 'CAMPOS', 'ÁRBITRO
 
 // Categorias do chaveamento e a célula da premissa (nº de times) na aba TORNEIO.
 const TABELA_CATS = [
-  { cell: 'B3', label: 'Masculino', emoji: '⚡', color: '#0D4BFF' },
-  { cell: 'B4', label: 'Feminino',  emoji: '🌸', color: '#db2777' },
-  { cell: 'B5', label: 'Sub-15',    emoji: '🌟', color: '#f59e0b' },
-  { cell: 'B6', label: 'Sub-12',    emoji: '🌱', color: '#10b981' },
+  { cell: 'B3', row: 11, label: 'Masculino', emoji: '⚡', color: '#0D4BFF' },
+  { cell: 'B4', row: 12, label: 'Feminino',  emoji: '🌸', color: '#db2777' },
+  { cell: 'B5', row: 13, label: 'Sub-15',    emoji: '🌟', color: '#f59e0b' },
+  { cell: 'B6', row: 14, label: 'Sub-12',    emoji: '🌱', color: '#10b981' },
 ];
 
 // Monta os grupos a partir do nº de times e do tamanho do grupo.
@@ -44,48 +44,129 @@ function buildGroups(nTeams, perGroup) {
   return groups;
 }
 
-// Vista do chaveamento: 4 categorias, cada uma dividida em grupos com vagas (N-A, N-B...).
-// Recalcula sozinha a partir das premissas da aba TORNEIO (somente leitura).
+// Gera as vagas classificadas: 1º de cada grupo, depois 2º, e o restante como
+// wild cards (WC) até completar as vagas de playoff definidas no TORNEIO.
+function buildSeeds(nGroups, play) {
+  const L = (i) => String.fromCharCode(65 + i);
+  const seeds = [];
+  for (let i = 0; i < nGroups && seeds.length < play; i++) seeds.push({ label: '1º ' + L(i), kind: 'win' });
+  for (let i = 0; i < nGroups && seeds.length < play; i++) seeds.push({ label: '2º ' + L(i), kind: 'run' });
+  let wc = 1;
+  while (seeds.length < play) seeds.push({ label: 'WC' + (wc++), kind: 'wc' });
+  return seeds;
+}
+
+// Aba TABELA: fase de grupos + mata-mata (wild cards, quartas, semis, 3º e final)
+// + agenda dos 3 dias. Tudo recalculado das premissas do TORNEIO (somente leitura).
 function GruposTabela({ ctx }) {
-  const perGroup = Number(ctx.get('TORNEIO', 'B7')) || 0;
+  const g = (co) => Number(ctx.get('TORNEIO', co)) || 0;
+  const perGroup = g('B7');
+  const DIAS = [
+    { d: '31/10', t: 'Sex', fases: 'Fase de grupos' },
+    { d: '01/11', t: 'Sáb', fases: 'Colocação · Quartas · Semifinais' },
+    { d: '02/11', t: 'Dom', fases: 'Semifinais · 3º lugar · Finais' },
+  ];
   return (
     <div>
-      <div style={{ fontSize: 12.5, color: '#64748b', marginBottom: 18, lineHeight: 1.5 }}>
-        Chaveamento gerado automaticamente a partir das premissas da aba <strong>TORNEIO</strong>
-        {perGroup ? ` — ${perGroup} times por grupo` : ''}. Edite os números lá que a tabela se refaz sozinha.
+      <div style={{ fontSize: 12.5, color: '#64748b', marginBottom: 18, lineHeight: 1.6 }}>
+        Chaveamento gerado das premissas da aba <strong>TORNEIO</strong>{perGroup ? ` — ${perGroup} times por grupo` : ''}. Torneio em 3 dias (<strong>31/10, 01/11 e 02/11</strong>). <strong>Todo time joga no mínimo 5 jogos</strong>; quem avança joga mais. Edite os números no TORNEIO que tudo se refaz.
       </div>
+
       {TABELA_CATS.map((cat) => {
-        const nTeams = Number(ctx.get('TORNEIO', cat.cell)) || 0;
+        const nTeams = g(cat.cell);
         const groups = buildGroups(nTeams, perGroup);
+        const nGroups = groups.length;
+        const play = g('F' + cat.row);
+        const qf = g('G' + cat.row);
+        const sf = g('H' + cat.row);
+        const tp = Math.max(1, g('I' + cat.row));
+        const fn = g('J' + cat.row);
+        const consol = Math.max(0, nTeams - play);
+        const seeds = buildSeeds(nGroups, play);
+        const phases = [
+          { name: 'Quartas / R1', games: qf, c: cat.color },
+          { name: 'Semifinais', games: sf, c: '#7c3aed' },
+          { name: 'Disputa de 3º lugar', games: tp, c: '#f59e0b' },
+          { name: 'Final', games: fn, c: '#059669' },
+        ].filter((p) => p.games > 0);
+
         return (
-          <div key={cat.cell} style={{ marginBottom: 26 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '8px 0 12px', padding: '9px 14px', borderRadius: 10, background: cat.color + '14', border: `1px solid ${cat.color}30` }}>
+          <div key={cat.cell} style={{ marginBottom: 34, paddingBottom: 22, borderBottom: '1px dashed #e2e8f0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '4px 0 14px', padding: '9px 14px', borderRadius: 10, background: cat.color + '14', border: `1px solid ${cat.color}30`, flexWrap: 'wrap' }}>
               <span style={{ fontSize: 14 }}>{cat.emoji}</span>
               <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: .5, textTransform: 'uppercase', color: cat.color }}>{cat.label}</span>
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', marginLeft: 6 }}>{nTeams} times · {groups.length} grupo{groups.length === 1 ? '' : 's'}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', marginLeft: 6 }}>{nTeams} times · {nGroups} grupo{nGroups === 1 ? '' : 's'} · {play} no mata-mata</span>
             </div>
-            {groups.length === 0 ? (
+
+            {nGroups === 0 ? (
               <div style={{ fontSize: 12, color: '#94a3b8', padding: '4px 6px' }}>Defina a quantidade de times na aba TORNEIO.</div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(168px, 1fr))', gap: 12 }}>
-                {groups.map((g) => (
-                  <div key={g.n} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
-                    <div style={{ padding: '8px 12px', background: cat.color + '12', borderBottom: `1px solid ${cat.color}25`, fontSize: 11.5, fontWeight: 800, letterSpacing: .5, textTransform: 'uppercase', color: cat.color }}>Grupo {g.n}</div>
-                    <div style={{ padding: '6px 8px' }}>
-                      {g.slots.map((slot) => (
-                        <div key={slot} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 8px', borderBottom: '1px solid #f8fafc' }}>
-                          <span style={{ minWidth: 38, textAlign: 'center', fontWeight: 800, color: cat.color, background: cat.color + '14', borderRadius: 6, padding: '3px 4px', fontSize: 11.5 }}>{slot}</span>
-                          <span style={{ color: '#cbd5e1', fontSize: 12.5 }}>a definir</span>
-                        </div>
-                      ))}
+              <>
+                <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: '#94a3b8', margin: '4px 2px 10px' }}>Fase de grupos · 3 jogos por time</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(168px, 1fr))', gap: 12, marginBottom: 20 }}>
+                  {groups.map((grp) => (
+                    <div key={grp.n} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
+                      <div style={{ padding: '8px 12px', background: cat.color + '12', borderBottom: `1px solid ${cat.color}25`, fontSize: 11.5, fontWeight: 800, letterSpacing: .5, textTransform: 'uppercase', color: cat.color }}>Grupo {grp.n}</div>
+                      <div style={{ padding: '6px 8px' }}>
+                        {grp.slots.map((slot) => (
+                          <div key={slot} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 8px', borderBottom: '1px solid #f8fafc' }}>
+                            <span style={{ minWidth: 38, textAlign: 'center', fontWeight: 800, color: cat.color, background: cat.color + '14', borderRadius: 6, padding: '3px 4px', fontSize: 11.5 }}>{slot}</span>
+                            <span style={{ color: '#cbd5e1', fontSize: 12.5 }}>a definir</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+
+                <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: '#94a3b8', margin: '4px 2px 10px' }}>Classificados ao mata-mata{seeds.some((sd) => sd.kind === 'wc') ? ' (inclui wild cards)' : ''}</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 20 }}>
+                  {seeds.map((sd, i) => (
+                    <span key={i} style={{ fontSize: 11.5, fontWeight: 800, padding: '5px 10px', borderRadius: 8, color: sd.kind === 'wc' ? '#b45309' : cat.color, background: sd.kind === 'wc' ? '#fef3c7' : cat.color + '14', border: `1px solid ${sd.kind === 'wc' ? '#fcd34d' : cat.color + '30'}` }}>{sd.label}</span>
+                  ))}
+                </div>
+
+                <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: '#94a3b8', margin: '4px 2px 10px' }}>🏆 Mata-mata — chave do título</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 16 }}>
+                  {phases.map((p, pi) => (
+                    <div key={pi} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
+                      <div style={{ padding: '8px 12px', background: p.c + '12', borderBottom: `1px solid ${p.c}25`, fontSize: 11, fontWeight: 800, letterSpacing: .5, textTransform: 'uppercase', color: p.c, display: 'flex', justifyContent: 'space-between' }}>
+                        <span>{p.name}</span><span>{p.games} jogo{p.games === 1 ? '' : 's'}</span>
+                      </div>
+                      <div style={{ padding: '6px 8px' }}>
+                        {Array.from({ length: p.games }, (_, j) => (
+                          <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 8px', borderBottom: '1px solid #f8fafc' }}>
+                            <span style={{ minWidth: 46, textAlign: 'center', fontWeight: 800, color: p.c, background: p.c + '14', borderRadius: 6, padding: '3px 4px', fontSize: 11 }}>Jogo {j + 1}</span>
+                            <span style={{ color: '#cbd5e1', fontSize: 12.5 }}>a definir</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ fontSize: 12, color: '#475569', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 14px', lineHeight: 1.6 }}>
+                  <strong>Garantia de 5 jogos:</strong> os {consol} time{consol === 1 ? '' : 's'} que não avança{consol === 1 ? '' : 'm'} ao título entra{consol === 1 ? '' : 'm'} na <strong>chave de colocação</strong> (2 rodadas) → todos completam <strong>3 (grupos) + 2 = 5 jogos</strong>. Quem avança no título joga 6 ou 7.
+                </div>
+              </>
             )}
           </div>
         );
       })}
+
+      <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: '#94a3b8', margin: '6px 2px 12px' }}>📅 Agenda dos 3 dias</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+        {DIAS.map((dia, i) => (
+          <div key={i} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14, padding: '14px 16px', boxShadow: '0 1px 3px rgba(0,0,0,.05)', borderTop: `3px solid ${['#009c3b', '#0D4BFF', '#eab308'][i]}` }}>
+            <div style={{ fontSize: 20, fontWeight: 900, letterSpacing: -1, color: '#0f172a' }}>{dia.d}</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 8 }}>{dia.t} · Dia {i + 1}</div>
+            <div style={{ fontSize: 12.5, color: '#475569', lineHeight: 1.5 }}>{dia.fases}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 12, lineHeight: 1.6 }}>
+        As semifinais e finais acontecem nos dias 01/11 e 02/11. Se a fase de grupos não fechar em 31/10, ela avança para 01/11 e a decisão fica em 02/11.
+      </div>
     </div>
   );
 }
