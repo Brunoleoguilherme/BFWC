@@ -129,15 +129,18 @@ export async function POST(req) {
       .ilike('email', email)
       .maybeSingle();
 
-    // Check if email already exists
-    const { data: existing } = await supabase.from('portal_teams').select('id').ilike('email', email).single();
-    if (existing) return NextResponse.json({ ok: false, message: 'Este e-mail já está cadastrado.' }, { status: 409 });
+    // Check if email already exists. Se o cadastro existe mas ainda NÃO verificou o
+    // e-mail (status pending_email), não bloqueia: renova o token e reenvia a confirmação.
+    const { data: existing } = await supabase.from('portal_teams').select('id, status').ilike('email', email).maybeSingle();
+    if (existing && existing.status !== 'pending_email') {
+      return NextResponse.json({ ok: false, message: 'Este e-mail já está cadastrado.' }, { status: 409 });
+    }
 
     const password_hash = hashPassword(password);
     const verification_token = randomUUID();
     const token_expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-    const { data: team, error } = await supabase.from('portal_teams').insert({
+    const teamPayload = {
       club_name, country, city, contact_name, contact_role,
       email: email.toLowerCase().trim(),
       whatsapp,
@@ -152,7 +155,13 @@ export async function POST(req) {
       terms_version: TERMS_VERSION,
       terms_accepted_at: new Date().toISOString(),
       terms_ip: clientIp(req),
-    }).select('id').single();
+    };
+
+    // Novo cadastro OU reenvio: se já existe um cadastro não verificado, atualiza os
+    // dados e renova o token (em vez de duplicar), e o e-mail de confirmação é reenviado.
+    const { data: team, error } = existing
+      ? await supabase.from('portal_teams').update(teamPayload).eq('id', existing.id).select('id').single()
+      : await supabase.from('portal_teams').insert(teamPayload).select('id').single();
 
     if (error) throw error;
 
