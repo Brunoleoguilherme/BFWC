@@ -63,7 +63,7 @@ const CAT_DEFS = [
 ];
 
 // Etapas do funil consideradas na contagem por categoria (rejeitados de fora)
-const CAT_BUCKETS = ['pre', 'cadastro', 'vaga', 'pago', 'atletas', 'finalizada'];
+const CAT_BUCKETS = ['vaga', 'pago', 'atletas', 'finalizada'];
 
 // Agrega, por categoria, quantos times a escolheram e o total de atletas informados.
 // Um time com várias categorias é contado em cada uma delas (por isso a soma dos
@@ -710,7 +710,7 @@ export default function TeamsPage() {
         return (
           <div style={{ marginBottom: 26 }}>
             <div style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: '#94a3b8', margin: '0 2px 8px' }}>
-              Por categoria
+              Garantidos por categoria
             </div>
             <div className="pipe-cats">
               {CAT_DEFS.map(c => {
@@ -726,7 +726,7 @@ export default function TeamsPage() {
                       <span style={{ fontSize: 28, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1, color: '#0f172a' }}>
                         {s ? s.teams : '—'}
                       </span>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>times</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>garantidos</span>
                     </div>
                     <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 6 }}>
                       {s && s.athletes > 0 ? `${s.athletes} atletas informados` : 'atletas não informados'}
@@ -736,7 +736,7 @@ export default function TeamsPage() {
               })}
             </div>
             <div style={{ fontSize: 10.5, color: '#94a3b8', margin: '8px 2px 0', lineHeight: 1.4 }}>
-              Times ativos por categoria (exceto rejeitados). Um time pode entrar em mais de uma categoria, então a soma dos cards é maior que o total de times{data ? ` — ${teamsWithCat} times com categoria informada` : ''}.
+              Times garantidos por categoria — vaga garantida + pagamento total + atletas inscritos + inscrição finalizada. Um time pode entrar em mais de uma categoria, então a soma dos cards pode passar do total de times garantidos{data ? ` — ${teamsWithCat} com categoria informada` : ''}.
             </div>
           </div>
         );
