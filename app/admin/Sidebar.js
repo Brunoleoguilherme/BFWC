@@ -57,6 +57,7 @@ const GROUPS = [
     section: 'Financeiro',
     items: [
       { href: '/admin/financeiro', label: 'Dashboard Financeiro', icon: '💰', matchPath: '/admin/financeiro', matchStatus: null, color: '#009c3b' },
+      { href: '/admin/custos', label: 'Custos do Evento', icon: '🧾', matchPath: '/admin/custos', matchStatus: null, color: '#eab308' },
     ],
   },
   {
