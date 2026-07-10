@@ -38,6 +38,7 @@ const GROUPS = [
         color: '#009c3b',
       },
       { href: '/admin/vagas-sociais', label: 'Vagas Sociais', icon: '🤝', matchPath: '/admin/vagas-sociais', matchStatus: null, color: '#009c3b' },
+      { href: '/admin/alojamento', label: 'Alojamento', icon: '🏠', matchPath: '/admin/alojamento', matchStatus: null, color: '#0D4BFF' },
     ],
   },
   {
