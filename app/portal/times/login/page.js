@@ -21,6 +21,7 @@ const T = {
     back: '← Voltar ao portal',
     forgot: 'Esqueci a senha',
     verified: '✅ E-mail verificado! Aguarde a aprovação do administrador para acessar.',
+    expired: '⏳ Seu link de verificação expirou. Faça login se já validou antes, ou peça um novo link para contato@brasilflag.com.',
   },
   en: {
     badge: 'Team Area',
@@ -37,6 +38,7 @@ const T = {
     back: '← Back to portal',
     forgot: 'Forgot my password',
     verified: '✅ Email verified! Awaiting admin approval to access.',
+    expired: '⏳ Your verification link has expired. Log in if you already verified, or request a new one at contato@brasilflag.com.',
   },
   es: {
     badge: 'Área de Equipos',
@@ -53,6 +55,7 @@ const T = {
     back: '← Volver al portal',
     forgot: 'Olvidé mi contraseña',
     verified: '✅ Correo verificado. Esperando aprobación del administrador.',
+    expired: '⏳ Tu enlace de verificación expiró. Inicia sesión si ya lo validaste, o solicita uno nuevo a contato@brasilflag.com.',
   },
 };
 
@@ -69,6 +72,7 @@ export default function TimesLoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [justVerified, setJustVerified] = useState(false);
+  const [justExpired, setJustExpired] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('bfwc_language') || localStorage.getItem('bfwc_lang');
@@ -76,6 +80,9 @@ export default function TimesLoginPage() {
     if (sessionStorage.getItem('bfwc_team_session')) router.replace('/portal/times');
     if (typeof window !== 'undefined' && window.location.search.includes('verified=1')) {
       setJustVerified(true);
+    }
+    if (typeof window !== 'undefined' && window.location.search.includes('expired=1')) {
+      setJustExpired(true);
     }
     // Trava até 07/07 10h (Brasília); libera sozinha quando chegar a hora
     const check = () => setLocked(Date.now() < OPENS_AT);
@@ -194,6 +201,12 @@ export default function TimesLoginPage() {
         {justVerified && (
           <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 10, background: 'rgba(0,156,59,.08)', border: '1px solid rgba(0,156,59,.25)', fontSize: 13, color: '#009c3b', lineHeight: 1.5 }}>
             {t.verified}
+          </div>
+        )}
+
+        {justExpired && (
+          <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 10, background: 'rgba(234,179,8,.1)', border: '1px solid rgba(234,179,8,.3)', fontSize: 13, color: '#a16207', lineHeight: 1.5 }}>
+            {t.expired}
           </div>
         )}
 

@@ -21,12 +21,14 @@ export async function GET() {
   const supabase = getSupabaseAdmin();
   const { data, error: dbErr } = await supabase
     .from('portal_teams')
-    .select('id, club_name, contact_name, country, category, alojamento, status')
+    .select('id, club_name, contact_name, country, category, alojamento, status, payment_confirmed, amount_paid_cents, exemption_reason')
     .eq('status', 'approved')
     .order('club_name');
   if (dbErr) return NextResponse.json({ error: dbErr.message }, { status: 500 });
 
   const teams = (data || [])
+    // Somente times com vaga garantida (1a parcela), pagamento confirmado ou isentos.
+    .filter((t) => t.payment_confirmed || (t.amount_paid_cents || 0) > 0 || t.exemption_reason)
     .map((t) => {
       const sub12 = grab(t.category, RE.sub12);
       const sub15 = grab(t.category, RE.sub15);

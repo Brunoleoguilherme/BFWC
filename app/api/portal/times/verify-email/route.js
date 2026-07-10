@@ -6,7 +6,7 @@ export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const token = searchParams.get('token');
 
-  if (!token) return NextResponse.redirect(new URL('/portal/times/cadastro?error=token_missing', req.url));
+  if (!token) return NextResponse.redirect(new URL('/portal/times/login', req.url));
 
   const supabase = getSupabaseAdmin();
 
@@ -16,7 +16,7 @@ export async function GET(req) {
     .eq('email_verification_token', token)
     .single();
 
-  if (error || !team) return NextResponse.redirect(new URL('/portal/times/cadastro?error=token_invalid', req.url));
+  if (error || !team) return NextResponse.redirect(new URL('/portal/times/login?verified=1', req.url));
 
   if (team.status !== 'pending_email') {
     // Already verified
@@ -24,7 +24,7 @@ export async function GET(req) {
   }
 
   const expired = new Date(team.email_token_expires_at) < new Date();
-  if (expired) return NextResponse.redirect(new URL('/portal/times/cadastro?error=token_expired', req.url));
+  if (expired) return NextResponse.redirect(new URL('/portal/times/login?expired=1', req.url));
 
   await supabase
     .from('portal_teams')
