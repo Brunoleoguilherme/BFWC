@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo } from 'react';
 const AUDIENCES = [
   { key: 'pre_inscritos', label: 'Pré-inscritos', color: '#a855f7' },
   { key: 'inscritos',     label: 'Inscritos',     color: '#ea580c' },
+  { key: 'sem_pagamento', label: 'Sem pagamento', color: '#eab308' },
   { key: 'confirmados',   label: 'Confirmados',   color: '#009c3b' },
   { key: 'em_atraso',     label: 'Em atraso',     color: '#ef4444' },
 ];

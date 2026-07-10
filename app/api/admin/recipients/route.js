@@ -38,7 +38,7 @@ export async function GET() {
 
   const { data: pteams } = await supabase
     .from('portal_teams')
-    .select('id, club_name, contact_name, email, category, payment_confirmed, payment_option, athletes_paid_qty, amount_paid_cents');
+    .select('id, club_name, contact_name, email, category, payment_confirmed, payment_option, athletes_paid_qty, amount_paid_cents, status, exemption_reason, whatsapp');
 
   const { data: insts } = await supabase
     .from('payment_installments')
@@ -71,6 +71,33 @@ export async function GET() {
     if (overdue && !fully) em_atraso.push(mk(t));
   });
 
+  // Inscritos que ainda NAO pagaram nada (nem isentos), com auto-descarte de
+  // clubes duplicados que ja tem outro cadastro pago/confirmado/isento.
+  const norm = (x) => (x || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const wa8 = (x) => (x || '').replace(/\D/g, '').slice(-8);
+  const resolvedClubs = new Set();
+  const resolvedWa = new Set();
+  const resolvedEmails = new Set();
+  (pteams || []).forEach((t) => {
+    const isResolved = t.payment_confirmed || (t.amount_paid_cents || 0) > 0 || !!t.exemption_reason;
+    if (!isResolved) return;
+    if (t.club_name) resolvedClubs.add(norm(t.club_name));
+    const w = wa8(t.whatsapp); if (w.length === 8) resolvedWa.add(w);
+    if (t.email) resolvedEmails.add(t.email.toLowerCase().trim());
+  });
+  const sem_pagamento = (pteams || []).filter((t) => {
+    if (t.status !== 'approved') return false;
+    if (t.payment_confirmed) return false;
+    if ((t.amount_paid_cents || 0) > 0) return false;
+    if (t.exemption_reason) return false;
+    if (!t.email) return false;
+    if (resolvedClubs.has(norm(t.club_name))) return false;
+    const w = wa8(t.whatsapp);
+    if (w.length === 8 && resolvedWa.has(w)) return false;
+    if (resolvedEmails.has(t.email.toLowerCase().trim())) return false;
+    return true;
+  }).map(mk);
+
   const dedupe = (arr) => {
     const seen = new Set();
     return arr.filter(r => { const k = r.email.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
@@ -83,6 +110,7 @@ export async function GET() {
       inscritos:     dedupe(inscritos),
       confirmados:   dedupe(confirmados),
       em_atraso:     dedupe(em_atraso),
+      sem_pagamento: dedupe(sem_pagamento),
     },
   });
 }
