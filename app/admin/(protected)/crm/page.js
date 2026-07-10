@@ -8,6 +8,7 @@ const AUDIENCES = [
   { key: 'sem_pagamento', label: 'Sem pagamento', color: '#eab308' },
   { key: 'confirmados',   label: 'Confirmados',   color: '#009c3b' },
   { key: 'em_atraso',     label: 'Em atraso',     color: '#ef4444' },
+  { key: 'newsletter',    label: 'Newsletter',    color: '#0ea5e9' },
 ];
 
 const TEMPLATES = [
@@ -17,6 +18,19 @@ const TEMPLATES = [
     message: 'Olá, {clube}!\n\nQue alegria ter vocês no Brasil Flag World Championship 2026. Fiquem atentos ao e-mail para novidades sobre o evento em Leme, SP.\n\nVamos juntos!' },
   { key: 'aviso_geral', label: 'Aviso geral', subject: 'Comunicado — BFWC 2026',
     message: 'Olá, {clube}!\n\n[escreva o comunicado aqui]\n\nEquipe BFWC 2026.' },
+  { key: 'checkin', label: 'Check-in inscritos (PT/ES/EN)', i18n: {
+    pt: { subject: 'Podemos ajudar com sua inscrição no BFWC 2026?',
+      message: 'Olá, {clube}!\n\nVimos que vocês começaram a inscrição no Brasil Flag World Championship 2026 e passamos só para saber se está tudo tranquilo por aí. 🏈\n\nFicou alguma dúvida? Seja sobre o processo de inscrição, as categorias, o pagamento ou qualquer outro detalhe, é só falar com a gente — estamos por aqui para ajudar.\n\nFale pelo canal que for mais fácil pra você:\nWhatsApp: +55 16 99775-4522\nE-mail: contato@brasilflag.com\n\nSerá um prazer ajudar no que precisarem.\n\nUm abraço,\nEquipe Brasil Flag World Championship 2026' },
+    es: { subject: '¿Podemos ayudarte con tu inscripción al BFWC 2026?',
+      message: '¡Hola, {clube}!\n\nVimos que comenzaron la inscripción en el Brasil Flag World Championship 2026 y pasamos solo para saber si todo va bien por ahí. 🏈\n\n¿Les quedó alguna duda? Ya sea sobre el proceso de inscripción, las categorías, el pago o cualquier otro detalle, escríbannos — estamos aquí para ayudar.\n\nContáctennos por el canal que les resulte más fácil:\nWhatsApp: +55 16 99775-4522\nCorreo: contato@brasilflag.com\n\nSerá un gusto ayudarlos en lo que necesiten.\n\nUn abrazo,\nEquipo Brasil Flag World Championship 2026' },
+    en: { subject: 'Can we help with your BFWC 2026 registration?',
+      message: 'Hi, {clube}!\n\nWe noticed your team started the registration for the Brasil Flag World Championship 2026, and we\'re just checking in to make sure everything is going smoothly. 🏈\n\nDo you have any questions? Whether it\'s about the registration process, the categories, the payment, or anything else, just reach out — we\'re here to help.\n\nContact us through whichever channel is easiest for you:\nWhatsApp: +55 16 99775-4522\nEmail: contato@brasilflag.com\n\nWe\'re happy to help with anything you need.\n\nBest regards,\nBrasil Flag World Championship 2026 Team' } } },
+];
+
+const LANGS = [
+  { key: 'pt', label: 'PT', flag: '🇧🇷' },
+  { key: 'es', label: 'ES', flag: '🇪🇸' },
+  { key: 'en', label: 'EN', flag: '🇬🇧' },
 ];
 
 export default function CRMPage() {
@@ -26,8 +40,11 @@ export default function CRMPage() {
 
   const [activeFilters, setActiveFilters] = useState(['pre_inscritos']);
   const [selected, setSelected] = useState([]); // emails
-  const [subject, setSubject] = useState('');
-  const [message, setMessage] = useState('');
+  const [lang, setLang] = useState('pt');
+  const [subjects, setSubjects] = useState({ pt: '', es: '', en: '' });
+  const [messages, setMessages] = useState({ pt: '', es: '', en: '' });
+  const [manualList, setManualList] = useState([]);
+  const [manual, setManual] = useState({ email: '', name: '', club: '', lang: 'pt' });
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState(null);
   const [blasts, setBlasts] = useState(null);
@@ -50,17 +67,21 @@ export default function CRMPage() {
 
   // Lista de destinatários combinada pelas audiências ativas (dedup por email)
   const list = useMemo(() => {
-    if (!audiences) return [];
     const seen = new Map();
     activeFilters.forEach(f => {
-      (audiences[f] || []).forEach(r => {
+      (audiences?.[f] || []).forEach(r => {
         const k = r.email.toLowerCase();
-        if (!seen.has(k)) seen.set(k, { ...r, _aud: [f] });
+        if (!seen.has(k)) seen.set(k, { ...r, lang: r.lang || 'pt', _aud: [f] });
         else seen.get(k)._aud.push(f);
       });
     });
+    manualList.forEach(r => {
+      const k = r.email.toLowerCase();
+      if (!seen.has(k)) seen.set(k, { ...r, lang: r.lang || 'pt', _aud: ['manual'] });
+      else seen.get(k)._aud.push('manual');
+    });
     return [...seen.values()];
-  }, [audiences, activeFilters]);
+  }, [audiences, activeFilters, manualList]);
 
   function toggleFilter(k) {
     setActiveFilters(prev => prev.includes(k) ? prev.filter(x => x !== k) : [...prev, k]);
@@ -72,16 +93,44 @@ export default function CRMPage() {
   function selectAll() { setSelected(list.map(r => r.email)); }
   function clearAll() { setSelected([]); }
 
-  function applyTemplate(t) { setSubject(t.subject); setMessage(t.message); }
+  function applyTemplate(t) {
+    if (t.i18n) {
+      setSubjects({ pt: t.i18n.pt.subject, es: t.i18n.es.subject, en: t.i18n.en.subject });
+      setMessages({ pt: t.i18n.pt.message, es: t.i18n.es.message, en: t.i18n.en.message });
+    } else {
+      setSubjects(s => ({ ...s, pt: t.subject }));
+      setMessages(m => ({ ...m, pt: t.message }));
+      setLang('pt');
+    }
+  }
 
   const chosen = useMemo(() => list.filter(r => selected.includes(r.email)), [list, selected]);
+  const canSend = chosen.length > 0 && subjects.pt.trim() && messages.pt.trim();
+  const langCounts = useMemo(() => {
+    const c = {};
+    chosen.forEach(r => { const l = (r.lang || 'pt'); c[l] = (c[l] || 0) + 1; });
+    return c;
+  }, [chosen]);
+
+  function addManual() {
+    const email = manual.email.trim();
+    if (!/\S+@\S+\.\S+/.test(email)) return;
+    setManualList(prev => prev.some(m => m.email.toLowerCase() === email.toLowerCase())
+      ? prev
+      : [...prev, { id: 'manual:' + email, email, name: manual.name.trim(), club: manual.club.trim(), lang: manual.lang }]);
+    setSelected(prev => prev.includes(email) ? prev : [...prev, email]);
+    setManual({ email: '', name: '', club: '', lang: manual.lang });
+  }
 
   async function send() {
-    if (role === 'viewer' || chosen.length === 0 || !subject.trim() || !message.trim()) return;
+    if (role === 'viewer' || !canSend) return;
     setSending(true); setResult(null);
     const r = await fetch('/api/admin/broadcast', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ recipients: chosen.map(c => ({ email: c.email, name: c.name, club: c.club })), subject, message }),
+      body: JSON.stringify({
+        recipients: chosen.map(c => ({ email: c.email, name: c.name, club: c.club, lang: c.lang || 'pt' })),
+        subject: subjects, message: messages,
+      }),
     });
     const d = await r.json();
     setSending(false);
@@ -134,6 +183,18 @@ export default function CRMPage() {
             </div>
           </div>
 
+          {/* Adicionar e-mail manualmente */}
+          <div style={{ padding: '12px 22px', borderBottom: '1px solid #f1f5f9', background: '#fbfdff', display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            <input value={manual.email} onChange={e => setManual(m => ({ ...m, email: e.target.value }))} onKeyDown={e => { if (e.key === 'Enter') addManual(); }} placeholder="Adicionar e-mail manual" style={{ flex: '2 1 170px', padding: '9px 12px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, fontSize: 12.5, color: '#0f172a', outline: 'none', fontFamily: 'inherit' }} />
+            <input value={manual.club} onChange={e => setManual(m => ({ ...m, club: e.target.value }))} placeholder="Time (opcional)" style={{ flex: '1 1 110px', padding: '9px 12px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, fontSize: 12.5, color: '#0f172a', outline: 'none', fontFamily: 'inherit' }} />
+            <select value={manual.lang} onChange={e => setManual(m => ({ ...m, lang: e.target.value }))} style={{ padding: '9px 8px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, fontSize: 12.5, color: '#0f172a', fontFamily: 'inherit' }}>
+              <option value="pt">PT</option>
+              <option value="es">ES</option>
+              <option value="en">EN</option>
+            </select>
+            <button onClick={addManual} style={{ padding: '9px 16px', borderRadius: 10, border: 'none', background: '#0f172a', color: '#fff', fontSize: 12.5, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Adicionar</button>
+          </div>
+
           {loading ? (
             <div style={{ padding: 40, textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>Carregando...</div>
           ) : list.length === 0 ? (
@@ -155,9 +216,10 @@ export default function CRMPage() {
                       <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>{r.club || r.name || r.email}</div>
                       <div style={{ fontSize: 11, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.email}</div>
                     </div>
-                    <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                    <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'center' }}>
+                      <span style={{ fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>{r.lang || 'pt'}</span>
                       {r._aud.map(a => (
-                        <span key={a} style={{ width: 8, height: 8, borderRadius: '50%', background: audColor(a) }} title={AUDIENCES.find(x => x.key === a)?.label} />
+                        <span key={a} style={{ width: 8, height: 8, borderRadius: '50%', background: a === 'manual' ? '#0f172a' : audColor(a) }} title={a === 'manual' ? 'Manual' : AUDIENCES.find(x => x.key === a)?.label} />
                       ))}
                     </div>
                   </div>
@@ -181,11 +243,30 @@ export default function CRMPage() {
             ))}
           </div>
 
-          <div style={S.label}>Assunto</div>
-          <input style={{ ...S.input, marginBottom: 14 }} value={subject} onChange={e => setSubject(e.target.value)} placeholder="Assunto do e-mail" />
+          <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+            {LANGS.map(L => {
+              const on = lang === L.key;
+              const filled = subjects[L.key].trim() || messages[L.key].trim();
+              const n = langCounts[L.key] || 0;
+              return (
+                <button key={L.key} onClick={() => setLang(L.key)} style={{
+                  flex: 1, padding: '8px 6px', borderRadius: 9, fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+                  background: on ? '#0f172a' : '#f1f5f9', color: on ? '#fff' : '#475569',
+                  border: `1px solid ${on ? '#0f172a' : '#e2e8f0'}`,
+                }}>{L.flag} {L.label}{filled ? ' ✓' : ''}{n ? ` · ${n}` : ''}</button>
+              );
+            })}
+          </div>
 
-          <div style={S.label}>Mensagem</div>
-          <textarea style={{ ...S.input, minHeight: 160, resize: 'vertical', marginBottom: 16, lineHeight: 1.5 }} value={message} onChange={e => setMessage(e.target.value)} placeholder="Escreva sua mensagem... (uma linha em branco separa parágrafos)" />
+          <div style={S.label}>Assunto ({lang.toUpperCase()})</div>
+          <input style={{ ...S.input, marginBottom: 14 }} value={subjects[lang]} onChange={e => setSubjects(s => ({ ...s, [lang]: e.target.value }))} placeholder={`Assunto do e-mail (${lang.toUpperCase()})`} />
+
+          <div style={S.label}>Mensagem ({lang.toUpperCase()})</div>
+          <textarea style={{ ...S.input, minHeight: 160, resize: 'vertical', marginBottom: 8, lineHeight: 1.5 }} value={messages[lang]} onChange={e => setMessages(m => ({ ...m, [lang]: e.target.value }))} placeholder="Escreva sua mensagem... (uma linha em branco separa parágrafos)" />
+
+          <div style={{ fontSize: 11, color: '#94a3b8', marginBottom: 16, lineHeight: 1.5 }}>
+            Cada time recebe no idioma dele automaticamente. Preencha ao menos o <strong>Português</strong> (padrão para quem não tem idioma definido).
+          </div>
 
           {result && (
             <div style={{ padding: '11px 14px', borderRadius: 10, marginBottom: 12, fontSize: 12.5, fontWeight: 600,
@@ -200,11 +281,11 @@ export default function CRMPage() {
               Somente leitura — apenas admins podem enviar
             </div>
           ) : (
-            <button onClick={send} disabled={sending || chosen.length === 0 || !subject.trim() || !message.trim()} style={{
+            <button onClick={send} disabled={sending || !canSend} style={{
               width: '100%', padding: '14px', borderRadius: 12, border: 'none',
-              background: (sending || chosen.length === 0 || !subject.trim() || !message.trim()) ? '#cbd5e1' : '#009c3b',
+              background: (sending || !canSend) ? '#cbd5e1' : '#009c3b',
               color: '#fff', fontSize: 13, fontWeight: 900, letterSpacing: 1, textTransform: 'uppercase',
-              cursor: (sending || chosen.length === 0 || !subject.trim() || !message.trim()) ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
+              cursor: (sending || !canSend) ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
             }}>
               {sending ? 'Enviando...' : `Enviar para ${chosen.length} destinatário${chosen.length !== 1 ? 's' : ''}`}
             </button>

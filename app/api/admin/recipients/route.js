@@ -38,17 +38,24 @@ export async function GET() {
 
   const { data: pteams } = await supabase
     .from('portal_teams')
-    .select('id, club_name, contact_name, email, category, payment_confirmed, payment_option, athletes_paid_qty, amount_paid_cents, status, exemption_reason, whatsapp');
+    .select('id, club_name, contact_name, email, category, payment_confirmed, payment_option, athletes_paid_qty, amount_paid_cents, status, exemption_reason, whatsapp, preferred_language');
 
   const { data: insts } = await supabase
     .from('payment_installments')
     .select('team_id, status, due_date');
 
+  const { data: news } = await supabase
+    .from('newsletter_leads')
+    .select('email, language');
+  const newsletter = (news || [])
+    .filter((n) => n.email)
+    .map((n) => ({ id: 'nl:' + n.email, email: n.email, name: '', club: '', lang: (n.language || 'pt') }));
+
   const today = todayBrasilia();
   const instBy = {};
   (insts || []).forEach(i => { (instBy[i.team_id] ||= []).push(i); });
 
-  const mk = (t) => ({ id: t.id, email: t.email || '', name: t.contact_name || '', club: t.club_name || '' });
+  const mk = (t) => ({ id: t.id, email: t.email || '', name: t.contact_name || '', club: t.club_name || '', lang: (t.preferred_language || 'pt') });
 
   const pre_inscritos = (interests || []).filter(t => t.email).map(mk);
 
@@ -111,6 +118,7 @@ export async function GET() {
       confirmados:   dedupe(confirmados),
       em_atraso:     dedupe(em_atraso),
       sem_pagamento: dedupe(sem_pagamento),
+      newsletter:    dedupe(newsletter),
     },
   });
 }

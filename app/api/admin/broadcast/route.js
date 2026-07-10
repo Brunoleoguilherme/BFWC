@@ -13,7 +13,15 @@ export async function POST(request) {
 
   if (!Array.isArray(recipients) || recipients.length === 0)
     return NextResponse.json({ error: 'Nenhum destinatário selecionado.' }, { status: 400 });
-  if (!subject || !message)
+  const pickLang = (v, lang) => {
+    if (v && typeof v === 'object') return v[lang] || v.pt || v.en || v.es || '';
+    return v || '';
+  };
+  const hasContent = (v) => {
+    if (v && typeof v === 'object') return !!(v.pt && String(v.pt).trim());
+    return !!(v && String(v).trim());
+  };
+  if (!hasContent(subject) || !hasContent(message))
     return NextResponse.json({ error: 'Assunto e mensagem são obrigatórios.' }, { status: 400 });
 
   const resend = getResend();
@@ -30,7 +38,10 @@ export async function POST(request) {
     .join('');
 
   for (const r of valid) {
-    const personalized = message
+    const lang = String(r.lang || 'pt').toLowerCase().slice(0, 2);
+    const subj = pickLang(subject, lang) || pickLang(subject, 'pt');
+    const msg = pickLang(message, lang) || pickLang(message, 'pt');
+    const personalized = msg
       .replace(/\{nome\}/gi, r.name || '')
       .replace(/\{clube\}/gi, r.club || '');
     const inner = `<tr><td style="padding:0 28px 8px">
@@ -38,7 +49,7 @@ export async function POST(request) {
         <tr><td style="padding:28px 30px">${bodyHtml(personalized)}</td></tr>
       </table></td></tr>`;
     const html = emailShell({
-      preheader: subject,
+      preheader: subj,
       badge: 'BFWC 2026 · Comunicado',
       accent: '#22e06a',
       band: '#009c3b',
@@ -46,7 +57,7 @@ export async function POST(request) {
       innerHtml: inner,
     });
     try {
-      const { data: sendData, error: sendErr } = await resend.emails.send({ from: fromEmail, to: r.email, subject, html });
+      const { data: sendData, error: sendErr } = await resend.emails.send({ from: fromEmail, to: r.email, subject: subj, html });
       if (sendErr) failed.push({ email: r.email, error: sendErr.message });
       else {
         sent++;
@@ -54,6 +65,7 @@ export async function POST(request) {
           email: r.email.toLowerCase().trim(),
           name: r.name || null,
           club_name: r.club || null,
+          language: lang,
           resend_id: sendData?.id || null,
         });
       }
@@ -68,7 +80,7 @@ export async function POST(request) {
       const supabase = getSupabaseAdmin();
       const { data: blast } = await supabase.from('email_blasts')
         .insert({
-          subject,
+          subject: pickLang(subject, 'pt'),
           description: `Comunicação do painel — por ${profile?.name || 'admin'}`,
           source: 'painel',
         })
