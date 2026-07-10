@@ -44,65 +44,114 @@ function buildGroups(nTeams, perGroup) {
   return groups;
 }
 
-// Gera as vagas classificadas: 1º de cada grupo, depois 2º, e o restante como
-// wild cards (WC) até completar as vagas de playoff definidas no TORNEIO.
-function buildSeeds(nGroups, play) {
-  const L = (i) => String.fromCharCode(65 + i);
-  const seeds = [];
-  for (let i = 0; i < nGroups && seeds.length < play; i++) seeds.push({ label: '1º ' + L(i), kind: 'win' });
-  for (let i = 0; i < nGroups && seeds.length < play; i++) seeds.push({ label: '2º ' + L(i), kind: 'run' });
-  let wc = 1;
-  while (seeds.length < play) seeds.push({ label: 'WC' + (wc++), kind: 'wc' });
-  return seeds;
+function letterOf(i) { return String.fromCharCode(65 + i); }
+
+// Monta o mata-mata a partir das premissas do TORNEIO:
+//  - 1º de cada grupo vão direto às quartas;
+//  - repescagem (wild card / play-in) decide as vagas restantes das quartas;
+//  - semifinais, 3º lugar e final saem dos vencedores/perdedores das fases anteriores.
+function buildBracket(nTeams, nGroups, groups, qf, sf, tp, fn) {
+  const L = letterOf;
+  const maxPlace = groups.reduce((m, g) => Math.max(m, g.slots.length), 0);
+  const ranking = [];
+  for (let p = 1; p <= maxPlace; p++)
+    for (let gi = 0; gi < nGroups; gi++)
+      if (groups[gi].slots.length >= p) ranking.push(p + 'º ' + L(gi));
+
+  const quarterSpots = Math.max(0, qf * 2);
+  const winners = ranking.slice(0, Math.min(nGroups, quarterSpots));
+  let wcGames = Math.max(0, quarterSpots - winners.length);
+  wcGames = Math.min(wcGames, Math.floor(Math.max(0, ranking.length - winners.length) / 2));
+  const wcPool = ranking.slice(winners.length, winners.length + 2 * wcGames);
+  const wcMatches = [];
+  for (let i = 0; i < wcGames; i++)
+    wcMatches.push({ home: wcPool[i], away: wcPool[wcPool.length - 1 - i], win: 'Venc. WC' + (i + 1) });
+
+  const qfMatches = [];
+  for (let i = 0; i < qf; i++) {
+    const home = i < winners.length ? winners[i] : 'Classificado';
+    const away = i < wcGames ? 'Venc. WC' + (i + 1) : 'Classificado';
+    qfMatches.push({ home, away, win: 'Venc. QF' + (i + 1) });
+  }
+  const sfMatches = [];
+  for (let i = 0; i < sf; i++) sfMatches.push({ home: 'Venc. Quartas', away: 'Venc. Quartas', win: 'Venc. SF' + (i + 1) });
+  const tpMatches = [];
+  for (let i = 0; i < Math.max(1, tp); i++) tpMatches.push({ home: 'Perdedor Semifinal', away: 'Perdedor Semifinal' });
+  const fnMatches = [];
+  for (let i = 0; i < Math.max(1, fn); i++) fnMatches.push({ home: 'Vencedor Semifinal', away: 'Vencedor Semifinal' });
+
+  const inKnockout = winners.length + 2 * wcGames;
+  const consol = Math.max(0, nTeams - inKnockout);
+  return { winners, wcMatches, qfMatches, sfMatches, tpMatches, fnMatches, consol, wcGames };
 }
 
-// Aba TABELA: fase de grupos + mata-mata (wild cards, quartas, semis, 3º e final)
-// + agenda dos 3 dias. Tudo recalculado das premissas do TORNEIO (somente leitura).
+// Card de uma fase do mata-mata, com os confrontos.
+function PhaseCard({ title, color, matches, showWin }) {
+  return (
+    <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
+      <div style={{ padding: '8px 12px', background: color + '12', borderBottom: `1px solid ${color}25`, fontSize: 11, fontWeight: 800, letterSpacing: .5, textTransform: 'uppercase', color, display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+        <span>{title}</span><span>{matches.length} jogo{matches.length === 1 ? '' : 's'}</span>
+      </div>
+      <div style={{ padding: '8px 10px' }}>
+        {matches.map((m, i) => (
+          <div key={i} style={{ padding: '6px 4px', borderBottom: '1px solid #f8fafc' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+              <span style={{ fontWeight: 800, color, fontSize: 10.5, minWidth: 18 }}>{i + 1}</span>
+              <span style={{ color: '#334155', fontWeight: 600 }}>{m.home}</span>
+              <span style={{ color: '#cbd5e1', fontWeight: 700, fontSize: 11 }}>×</span>
+              <span style={{ color: '#334155', fontWeight: 600 }}>{m.away}</span>
+            </div>
+            {showWin && m.win ? <div style={{ fontSize: 10, color: '#94a3b8', marginLeft: 24, marginTop: 1 }}>→ {m.win} vai às quartas</div> : null}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Aba TABELA: grupos + repescagem (wild card) + mata-mata com confrontos + agenda dos 3 dias.
+// Tudo recalculado das premissas do TORNEIO (somente leitura).
 function GruposTabela({ ctx }) {
   const g = (co) => Number(ctx.get('TORNEIO', co)) || 0;
   const perGroup = g('B7');
   const DIAS = [
     { d: '31/10', t: 'Sex', fases: 'Fase de grupos' },
-    { d: '01/11', t: 'Sáb', fases: 'Colocação · Quartas · Semifinais' },
-    { d: '02/11', t: 'Dom', fases: 'Semifinais · 3º lugar · Finais' },
+    { d: '01/11', t: 'Sáb', fases: 'Repescagem · Quartas · Semifinais · Colocação' },
+    { d: '02/11', t: 'Dom', fases: 'Disputa de 3º lugar · Finais · Colocação' },
   ];
+  const SUB = { fontSize: 10.5, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: '#94a3b8', margin: '4px 2px 10px' };
   return (
     <div>
       <div style={{ fontSize: 12.5, color: '#64748b', marginBottom: 18, lineHeight: 1.6 }}>
-        Chaveamento gerado das premissas da aba <strong>TORNEIO</strong>{perGroup ? ` — ${perGroup} times por grupo` : ''}. Torneio em 3 dias (<strong>31/10, 01/11 e 02/11</strong>). <strong>Todo time joga no mínimo 5 jogos</strong>; quem avança joga mais. Edite os números no TORNEIO que tudo se refaz.
+        Chaveamento gerado das premissas do <strong>TORNEIO</strong>{perGroup ? ` — ${perGroup} times por grupo` : ''}. Torneio em 3 dias (<strong>31/10, 01/11 e 02/11</strong>). Os <strong>1º de cada grupo vão direto às quartas</strong>; a <strong>repescagem (wild card)</strong> decide as vagas restantes. <strong>Todo time joga no mínimo 5 jogos</strong> (quem cai nos grupos entra na chave de colocação). Edite os números no TORNEIO que tudo se refaz.
       </div>
 
       {TABELA_CATS.map((cat) => {
         const nTeams = g(cat.cell);
         const groups = buildGroups(nTeams, perGroup);
         const nGroups = groups.length;
-        const play = g('F' + cat.row);
         const qf = g('G' + cat.row);
         const sf = g('H' + cat.row);
         const tp = Math.max(1, g('I' + cat.row));
-        const fn = g('J' + cat.row);
-        const consol = Math.max(0, nTeams - play);
-        const seeds = buildSeeds(nGroups, play);
-        const phases = [
-          { name: 'Quartas / R1', games: qf, c: cat.color },
-          { name: 'Semifinais', games: sf, c: '#7c3aed' },
-          { name: 'Disputa de 3º lugar', games: tp, c: '#f59e0b' },
-          { name: 'Final', games: fn, c: '#059669' },
-        ].filter((p) => p.games > 0);
+        const fn = Math.max(1, g('J' + cat.row));
+        const groupGames = g('E' + cat.row);
+        const bk = buildBracket(nTeams, nGroups, groups, qf, sf, tp, fn);
+        const d2 = bk.wcGames + qf + sf;
+        const d3 = tp + fn;
 
         return (
           <div key={cat.cell} style={{ marginBottom: 34, paddingBottom: 22, borderBottom: '1px dashed #e2e8f0' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '4px 0 14px', padding: '9px 14px', borderRadius: 10, background: cat.color + '14', border: `1px solid ${cat.color}30`, flexWrap: 'wrap' }}>
               <span style={{ fontSize: 14 }}>{cat.emoji}</span>
               <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: .5, textTransform: 'uppercase', color: cat.color }}>{cat.label}</span>
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', marginLeft: 6 }}>{nTeams} times · {nGroups} grupo{nGroups === 1 ? '' : 's'} · {play} no mata-mata</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', marginLeft: 6 }}>{nTeams} times · {nGroups} grupo{nGroups === 1 ? '' : 's'}</span>
             </div>
 
             {nGroups === 0 ? (
               <div style={{ fontSize: 12, color: '#94a3b8', padding: '4px 6px' }}>Defina a quantidade de times na aba TORNEIO.</div>
             ) : (
               <>
-                <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: '#94a3b8', margin: '4px 2px 10px' }}>Fase de grupos · 3 jogos por time</div>
+                <div style={SUB}>Fase de grupos · 3 jogos por time</div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(168px, 1fr))', gap: 12, marginBottom: 20 }}>
                   {groups.map((grp) => (
                     <div key={grp.n} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
@@ -119,34 +168,45 @@ function GruposTabela({ ctx }) {
                   ))}
                 </div>
 
-                <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: '#94a3b8', margin: '4px 2px 10px' }}>Classificados ao mata-mata{seeds.some((sd) => sd.kind === 'wc') ? ' (inclui wild cards)' : ''}</div>
+                <div style={SUB}>Vão direto às quartas (1º de cada grupo)</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 20 }}>
-                  {seeds.map((sd, i) => (
-                    <span key={i} style={{ fontSize: 11.5, fontWeight: 800, padding: '5px 10px', borderRadius: 8, color: sd.kind === 'wc' ? '#b45309' : cat.color, background: sd.kind === 'wc' ? '#fef3c7' : cat.color + '14', border: `1px solid ${sd.kind === 'wc' ? '#fcd34d' : cat.color + '30'}` }}>{sd.label}</span>
+                  {bk.winners.map((w, i) => (
+                    <span key={i} style={{ fontSize: 11.5, fontWeight: 800, padding: '5px 10px', borderRadius: 8, color: cat.color, background: cat.color + '14', border: `1px solid ${cat.color}30` }}>{w}</span>
                   ))}
                 </div>
 
-                <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: '#94a3b8', margin: '4px 2px 10px' }}>🏆 Mata-mata — chave do título</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 16 }}>
-                  {phases.map((p, pi) => (
-                    <div key={pi} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>
-                      <div style={{ padding: '8px 12px', background: p.c + '12', borderBottom: `1px solid ${p.c}25`, fontSize: 11, fontWeight: 800, letterSpacing: .5, textTransform: 'uppercase', color: p.c, display: 'flex', justifyContent: 'space-between' }}>
-                        <span>{p.name}</span><span>{p.games} jogo{p.games === 1 ? '' : 's'}</span>
-                      </div>
-                      <div style={{ padding: '6px 8px' }}>
-                        {Array.from({ length: p.games }, (_, j) => (
-                          <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 8px', borderBottom: '1px solid #f8fafc' }}>
-                            <span style={{ minWidth: 46, textAlign: 'center', fontWeight: 800, color: p.c, background: p.c + '14', borderRadius: 6, padding: '3px 4px', fontSize: 11 }}>Jogo {j + 1}</span>
-                            <span style={{ color: '#cbd5e1', fontSize: 12.5 }}>a definir</span>
-                          </div>
-                        ))}
-                      </div>
+                {bk.wcMatches.length > 0 && (
+                  <>
+                    <div style={SUB}>🎟️ Repescagem — Wild Card (quem ganha vai às quartas)</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 12, marginBottom: 16 }}>
+                      <PhaseCard title="Wild Card" color="#b45309" matches={bk.wcMatches} showWin={true} />
+                    </div>
+                  </>
+                )}
+
+                <div style={SUB}>🏆 Mata-mata — chave do título</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 12, marginBottom: 16 }}>
+                  <PhaseCard title="Quartas de final" color={cat.color} matches={bk.qfMatches} showWin={false} />
+                  <PhaseCard title="Semifinais" color="#7c3aed" matches={bk.sfMatches} showWin={false} />
+                  <PhaseCard title="Disputa de 3º lugar" color="#f59e0b" matches={bk.tpMatches} showWin={false} />
+                  <PhaseCard title="Final" color="#059669" matches={bk.fnMatches} showWin={false} />
+                </div>
+
+                <div style={{ fontSize: 12, color: '#475569', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 14px', lineHeight: 1.6, marginBottom: 14 }}>
+                  <strong>Garantia de 5 jogos:</strong> os {bk.consol} time{bk.consol === 1 ? '' : 's'} que caem na fase de grupos entram na <strong>chave de colocação</strong> (2 rodadas) → todos completam <strong>3 (grupos) + 2 = 5 jogos</strong>. Quem avança no título joga 6 ou 7.
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                  {[
+                    { dia: '31/10', txt: `Grupos · ${groupGames} jogos`, c: '#009c3b' },
+                    { dia: '01/11', txt: `Repescagem + Quartas + Semis · ${d2} jogos`, c: '#0D4BFF' },
+                    { dia: '02/11', txt: `3º lugar + Final · ${d3} jogos`, c: '#eab308' },
+                  ].map((x, i) => (
+                    <div key={i} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 10px', borderLeft: `3px solid ${x.c}` }}>
+                      <div style={{ fontSize: 12, fontWeight: 900, color: '#0f172a' }}>{x.dia}</div>
+                      <div style={{ fontSize: 11, color: '#64748b', lineHeight: 1.4, marginTop: 2 }}>{x.txt}</div>
                     </div>
                   ))}
-                </div>
-
-                <div style={{ fontSize: 12, color: '#475569', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '10px 14px', lineHeight: 1.6 }}>
-                  <strong>Garantia de 5 jogos:</strong> os {consol} time{consol === 1 ? '' : 's'} que não avança{consol === 1 ? '' : 'm'} ao título entra{consol === 1 ? '' : 'm'} na <strong>chave de colocação</strong> (2 rodadas) → todos completam <strong>3 (grupos) + 2 = 5 jogos</strong>. Quem avança no título joga 6 ou 7.
                 </div>
               </>
             )}
@@ -154,7 +214,7 @@ function GruposTabela({ ctx }) {
         );
       })}
 
-      <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: '#94a3b8', margin: '6px 2px 12px' }}>📅 Agenda dos 3 dias</div>
+      <div style={SUB}>📅 Agenda dos 3 dias</div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
         {DIAS.map((dia, i) => (
           <div key={i} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 14, padding: '14px 16px', boxShadow: '0 1px 3px rgba(0,0,0,.05)', borderTop: `3px solid ${['#009c3b', '#0D4BFF', '#eab308'][i]}` }}>
@@ -165,7 +225,7 @@ function GruposTabela({ ctx }) {
         ))}
       </div>
       <div style={{ fontSize: 11.5, color: '#94a3b8', marginTop: 12, lineHeight: 1.6 }}>
-        As semifinais e finais acontecem nos dias 01/11 e 02/11. Se a fase de grupos não fechar em 31/10, ela avança para 01/11 e a decisão fica em 02/11.
+        Semifinais e finais nos dias 01/11 e 02/11. Se a fase de grupos não fechar em 31/10, ela avança para 01/11 e a decisão fica em 02/11. Os confrontos das fases seguintes são preenchidos conforme os resultados.
       </div>
     </div>
   );
