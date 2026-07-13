@@ -3,7 +3,7 @@ export default function manifest() {
   return {
     name: 'Brasil Flag World Championship 2026',
     short_name: 'BFWC 2026',
-    description: 'O maior campeonato internacional de clubes de Flag Football 5x5 do Brasil — 30/10 a 02/11/2026, Leme/SP.',
+    description: 'O maior campeonato internacional de clubes de Flag Football 5x5 do Brasil — 31/10 a 02/11/2026, Leme/SP.',
     start_url: '/portal?source=pwa',
     display: 'standalone',
     orientation: 'portrait',

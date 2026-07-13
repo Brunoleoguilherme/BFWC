@@ -102,7 +102,7 @@ export default function SitePage() {
             <div className="heroMeta">
               <span>
                 <CalendarDays size={19} />
-                30 OUT – 02 NOV · 2026
+                31 OUT – 02 NOV · 2026
               </span>
 
               <span>

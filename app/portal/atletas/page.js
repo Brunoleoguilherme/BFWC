@@ -449,7 +449,7 @@ function VenueMap() {
     rrect(350,H-105,400,68,10,'#1a1500','#c9a227',2);
     g.fillStyle='#c9a227';g.beginPath();g.moveTo(365,H-75);g.lineTo(378,H-58);g.lineTo(352,H-58);g.closePath();g.fill();
     txt('🎤  PALCO PRINCIPAL',550,H-90,12,'#f4e27a','800');
-    txt('Abertura · Encerramento · Premiações — 30/10',550,H-73,9,'rgba(255,200,50,.5)','600');
+    txt('Abertura · Encerramento · Premiações — 31/10',550,H-73,9,'rgba(255,200,50,.5)','600');
     txt('Leme, SP',550,H-58,8,'rgba(255,200,50,.3)','600');
 
     rrect(40,H-105,140,68,8,'#0d1e38','#2a6fc9',2);

@@ -51,7 +51,7 @@ export default function PrefeituraLemeNewsPage() {
             Championship 2026 tem o orgulho de anunciar a Prefeitura de Leme como
             apoiadora oficial do evento — um passo importante para consolidar o
             município como palco do maior campeonato internacional de Flag
-            Football já realizado no Brasil, entre os dias 30 de outubro e 2 de
+            Football já realizado no Brasil, entre os dias 31 de outubro e 2 de
             novembro de 2026, no Clube de Campo Empyreo, com equipes de vários
             países do mundo.
           </p>

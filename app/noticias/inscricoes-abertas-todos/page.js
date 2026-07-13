@@ -59,7 +59,7 @@ export default function InscricoesAbertasTodosNewsPage() {
             <strong> Brasil Flag World Championship 2026</strong> está aberta para
             qualquer equipe — não é mais necessário ter feito a pré-inscrição. O
             maior campeonato internacional de clubes de Flag Football 5x5 já
-            realizado no Brasil acontece de 30 de outubro a 2 de novembro, em
+            realizado no Brasil acontece de 31 de outubro a 2 de novembro, em
             Leme/SP, e as vagas seguem sendo preenchidas por ordem de pagamento da
             primeira parcela.
           </p>

@@ -5,7 +5,7 @@ import '../noticia.css';
 
 export const metadata = {
   title: 'Pré-inscrições do BFWC 2026 entram em suas horas decisivas — Brasil Flag World Championship',
-  description: 'Pré-inscrições abertas até 01/07 nas categorias Sub-12 (misto), Sub-15 (misto), Adulto Masculino e Adulto Feminino. O evento acontece de 30 de outubro a 2 de novembro de 2026, no Clube de Campo Empyreo, em Leme, SP.',
+  description: 'Pré-inscrições abertas até 01/07 nas categorias Sub-12 (misto), Sub-15 (misto), Adulto Masculino e Adulto Feminino. O evento acontece de 31 de outubro a 2 de novembro de 2026, no Clube de Campo Empyreo, em Leme, SP.',
 };
 
 export default function PreInscricoesNewsPage() {
@@ -63,7 +63,7 @@ export default function PreInscricoesNewsPage() {
 
           <p>
             O cenário está montado. O palco está pronto: o campeonato acontece{' '}
-            <strong>de 30 de outubro a 2 de novembro de 2026</strong>, no Clube
+            <strong>de 31 de outubro a 2 de novembro de 2026</strong>, no Clube
             de Campo Empyreo, em Leme, SP — com equipes de vários países e toda a
             infraestrutura de um evento internacional.
           </p>
