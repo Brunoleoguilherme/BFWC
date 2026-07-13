@@ -148,6 +148,17 @@ export function NewsSection({ lang, showHeading = true }) {
       <div style={{ display: 'grid', gap: 16 }}>
         {[
           {
+            href: '/noticias/inscricoes-abertas-todos',
+            badge: lang === 'en' ? 'Registration open' : lang === 'es' ? 'Inscripciones abiertas' : 'Inscrições abertas',
+            title: lang === 'en'
+              ? 'Registration open to all teams: see how much of each category is filled'
+              : lang === 'es'
+              ? 'Inscripciones abiertas para todos los equipos: mira cuánto se llenó en cada categoría'
+              : 'Inscrições abertas para todas as equipes: veja quanto já foi preenchido em cada categoria',
+            date: lang === 'en' ? 'July 13, 2026' : lang === 'es' ? '13 de julio de 2026' : '13 de julho de 2026',
+            media: <img src="/assets/local-2.jpg" alt="Inscrições abertas para todas as equipes — BFWC 2026" style={{ width: 120, height: 140, objectFit: 'cover', borderRadius: 12, border: '1px solid rgba(255,255,255,.15)' }} />,
+          },
+          {
             href: '/noticias/inscricoes-abertas',
             badge: lang === 'en' ? 'Registration open' : lang === 'es' ? 'Inscripciones abiertas' : 'Inscrições abertas',
             title: lang === 'en'
