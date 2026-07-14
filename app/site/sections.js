@@ -148,6 +148,17 @@ export function NewsSection({ lang, showHeading = true }) {
       <div style={{ display: 'grid', gap: 16 }}>
         {[
           {
+            href: '/noticias/blue-panda',
+            badge: lang === 'en' ? 'Official announcement' : lang === 'es' ? 'Anuncio oficial' : 'Anúncio oficial',
+            title: lang === 'en'
+              ? 'Blue Panda Travel is the official travel agency of the Brasil Flag World Championship 2026'
+              : lang === 'es'
+              ? 'Blue Panda Travel es la agencia de viajes oficial del Brasil Flag World Championship 2026'
+              : 'Blue Panda Travel é a agência de viagem oficial do Brasil Flag World Championship 2026',
+            date: lang === 'en' ? 'July 14, 2026' : lang === 'es' ? '14 de julio de 2026' : '14 de julho de 2026',
+            media: <img src="/assets/blue-panda.png" alt="Blue Panda Travel" style={{ width: 130, height: 120, objectFit: 'contain', borderRadius: 12, background: 'linear-gradient(135deg,#0a2255,#04101f)', padding: 12, border: '1px solid rgba(255,255,255,.15)' }} />,
+          },
+          {
             href: '/noticias/inscricoes-abertas-todos',
             badge: lang === 'en' ? 'Registration open' : lang === 'es' ? 'Inscripciones abiertas' : 'Inscrições abertas',
             title: lang === 'en'
