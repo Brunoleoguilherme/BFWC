@@ -5,7 +5,7 @@ import '../noticia.css';
 
 export const metadata = {
   title: 'Blue Panda Travel é a agência de viagem oficial do BFWC 2026',
-  description: 'A Blue Panda Travel é a agência de viagem oficial do Brasil Flag World Championship 2026, com pacotes de hotéis e voos com tarifas especiais para as equipes.',
+  description: 'A Blue Panda Travel é a agência de viagem oficial do Brasil Flag World Championship 2026, buscando as melhores condições possíveis de hospedagem e passagens para as equipes.',
 };
 
 export default function BluePandaNewsPage() {
@@ -64,9 +64,9 @@ export default function BluePandaNewsPage() {
 
           <p>
             A Blue Panda Travel será a parceira responsável por apoiar as equipes
-            e delegações na organização da viagem até Leme/SP, oferecendo
-            <strong> pacotes de hotéis e voos com tarifas especiais</strong> para as
-            equipes confirmadas no campeonato.
+            e delegações na organização da viagem até Leme/SP, trabalhando para
+            buscar <strong>as melhores condições possíveis de hospedagem e
+            passagens</strong> para as equipes confirmadas no campeonato.
           </p>
 
           <p>

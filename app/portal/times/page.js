@@ -109,7 +109,7 @@ const REGS = [
 ];
 
 const TRAVEL = [
-  { icon: '🏨', title: { pt: 'Hotéis & Voos', en: 'Hotels & Flights', es: 'Hoteles y Vuelos' }, text: { pt: 'Nossa agência parceira Blue Panda Travel entrará em contato com as equipes confirmadas para oferecer pacotes com tarifas especiais. Dúvidas: contato@bluepandatravel.com.br', en: 'Our partner agency Blue Panda Travel will contact confirmed teams to offer packages with special rates. Questions: contato@bluepandatravel.com.br', es: 'Nuestra agencia asociada Blue Panda Travel contactará a los equipos confirmados para ofrecer paquetes con tarifas especiales. Dudas: contato@bluepandatravel.com.br' } },
+  { icon: '🏨', title: { pt: 'Hotéis & Voos', en: 'Hotels & Flights', es: 'Hoteles y Vuelos' }, text: { pt: 'Nossa agência parceira Blue Panda Travel entrará em contato com as equipes confirmadas para buscar as melhores condições possíveis de hospedagem e passagens. Dúvidas: contato@bluepandatravel.com.br', en: 'Our partner agency Blue Panda Travel will contact confirmed teams to seek the best possible rates for accommodation and flights. Questions: contato@bluepandatravel.com.br', es: 'Nuestra agencia asociada Blue Panda Travel contactará a los equipos confirmados para buscar las mejores condiciones posibles de alojamiento y pasajes. Dudas: contato@bluepandatravel.com.br' } },
   { icon: '🗺️', title: { pt: 'Guia do Participante', en: 'Participant Guide', es: 'Guía del Participante' }, text: { pt: 'O guia oficial do participante estará disponível no site.', en: 'The official participant guide will be available on the website.', es: 'La guía oficial del participante estará disponible en el sitio.' } },
 ];
 
