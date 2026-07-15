@@ -64,7 +64,7 @@ export async function GET(req) {
   // Times aprovados com plano definido (começaram o processo de pagamento)
   const { data: teams } = await supabase
     .from('portal_teams')
-    .select('id, club_name, email, category, preferred_language, payment_plan, payment_option, athletes_paid_qty, amount_paid_cents')
+    .select('id, club_name, email, category, preferred_language, payment_plan, payment_option, athletes_paid_qty, amount_paid_cents, payment_selection')
     .eq('status', 'approved')
     .not('payment_plan', 'is', null);
 

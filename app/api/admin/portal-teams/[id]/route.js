@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getResend, fromEmail, emailLogoImg } from '@/lib/email';
 import { requireAdmin, verifyPassword } from '@/lib/authAdmin';
 import { notifyVagaGarantida } from '@/lib/vagaGarantida';
+import { paidCategoriesOf, selectionSummary, CATS } from '@/lib/installments';
 import { randomUUID } from 'crypto';
 
 function approvedHtml({ club_name, contact_name }) {
@@ -54,8 +55,8 @@ function verifyEmailHtml({ club_name, contact_name, verifyUrl }) {
 export async function PATCH(req, { params }) {
   try {
     const { id } = await params;
-    const { action, admin_notes, password, fields, reason } = await req.json();
-    if (!['approve', 'reject', 'finalize', 'unfinalize', 'edit', 'exempt', 'unexempt', 'resend_verification'].includes(action))
+    const { action, admin_notes, password, fields, reason, category, confirm } = await req.json();
+    if (!['approve', 'reject', 'finalize', 'unfinalize', 'edit', 'exempt', 'unexempt', 'resend_verification', 'remove_category'].includes(action))
       return NextResponse.json({ ok: false, message: 'Ação inválida.' }, { status: 400 });
 
     const supabase = getSupabaseAdmin();
@@ -128,6 +129,63 @@ export async function PATCH(req, { params }) {
       const { error: upErr } = await supabase.from('portal_teams').update(updates).eq('id', id);
       if (upErr) return NextResponse.json({ ok: false, message: upErr.message }, { status: 500 });
       return NextResponse.json({ ok: true, updated: Object.keys(updates) });
+    }
+
+    // Excluir uma categoria do time (recalcula seleção/atletas; nunca deixa sem categoria;
+    // bloqueia categoria já paga/garantida; mantém atletas cadastrados, só avisa)
+    if (action === 'remove_category') {
+      const { error: authErr } = await requireAdmin();
+      if (authErr) return authErr;
+
+      const cat = (category || '').trim();
+      if (!cat) return NextResponse.json({ ok: false, message: 'Categoria obrigatória.' }, { status: 400 });
+
+      const { data: t } = await supabase
+        .from('portal_teams')
+        .select('id, category, payment_selection, payment_option, athletes_paid_qty, payment_confirmed, exempted_at, status')
+        .eq('id', id)
+        .single();
+      if (!t) return NextResponse.json({ ok: false, message: 'Time não encontrado.' }, { status: 404 });
+
+      const current = CATS.filter((c) => (t.category || '').includes(c));
+      if (!current.includes(cat))
+        return NextResponse.json({ ok: false, message: 'O time não está inscrito nessa categoria.' }, { status: 400 });
+      if (current.length <= 1)
+        return NextResponse.json({ ok: false, code: 'LAST_CATEGORY', message: 'Não é possível excluir a última categoria do time.' }, { status: 400 });
+
+      // Bloqueia se a categoria já está paga/garantida
+      const guaranteed = !!t.payment_confirmed || (!!t.exempted_at && t.status !== 'rejected');
+      if (guaranteed && paidCategoriesOf(t).includes(cat))
+        return NextResponse.json({ ok: false, code: 'CATEGORY_PAID', message: `A categoria ${cat} já está paga/garantida e não pode ser excluída pelo painel.` }, { status: 409 });
+
+      // Avisa se houver atletas cadastrados nessa categoria (serão mantidos no time)
+      const { count: athCount } = await supabase
+        .from('team_athletes')
+        .select('id', { count: 'exact', head: true })
+        .eq('team_id', id)
+        .eq('category', cat);
+      if ((athCount || 0) > 0 && !confirm)
+        return NextResponse.json({ ok: false, code: 'HAS_ATHLETES', athletes_count: athCount, message: `Há ${athCount} atleta(s) cadastrado(s) em ${cat}. Eles serão mantidos no time. Confirmar a exclusão da categoria?` }, { status: 200 });
+
+      // Recalcula categoria e seleção de pagamento
+      const updates = { category: current.filter((c) => c !== cat).join(', ') };
+      let sel = t.payment_selection;
+      if (typeof sel === 'string') { try { sel = JSON.parse(sel); } catch { sel = null; } }
+      if (sel && typeof sel === 'object' && !Array.isArray(sel) && sel[cat] !== undefined) {
+        const newSel = { ...sel };
+        delete newSel[cat];
+        if (Object.keys(newSel).length) {
+          const summ = selectionSummary(newSel);
+          updates.payment_selection = newSel;
+          updates.payment_option = summ.option;
+          updates.athletes_paid_qty = summ.qty;
+        } else {
+          updates.payment_selection = null;
+        }
+      }
+      const { error: upErr } = await supabase.from('portal_teams').update(updates).eq('id', id);
+      if (upErr) return NextResponse.json({ ok: false, message: upErr.message }, { status: 500 });
+      return NextResponse.json({ ok: true, removed: cat, category: updates.category, athletes_kept: athCount || 0 });
     }
 
     // Marcação manual de "Inscrição finalizada" (pós-análise de documentos) — sem e-mail

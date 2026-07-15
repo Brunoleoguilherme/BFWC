@@ -422,6 +422,22 @@ function PortalModal({ team: t, onClose, onUpdate, readOnly }) {
     }
   }
 
+  async function removeCategory(cat, confirmDelete) {
+    setBusy(true);
+    const res = await fetch(`/api/admin/portal-teams/${t.id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'remove_category', category: cat, confirm: !!confirmDelete }),
+    });
+    const d = await res.json().catch(() => ({}));
+    setBusy(false);
+    if (d.ok) { onUpdate(); onClose(); return; }
+    if (d.code === 'HAS_ATHLETES') {
+      if (window.confirm(d.message)) return removeCategory(cat, true);
+      return;
+    }
+    alert(d.message || 'Não foi possível excluir a categoria.');
+  }
+
   const fields = [
     ['Contato', t.contact_name], ['E-mail', t.email], ['WhatsApp', t.whatsapp],
     ['Instagram', t.instagram || null], ['Descrição', t.description || null],
@@ -469,6 +485,26 @@ function PortalModal({ team: t, onClose, onUpdate, readOnly }) {
           </div>
         ))}
       </div>
+
+      {!readOnly && !rejected && !editing && (
+        <div style={{ marginBottom: 22 }}>
+          <div style={S.label}>Categorias inscritas</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            {CAT_DEFS.filter((d) => d.re.test(t.category || '')).map((d, _i, arr) => (
+              <span key={d.key} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 10, background: `${d.color}14`, border: `1px solid ${d.color}44`, fontSize: 12.5, fontWeight: 800, color: d.color }}>
+                {d.label}
+                {arr.length > 1 && (
+                  <button onClick={() => removeCategory(d.key)} disabled={busy} title={`Excluir ${d.label}`}
+                    style={{ cursor: 'pointer', border: 'none', background: 'rgba(220,38,38,.12)', color: '#dc2626', width: 20, height: 20, borderRadius: 6, fontWeight: 900, lineHeight: 1, fontSize: 13, padding: 0 }}>×</button>
+                )}
+              </span>
+            ))}
+          </div>
+          <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 8 }}>
+            Excluir remove a categoria do time e recalcula valor e atletas. Categoria já paga/garantida não pode ser excluída aqui.
+          </p>
+        </div>
+      )}
 
       {t.logo_url && (
         <div style={{ marginBottom: 22 }}>

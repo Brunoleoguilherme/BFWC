@@ -38,7 +38,7 @@ export async function GET() {
 
   const { data: pteams } = await supabase
     .from('portal_teams')
-    .select('id, club_name, contact_name, email, category, payment_confirmed, payment_option, athletes_paid_qty, amount_paid_cents, status, exemption_reason, whatsapp, preferred_language');
+    .select('id, club_name, contact_name, email, category, payment_confirmed, payment_option, athletes_paid_qty, amount_paid_cents, status, exemption_reason, whatsapp, preferred_language, payment_selection');
 
   const { data: insts } = await supabase
     .from('payment_installments')

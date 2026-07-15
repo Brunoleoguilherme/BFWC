@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getSupabaseServer } from '@/lib/supabaseServer';
-import { totalCentsForTeam } from '@/lib/installments';
+import { totalCentsForTeam, enabledAthletesFor } from '@/lib/installments';
 
 async function getAdminUser() {
   const supabase = await getSupabaseServer();
@@ -27,7 +27,7 @@ export async function GET() {
 
   const { data: teams, error: tErr } = await supabase
     .from('portal_teams')
-    .select('id, club_name, country, city, category, status, payment_confirmed, payment_option, athletes_paid_qty, payment_plan, amount_paid_cents, created_at');
+    .select('id, club_name, country, city, category, status, payment_confirmed, payment_option, athletes_paid_qty, payment_plan, amount_paid_cents, payment_selection, exempted_at, created_at');
   if (tErr) return NextResponse.json({ error: tErr.message }, { status: 500 });
 
   const { data: insts } = await supabase
@@ -99,10 +99,9 @@ export async function GET() {
   // Meta por time: habilitados (plano) × cadastrados (roster) × finalizados (conta ativa)
   const teamsMeta = {};
   (teams || []).forEach(team => {
-    const numCats = (team.category || '').split(',').filter(s => s.trim()).length || 1;
-    const enabled = String(team.payment_option) === '2'
-      ? (team.athletes_paid_qty || 0)
-      : 20 * numCats;
+    // Habilitados = só o que o time GARANTIU (pago ou isento), contando apenas as categorias pagas.
+    const guaranteed = !!team.payment_confirmed || (!!team.exempted_at && team.status !== 'rejected');
+    const enabled = guaranteed ? enabledAthletesFor(team) : 0;
     teamsMeta[team.id] = {
       enabled,
       registered: athCount[team.id] || 0,
