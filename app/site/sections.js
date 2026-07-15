@@ -148,6 +148,17 @@ export function NewsSection({ lang, showHeading = true }) {
       <div style={{ display: 'grid', gap: 16 }}>
         {[
           {
+            href: '/noticias/new-players-sports',
+            badge: lang === 'en' ? 'Official announcement' : lang === 'es' ? 'Anuncio oficial' : 'Anúncio oficial',
+            title: lang === 'en'
+              ? 'New Players Sports is a new official sponsor of the Brasil Flag World Championship 2026'
+              : lang === 'es'
+              ? 'New Players Sports es nueva patrocinadora oficial del Brasil Flag World Championship 2026'
+              : 'New Players Sports é a nova patrocinadora oficial do Brasil Flag World Championship 2026',
+            date: lang === 'en' ? 'July 15, 2026' : lang === 'es' ? '15 de julio de 2026' : '15 de julho de 2026',
+            media: <img src="/assets/new-players.png" alt="New Players Sports" style={{ width: 130, height: 120, objectFit: 'contain', borderRadius: 12, background: 'linear-gradient(135deg,#0a2255,#04101f)', padding: 12, border: '1px solid rgba(255,255,255,.15)' }} />,
+          },
+          {
             href: '/noticias/blue-panda',
             badge: lang === 'en' ? 'Official announcement' : lang === 'es' ? 'Anuncio oficial' : 'Anúncio oficial',
             title: lang === 'en'
