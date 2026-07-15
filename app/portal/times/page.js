@@ -565,6 +565,7 @@ export default function TimesPortalPage() {
   const [planSize, setPlanSize]               = useState(null);   // 1, 2 ou 3 escolhido
   const [payPlanChoice, setPayPlanChoice]     = useState('auto'); // 'auto' (parcelado) | '1' (à vista)
   const [catChoice, setCatChoice]             = useState({});     // opção por categoria: { [cat]: '1' | '2' }
+  const [excludedCats, setExcludedCats]       = useState({});     // categorias que o time NÃO vai pagar agora: { [cat]: true }
   const [athQtys, setAthQtys]                 = useState({});     // atletas por categoria (opção 2)
   const [payInfo, setPayInfo]                 = useState(null);   // resposta de /payment-status
   const [paidBanner, setPaidBanner]           = useState(false);  // banner "pagamento aprovado" (?paid=1)
@@ -733,7 +734,7 @@ export default function TimesPortalPage() {
     if (!team) return;
     const locked = !!(payInfo?.payment_selection || payInfo?.payment_option);
     const sel = locked ? null : buildSelection();
-    if (!locked && !sel) { setCheckoutErr(L('Escolha uma opção de pagamento para cada categoria.', 'Choose a payment option for each category.', 'Elige una opción de pago para cada categoría.')); return; }
+    if (!locked && !sel) { setCheckoutErr(L('Escolha uma opção nas categorias que vai pagar.', 'Choose an option for the categories you will pay.', 'Elige una opción en las categorías que vas a pagar.')); return; }
     setCheckoutErr(''); setCheckoutLoading(true);
     try {
       const r = await fetch('/api/payments/create-checkout', {
@@ -755,7 +756,7 @@ export default function TimesPortalPage() {
     if (!team) return;
     const locked = !!(payInfo?.payment_selection || payInfo?.payment_option);
     const sel = locked ? null : buildSelection();
-    if (!locked && !sel) { setPixErr(L('Escolha uma opção de pagamento para cada categoria.', 'Choose a payment option for each category.', 'Elige una opción de pago para cada categoría.')); return; }
+    if (!locked && !sel) { setPixErr(L('Escolha uma opção nas categorias que vai pagar.', 'Choose an option for the categories you will pay.', 'Elige una opción en las categorías que vas a pagar.')); return; }
     setPixErr(''); setPixLoadingNum(number);
     try {
       const body = { team_id: team.id, number, selection: sel || undefined, plan_size: effectivePlan() };
@@ -935,8 +936,10 @@ export default function TimesPortalPage() {
   // Seleção de pagamento por categoria: { [cat]: { option: '1'|'2', qty? } } — null enquanto faltar escolher
   const buildSelection = () => {
     if (!registeredCats.length) return null;
+    const payCats = registeredCats.filter((c) => !excludedCats[c]); // só as categorias marcadas para pagar
+    if (!payCats.length) return null; // precisa pagar ao menos uma categoria
     const sel = {};
-    for (const c of registeredCats) {
+    for (const c of payCats) {
       const o = catChoice[c];
       if (o !== '1' && o !== '2') return null;
       sel[c] = o === '2' ? { option: '2', qty: Math.min(20, Math.max(12, athQtys[c] ?? 12)) } : { option: '1' };
@@ -1389,18 +1392,29 @@ export default function TimesPortalPage() {
               {!allPaid && !isLocked && (
                 <div style={{ ...card(), padding: cpad }}>
                   <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(15,23,42,.28)', marginBottom: 6 }}>{L('Escolha a forma de inscrição', 'Choose your registration option', 'Elige tu forma de inscripción')}</div>
-                  <div style={{ fontSize: 12, color: 'rgba(15,23,42,.5)', marginBottom: 14, lineHeight: 1.5 }}>{L('Escolha uma opção para cada categoria — os valores são somados em um único total.', 'Choose an option for each category — amounts are added into a single total.', 'Elige una opción para cada categoría — los valores se suman en un único total.')}</div>
+                  <div style={{ fontSize: 12, color: 'rgba(15,23,42,.5)', marginBottom: 14, lineHeight: 1.5 }}>{registeredCats.length > 1 ? L('Escolha a opção de cada categoria que vai pagar. Não quer pagar uma agora? Toque em “Não pagar agora” — o total soma só as categorias marcadas.', 'Choose the option for each category you want to pay. Not paying one now? Tap “Skip for now” — the total only adds the selected categories.', 'Elige la opción de cada categoría que vas a pagar. ¿No pagarás una ahora? Toca “No pagar ahora” — el total suma solo las categorías marcadas.') : L('Escolha uma opção para a sua categoria.', 'Choose an option for your category.', 'Elige una opción para tu categoría.')}</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     {registeredCats.map((c) => {
                       const o = catChoice[c];
                       const q = athCatQty(c);
                       const catSub = o === '1' ? 2000 : o === '2' ? 800 + 90 * q : 0;
+                      const excluded = !!excludedCats[c];
+                      const canExclude = registeredCats.length > 1;
                       return (
-                        <div key={c} style={{ padding: '14px', borderRadius: 14, border: '1px solid rgba(15,23,42,.08)', background: 'rgba(15,23,42,.02)' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                        <div key={c} style={{ padding: '14px', borderRadius: 14, border: '1px solid rgba(15,23,42,.08)', background: excluded ? 'rgba(15,23,42,.04)' : 'rgba(15,23,42,.02)', opacity: excluded ? .65 : 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: excluded ? 0 : 10, gap: 8, flexWrap: 'wrap' }}>
                             <span style={{ fontSize: 14, fontWeight: 900, color: '#0f172a' }}>🏈 {c}</span>
-                            {o && <span style={{ fontSize: 13, fontWeight: 900, color: o === '2' ? ACCENT : YELLOW }}>R$ {catSub.toLocaleString('pt-BR')}</span>}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                              {!excluded && o && <span style={{ fontSize: 13, fontWeight: 900, color: o === '2' ? ACCENT : YELLOW }}>R$ {catSub.toLocaleString('pt-BR')}</span>}
+                              {canExclude && (excluded ? (
+                                <button type="button" onClick={() => setExcludedCats(p => { const n = { ...p }; delete n[c]; return n; })} style={{ cursor: 'pointer', fontFamily: 'inherit', fontSize: 11.5, fontWeight: 800, color: GREEN, background: GREEN + '12', border: `1px solid ${GREEN}40`, borderRadius: 8, padding: '6px 10px' }}>+ {L('Pagar esta categoria', 'Pay this category', 'Pagar esta categoría')}</button>
+                              ) : (
+                                <button type="button" onClick={() => setExcludedCats(p => ({ ...p, [c]: true }))} style={{ cursor: 'pointer', fontFamily: 'inherit', fontSize: 11.5, fontWeight: 700, color: 'rgba(15,23,42,.5)', background: 'transparent', border: '1px solid rgba(15,23,42,.15)', borderRadius: 8, padding: '6px 10px' }}>✕ {L('Não pagar agora', 'Skip for now', 'No pagar ahora')}</button>
+                              ))}
+                            </div>
                           </div>
+                          {excluded && <div style={{ fontSize: 11.5, color: 'rgba(15,23,42,.45)', lineHeight: 1.5 }}>{L('Não será cobrada agora — a categoria continua no seu cadastro.', 'Not charged now — the category stays in your registration.', 'No se cobra ahora — la categoría sigue en tu registro.')}</div>}
+                          {!excluded && (<>
                           <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 10 }}>
                             <button onClick={() => setCatChoice(p => ({ ...p, [c]: '1' }))} style={{ flex: 1, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', padding: '14px', borderRadius: 14, border: `2px solid ${o === '1' ? YELLOW : 'rgba(15,23,42,.1)'}`, background: o === '1' ? YELLOW + '10' : '#fff' }}>
                               <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: YELLOW, marginBottom: 6 }}>{L('Opção 1 · Pacote', 'Option 1 · Package', 'Opción 1 · Paquete')}</div>
@@ -1422,12 +1436,13 @@ export default function TimesPortalPage() {
                               <span style={{ width: 84, textAlign: 'right', fontSize: 12, fontWeight: 800, color: ACCENT }}>+ R$ {(90 * q).toLocaleString('pt-BR')}</span>
                             </div>
                           )}
+                          </>)}
                         </div>
                       );
                     })}
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(15,23,42,.08)' }}>
-                    <span style={{ fontSize: 13, fontWeight: 900, color: draftSel ? '#0f172a' : 'rgba(15,23,42,.45)' }}>{draftSel ? 'Total' : L('Escolha uma opção em cada categoria para continuar', 'Choose an option for each category to continue', 'Elige una opción en cada categoría para continuar')}</span>
+                    <span style={{ fontSize: 13, fontWeight: 900, color: draftSel ? '#0f172a' : 'rgba(15,23,42,.45)' }}>{draftSel ? `Total${registeredCats.length > 1 ? ` · ${registeredCats.filter(c => !excludedCats[c]).length}/${registeredCats.length} ${L('categorias','categories','categorías')}` : ''}` : L('Escolha a opção nas categorias que vai pagar (desmarque as que não vai pagar agora).', 'Choose an option for the categories you will pay (skip the ones you are not paying now).', 'Elige la opción en las categorías que vas a pagar (omite las que no pagarás ahora).')}</span>
                     {draftSel && <span style={{ fontSize: 20, fontWeight: 900, color: YELLOW, letterSpacing: -0.5 }}>R$ {total.toLocaleString('pt-BR')}</span>}
                   </div>
                 </div>

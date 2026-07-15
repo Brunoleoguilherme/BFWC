@@ -34,7 +34,10 @@ export async function POST(req) {
 
     // Cota por categoria: bloqueia o 1º pagamento se a categoria já lotou
     if ((team.amount_paid_cents || 0) === 0) {
-      const fullCat = await fullCategoryFor(supabase, team.id, team.category);
+      // Cota so considera as categorias que o time REALMENTE vai pagar (seleção parcial).
+      const intendedSel = normalizeSelection(team.payment_selection, team.category) || normalizeSelection(selection, team.category);
+      const payCats = intendedSel ? Object.keys(intendedSel).join(',') : team.category;
+      const fullCat = await fullCategoryFor(supabase, team.id, payCats);
       if (fullCat) {
         return NextResponse.json({
           ok: false, code: 'CATEGORY_FULL',

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getSupabaseServer } from '@/lib/supabaseServer';
-import { totalCentsForTeam, countCategories, CATS, CATEGORY_QUOTAS } from '@/lib/installments';
+import { totalCentsForTeam, countCategories, CATS, CATEGORY_QUOTAS, paidCategoriesOf } from '@/lib/installments';
 
 async function getAdminUser() {
   const supabase = await getSupabaseServer();
@@ -32,7 +32,7 @@ export async function GET() {
 
   const { data: teams, error: tErr } = await supabase
     .from('portal_teams')
-    .select('id, club_name, email, country, category, status, payment_confirmed, payment_option, athletes_paid_qty, payment_plan, amount_paid_cents, stripe_payment_intent, payment_date, exempted_at, exemption_reason');
+    .select('id, club_name, email, country, category, status, payment_confirmed, payment_option, athletes_paid_qty, payment_plan, amount_paid_cents, stripe_payment_intent, payment_date, exempted_at, exemption_reason, payment_selection');
   if (tErr) return NextResponse.json({ error: tErr.message }, { status: 500 });
 
   const { data: installments, error: iErr } = await supabase
@@ -96,8 +96,10 @@ export async function GET() {
       byOption[opt].esperado_cents += total;
       byOption[opt].arrecadado_cents += paid;
 
+      // Conta a vaga na(s) categoria(s) que o time realmente pagou (isento = todas as inscritas).
+      const paidCats = exempt ? CATS.filter((c) => team.category?.includes(c)) : paidCategoriesOf(team);
       CATS.forEach((c, idx) => {
-        if (team.category?.includes(c)) byCategory[idx].paid_teams += 1;
+        if (paidCats.includes(c)) byCategory[idx].paid_teams += 1;
       });
 
       // parcelas em atraso: pendentes com vencimento passado (isentos não têm atraso)
