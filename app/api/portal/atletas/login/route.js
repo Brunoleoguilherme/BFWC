@@ -33,7 +33,7 @@ export async function POST(req) {
     if (!athlete.email_verified)
       return NextResponse.json({ ok: false, code: 'EMAIL_NOT_VERIFIED', message: 'E-mail não verificado. Verifique sua caixa de entrada.' }, { status: 403 });
 
-    if (athlete.status !== 'active')
+    if (athlete.status !== 'active' && athlete.status !== 'approved')
       return NextResponse.json({ ok: false, code: 'INACTIVE', message: 'Conta inativa. Entre em contato com a organização.' }, { status: 403 });
 
     if (!verifyPassword(password, athlete.password_hash))
