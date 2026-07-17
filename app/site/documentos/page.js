@@ -20,6 +20,7 @@ const COPY = {
       { file: 'politica-de-privacidade-bfwc2026-pt.pdf', title: 'Política de Privacidade e Proteção de Dados Pessoais', desc: 'Como tratamos os dados pessoais de atletas, equipes e participantes, em conformidade com a LGPD: coleta, finalidades, compartilhamento, direitos dos titulares e segurança.' },
       { file: 'Guia-de-Inscricao-dos-Times-BFWC2026-PT.pdf', title: 'Guia de Inscrição dos Times', desc: 'Passo a passo completo do processo de inscrição no portal: cadastro, aprovação, pagamento e inscrição de atletas.' },
       { file: 'Guia-Ilustrado-Inscricao-Times-BFWC2026-PT.pdf', title: 'Guia Ilustrado de Inscrição (com capturas de tela)', desc: 'A mesma jornada de inscrição, tela a tela, com imagens de cada etapa do portal.' },
+      { file: 'Guia-de-Inscricao-dos-Atletas-BFWC2026-PT.pdf', title: 'Guia de Inscrição dos Atletas', desc: 'Passo a passo para o atleta: convite do time, criação da conta, confirmação de e-mail, login e envio dos documentos (e autorização do responsável, para menores de 18).' },
     ],
     pending: [],
     open: 'Abrir PDF →',
