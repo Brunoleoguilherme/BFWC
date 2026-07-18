@@ -291,6 +291,207 @@ function DeleteModal({ user, onClose, onDeleted }) {
   );
 }
 
+function EditModal({ user, onClose, onSaved }) {
+  const isAdminUser = user.source === 'admin';
+  const [form, setForm] = useState({
+    name: user.name || '',
+    email: user.email || '',
+    role: user.role || 'admin',
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  function set(k, v) { setForm(f => ({ ...f, [k]: v })); }
+
+  async function submit(e) {
+    e.preventDefault();
+    setLoading(true); setError('');
+    const body = { id: user.id, source: user.source, name: form.name, email: form.email };
+    if (isAdminUser) body.role = form.role;
+    const res = await fetch('/api/admin/users', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    setLoading(false);
+    if (!res.ok) { setError(data.error || 'Erro ao salvar'); return; }
+    onSaved(form.name);
+    onClose();
+  }
+
+  const inp = {
+    width: '100%', padding: '12px 16px', borderRadius: 12, fontSize: 13,
+    background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.1)',
+    color: '#fff', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
+  };
+  const lbl = { display: 'block', fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 6 };
+
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,.82)',
+        backdropFilter: 'blur(10px)', zIndex: 1000,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 24, fontFamily: "'Inter', sans-serif",
+      }}
+      onClick={e => e.target === e.currentTarget && onClose()}
+    >
+      <div style={{
+        width: '100%', maxWidth: 480,
+        background: 'linear-gradient(145deg, #030d1f, #020814)',
+        border: '1px solid rgba(255,255,255,.1)', borderRadius: 24,
+        padding: '40px 44px', boxShadow: '0 60px 180px rgba(0,0,0,.9)',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#4d8aff', marginBottom: 4 }}>Editar usuário</div>
+            <h2 style={{ fontSize: 22, fontWeight: 900, letterSpacing: -1, color: '#fff', margin: 0 }}>Alterar dados</h2>
+          </div>
+          <button onClick={onClose} style={{ background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, width: 32, height: 32, cursor: 'pointer', color: 'rgba(255,255,255,.4)', fontSize: 14 }}>✕</button>
+        </div>
+
+        <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div>
+            <label style={lbl}>{user.source === 'times' ? 'Nome do clube' : 'Nome'}</label>
+            <input style={inp} value={form.name} onChange={e => set('name', e.target.value)} required />
+          </div>
+          <div>
+            <label style={lbl}>E-mail</label>
+            <input style={inp} type="email" value={form.email} onChange={e => set('email', e.target.value)} required />
+            {isAdminUser && (
+              <div style={{ marginTop: 6, fontSize: 10, color: 'rgba(255,255,255,.25)', lineHeight: 1.5 }}>
+                Alterar o e-mail muda também o login de acesso ao painel.
+              </div>
+            )}
+          </div>
+
+          {isAdminUser && (
+            <div>
+              <label style={{ ...lbl, marginBottom: 8 }}>Nível de acesso</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {ADMIN_ROLES.map(r => (
+                  <button
+                    key={r.value}
+                    type="button"
+                    onClick={() => set('role', r.value)}
+                    style={{
+                      padding: '12px 14px', borderRadius: 12, cursor: 'pointer',
+                      textAlign: 'left', fontFamily: 'inherit',
+                      background: form.role === r.value ? r.color + '14' : 'rgba(255,255,255,.03)',
+                      border: `1px solid ${form.role === r.value ? r.color + '45' : 'rgba(255,255,255,.08)'}`,
+                      transition: 'all .15s',
+                    }}
+                  >
+                    <div style={{ fontSize: 11, fontWeight: 800, color: r.color, marginBottom: 3 }}>{r.label}</div>
+                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,.35)', lineHeight: 1.4 }}>{r.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <div style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(255,68,68,.08)', border: '1px solid rgba(255,68,68,.2)', color: '#ff6b6b', fontSize: 12 }}>
+              {error}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+            <button type="button" onClick={onClose} style={{ flex: 1, padding: '13px', borderRadius: 12, background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)', color: 'rgba(255,255,255,.5)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+              Cancelar
+            </button>
+            <button type="submit" disabled={loading} style={{ flex: 1, padding: '13px', borderRadius: 12, border: 'none', background: '#4d8aff', color: '#fff', fontSize: 13, fontWeight: 900, letterSpacing: 1, textTransform: 'uppercase', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: loading ? 0.7 : 1 }}>
+              {loading ? 'Salvando...' : 'Salvar'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function ResetModal({ user, onClose, onSent }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const rc = (ROLES.find(x => x.value === user.role) || ROLES[0]).color;
+
+  async function submit() {
+    setLoading(true); setError('');
+    const res = await fetch('/api/admin/users/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: user.id, source: user.source }),
+    });
+    const data = await res.json();
+    setLoading(false);
+    if (!res.ok) { setError(data.error || 'Erro ao enviar'); return; }
+    onSent(data.email || user.email);
+    onClose();
+  }
+
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,.82)',
+        backdropFilter: 'blur(10px)', zIndex: 1000,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 24, fontFamily: "'Inter', sans-serif",
+      }}
+      onClick={e => e.target === e.currentTarget && onClose()}
+    >
+      <div style={{
+        width: '100%', maxWidth: 420,
+        background: 'linear-gradient(145deg, #030d1f, #020814)',
+        border: '1px solid rgba(77,138,255,.25)', borderRadius: 24,
+        padding: '40px 44px', boxShadow: '0 60px 180px rgba(0,0,0,.9)',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: 'uppercase', color: '#4d8aff', marginBottom: 4 }}>Redefinir senha</div>
+            <h2 style={{ fontSize: 20, fontWeight: 900, letterSpacing: -0.8, color: '#fff', margin: 0 }}>Enviar link por e-mail</h2>
+          </div>
+          <button onClick={onClose} style={{ background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, width: 32, height: 32, cursor: 'pointer', color: 'rgba(255,255,255,.4)', fontSize: 14 }}>✕</button>
+        </div>
+
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 14,
+          padding: '16px 18px', borderRadius: 14,
+          background: 'rgba(77,138,255,.06)', border: '1px solid rgba(77,138,255,.18)',
+          marginBottom: 24,
+        }}>
+          <div style={{ width: 42, height: 42, borderRadius: '50%', flexShrink: 0, background: rc + '18', border: `1px solid ${rc}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, color: rc }}>
+            {initials(user.name)}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginBottom: 2 }}>{user.name}</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,.45)' }}>{user.email}</div>
+          </div>
+        </div>
+
+        <div style={{ fontSize: 12, color: 'rgba(255,255,255,.45)', lineHeight: 1.6, marginBottom: 24 }}>
+          Enviaremos um e-mail com um link seguro para <strong style={{ color: '#cdd8ec' }}>{user.email}</strong>. A própria pessoa define a nova senha. O link vale por 1 hora.
+        </div>
+
+        {error && (
+          <div style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(255,68,68,.08)', border: '1px solid rgba(255,68,68,.2)', color: '#ff6b6b', fontSize: 12, marginBottom: 14 }}>
+            {error}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button type="button" onClick={onClose} style={{ flex: 1, padding: '13px', borderRadius: 12, background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)', color: 'rgba(255,255,255,.5)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+            Cancelar
+          </button>
+          <button type="button" onClick={submit} disabled={loading} style={{ flex: 1, padding: '13px', borderRadius: 12, border: 'none', background: '#4d8aff', color: '#fff', fontSize: 13, fontWeight: 900, letterSpacing: 1, textTransform: 'uppercase', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: loading ? 0.7 : 1 }}>
+            {loading ? 'Enviando...' : 'Enviar link'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function UserRow({ u, onDeleteClick }) {
   const rc = (ROLES.find(x => x.value === u.role) || ROLES[0]).color;
 
@@ -352,7 +553,7 @@ function UserRow({ u, onDeleteClick }) {
   );
 }
 
-function UserCard({ u, onDeleteClick }) {
+function UserCard({ u, onDeleteClick, onEditClick, onResetClick }) {
   const rc = (ROLES.find(x => x.value === u.role) || ROLES[0]).color;
   const pending = u.status && u.status !== 'approved' && u.status !== 'active';
   return (
@@ -362,12 +563,22 @@ function UserCard({ u, onDeleteClick }) {
       gap: 8, padding: '20px 16px 16px', borderRadius: 16,
       background: '#ffffff', border: '1px solid #e2e8f0', boxShadow: '0 1px 4px rgba(0,0,0,.06)',
     }}>
-      <button
-        onClick={() => onDeleteClick(u)} title="Excluir usuário"
-        style={{ position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: 8, background: 'rgba(255,68,68,.07)', border: '1px solid rgba(255,68,68,.16)', color: 'rgba(255,68,68,.6)', fontSize: 12, cursor: 'pointer' }}
-      >🗑</button>
+      <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 5 }}>
+        <button
+          onClick={() => onEditClick(u)} title="Editar dados"
+          style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(77,138,255,.08)', border: '1px solid rgba(77,138,255,.2)', color: 'rgba(77,138,255,.8)', fontSize: 12, cursor: 'pointer' }}
+        >✏️</button>
+        <button
+          onClick={() => onResetClick(u)} title="Redefinir senha"
+          style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(148,163,184,.12)', border: '1px solid rgba(148,163,184,.28)', color: '#64748b', fontSize: 12, cursor: 'pointer' }}
+        >🔑</button>
+        <button
+          onClick={() => onDeleteClick(u)} title="Excluir usuário"
+          style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,68,68,.07)', border: '1px solid rgba(255,68,68,.16)', color: 'rgba(255,68,68,.6)', fontSize: 12, cursor: 'pointer' }}
+        >🗑</button>
+      </div>
 
-      <div style={{ width: 52, height: 52, borderRadius: '50%', background: rc + '18', border: `1px solid ${rc}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 900, color: rc }}>
+      <div style={{ width: 52, height: 52, borderRadius: '50%', background: rc + '18', border: `1px solid ${rc}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 900, color: rc, marginTop: 10 }}>
         {initials(u.name)}
       </div>
       <div style={{ fontSize: 13.5, fontWeight: 800, color: '#0f172a', lineHeight: 1.25, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>{u.name}</div>
@@ -445,6 +656,8 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [editTarget, setEditTarget] = useState(null);
+  const [resetTarget, setResetTarget] = useState(null);
   const [toast, setToast] = useState(null);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
@@ -569,7 +782,7 @@ export default function UsersPage() {
         const grid = (items, empty) => items.length === 0
           ? <div style={{ padding: '10px 4px', fontSize: 12, color: '#94a3b8' }}>{empty}</div>
           : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12, marginTop: 4 }}>
-              {items.map(u => <UserCard key={u.id} u={u} onDeleteClick={setDeleteTarget} />)}
+              {items.map(u => <UserCard key={u.id} u={u} onDeleteClick={setDeleteTarget} onEditClick={setEditTarget} onResetClick={setResetTarget} />)}
             </div>;
         const GROUPS = [
           { label: 'Administradores', items: adminUsers,    empty: 'Nenhum admin.' },
@@ -613,6 +826,27 @@ export default function UsersPage() {
           onDeleted={() => {
             fetchUsers();
             setToast('Usuário excluído com sucesso');
+          }}
+        />
+      )}
+
+      {editTarget && (
+        <EditModal
+          user={editTarget}
+          onClose={() => setEditTarget(null)}
+          onSaved={(name) => {
+            fetchUsers();
+            setToast(`Dados de ${name} atualizados`);
+          }}
+        />
+      )}
+
+      {resetTarget && (
+        <ResetModal
+          user={resetTarget}
+          onClose={() => setResetTarget(null)}
+          onSent={(email) => {
+            setToast(`Link de redefinição enviado para ${email}`);
           }}
         />
       )}
