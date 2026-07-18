@@ -18,6 +18,25 @@ function initials(name) {
   return (name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 }
 
+// Avatar com foto/logo do usuário; cai para as iniciais se não houver imagem ou se ela falhar
+function Avatar({ u, size = 52 }) {
+  const rc = (ROLES.find(x => x.value === u.role) || ROLES[0]).color;
+  const [err, setErr] = useState(false);
+  const showImg = u.avatar && !err;
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
+      background: rc + '18', border: `1px solid ${rc}35`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: Math.round(size * 0.3), fontWeight: 900, color: rc,
+    }}>
+      {showImg
+        ? <img src={u.avatar} alt="" loading="lazy" onError={() => setErr(true)} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        : initials(u.name)}
+    </div>
+  );
+}
+
 function Badge({ role }) {
   const r = ROLES.find(x => x.value === role) || ROLES[0];
   return (
@@ -212,14 +231,7 @@ function DeleteModal({ user, onClose, onDeleted }) {
           background: 'rgba(255,68,68,.06)', border: '1px solid rgba(255,68,68,.18)',
           marginBottom: 24,
         }}>
-          <div style={{
-            width: 42, height: 42, borderRadius: '50%', flexShrink: 0,
-            background: rc + '18', border: `1px solid ${rc}35`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 14, fontWeight: 900, color: rc,
-          }}>
-            {initials(user.name)}
-          </div>
+          <Avatar u={user} size={42} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginBottom: 2 }}>{user.name}</div>
             <div style={{ fontSize: 12, color: 'rgba(255,255,255,.45)' }}>{user.email}</div>
@@ -460,9 +472,7 @@ function ResetModal({ user, onClose, onSent }) {
           background: 'rgba(77,138,255,.06)', border: '1px solid rgba(77,138,255,.18)',
           marginBottom: 24,
         }}>
-          <div style={{ width: 42, height: 42, borderRadius: '50%', flexShrink: 0, background: rc + '18', border: `1px solid ${rc}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, color: rc }}>
-            {initials(user.name)}
-          </div>
+          <Avatar u={user} size={42} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginBottom: 2 }}>{user.name}</div>
             <div style={{ fontSize: 12, color: 'rgba(255,255,255,.45)' }}>{user.email}</div>
@@ -560,7 +570,7 @@ function UserCard({ u, onDeleteClick, onEditClick, onResetClick }) {
     <div style={{
       position: 'relative',
       display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
-      gap: 8, padding: '20px 16px 16px', borderRadius: 16,
+      gap: 8, padding: '44px 16px 16px', borderRadius: 16,
       background: '#ffffff', border: '1px solid #e2e8f0', boxShadow: '0 1px 4px rgba(0,0,0,.06)',
     }}>
       <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 5 }}>
@@ -578,9 +588,7 @@ function UserCard({ u, onDeleteClick, onEditClick, onResetClick }) {
         >🗑</button>
       </div>
 
-      <div style={{ width: 52, height: 52, borderRadius: '50%', background: rc + '18', border: `1px solid ${rc}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 900, color: rc, marginTop: 10 }}>
-        {initials(u.name)}
-      </div>
+      <Avatar u={u} size={54} />
       <div style={{ fontSize: 13.5, fontWeight: 800, color: '#0f172a', lineHeight: 1.25, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>{u.name}</div>
       <Badge role={u.role} />
       <div style={{ fontSize: 11, color: '#64748b', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>{u.email}</div>

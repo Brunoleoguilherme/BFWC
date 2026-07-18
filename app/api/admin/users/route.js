@@ -35,18 +35,18 @@ export async function GET() {
 
   const [adminsRes, teamsRes, athletesRes] = await Promise.all([
     admin.from('admin_profiles').select('id, email, name, role, created_at').order('created_at', { ascending: true }),
-    admin.from('portal_teams').select('id, email, club_name, created_at, status').order('created_at', { ascending: true }),
-    admin.from('portal_athletes').select('id, email, name, created_at, status').order('created_at', { ascending: true }),
+    admin.from('portal_teams').select('id, email, club_name, logo_url, created_at, status').order('created_at', { ascending: true }),
+    admin.from('portal_athletes').select('id, email, name, photo_url, created_at, status').order('created_at', { ascending: true }),
   ]);
 
   const users = [
-    ...(adminsRes.data || []).map(u => ({ ...u, source: 'admin' })),
+    ...(adminsRes.data || []).map(u => ({ ...u, avatar: null, source: 'admin' })),
     ...(teamsRes.data || []).map(u => ({
-      id: u.id, email: u.email, name: u.club_name,
+      id: u.id, email: u.email, name: u.club_name, avatar: u.logo_url || null,
       role: 'times', created_at: u.created_at, status: u.status, source: 'times',
     })),
     ...(athletesRes.data || []).map(u => ({
-      id: u.id, email: u.email, name: u.name,
+      id: u.id, email: u.email, name: u.name, avatar: u.photo_url || null,
       role: 'atleta', created_at: u.created_at, status: u.status, source: 'atleta',
     })),
   ];
