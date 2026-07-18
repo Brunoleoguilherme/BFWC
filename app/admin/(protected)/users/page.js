@@ -31,7 +31,7 @@ function Avatar({ u, size = 52 }) {
       fontSize: Math.round(size * 0.3), fontWeight: 900, color: rc,
     }}>
       {showImg
-        ? <img src={u.avatar} alt="" loading="lazy" onError={() => setErr(true)} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        ? <img src={u.avatar} alt="" onError={() => setErr(true)} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
         : initials(u.name)}
     </div>
   );
