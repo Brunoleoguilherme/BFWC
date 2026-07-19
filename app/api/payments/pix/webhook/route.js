@@ -64,7 +64,8 @@ export async function POST(req) {
             .from('payment_installments')
             .select('status')
             .eq('team_id', inst.team_id);
-          const allPaid = !!allInst?.length && allInst.every(i => i.status === 'paid');
+          const planTotal = inst.plan_size || (allInst?.length || 0);
+          const allPaid = planTotal > 0 && (allInst || []).filter(i => i.status === 'paid').length >= planTotal;
           await getResend().emails.send({
             from: fromEmail,
             to: team.email,

@@ -75,7 +75,10 @@ export async function GET(request) {
         try {
           const parcelaTxt = `parcela ${inst.number}${inst.plan_size ? `/${inst.plan_size}` : ''}`;
           const valorTxt = ((inst.amount_cents || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-          const allPaidNow = list.every((i) => i.status === 'paid');
+          // "Concluído" só quando TODAS as parcelas do plano foram pagas —
+          // não basta as cobranças já geradas (num plano 3x, só a 1ª existe no início).
+          const planTotal = team.payment_plan || inst.plan_size || list.length;
+          const allPaidNow = list.filter((i) => i.status === 'paid').length >= planTotal;
           await getResend().emails.send({
             from: fromEmail, to: team.email,
             subject: allPaidNow ? '🏁 Pagamento concluído — inscrição confirmada no BFWC 2026' : `✅ Pagamento confirmado (${parcelaTxt}) — BFWC 2026`,
