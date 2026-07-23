@@ -1,0 +1,18 @@
+name: Reconcile PIX (a cada 15 min)
+
+# Substitui o cron da Vercel (indisponivel no plano Hobby para intervalos < 1 dia).
+# Chama o endpoint de reconciliacao de PIX a cada 15 minutos.
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Chamar endpoint reconcile-pix
+        run: |
+          curl -sS -X GET "https://brasilflag.com/api/cron/reconcile-pix" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            --fail-with-body

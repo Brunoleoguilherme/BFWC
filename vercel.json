@@ -5,10 +5,6 @@
       "schedule": "0 12 * * *"
     },
     {
-      "path": "/api/cron/reconcile-pix",
-      "schedule": "*/15 * * * *"
-    },
-    {
       "path": "/api/cron/materia-reminder",
       "schedule": "0 12 * * 5"
     }
