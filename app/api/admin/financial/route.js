@@ -61,6 +61,15 @@ export async function GET() {
   const overdue = [];
   const teamRows = [];
 
+  // ── Previsão de recebíveis: parcelas pendentes (não pagas) de times confirmados,
+  //    agregadas por mês de vencimento. Vencidas e sem data ganham baldes próprios. ──
+  const forecastMap = {};        // 'YYYY-MM' | 'overdue' | 'nodate' -> { amount_cents, count }
+  const bumpForecast = (key, cents) => {
+    (forecastMap[key] ||= { amount_cents: 0, count: 0 });
+    forecastMap[key].amount_cents += cents;
+    forecastMap[key].count += 1;
+  };
+
   let isencoesCount = 0;
   let isencoesWaived = 0;
 
@@ -109,6 +118,16 @@ export async function GET() {
           number: i.number, amount_cents: i.amount_cents, due_date: i.due_date,
         });
       });
+
+      // previsão de recebíveis: todas as parcelas pendentes (isentos não têm parcelas a receber)
+      if (!exempt) {
+        insts.filter(i => i.status !== 'paid').forEach(i => {
+          const cents = i.amount_cents || 0;
+          if (!i.due_date) bumpForecast('nodate', cents);
+          else if (i.due_date < today) bumpForecast('overdue', cents);
+          else bumpForecast(i.due_date.slice(0, 7), cents);
+        });
+      }
     }
 
     if (paid > 0 || committed) {
@@ -132,6 +151,25 @@ export async function GET() {
   overdue.sort((a, b) => a.due_date.localeCompare(b.due_date));
   teamRows.sort((a, b) => b.paid_cents - a.paid_cents);
 
+  // Monta a previsão: baldes de mês em ordem cronológica; overdue e nodate à parte.
+  const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  const forecast = Object.keys(forecastMap)
+    .filter(k => k !== 'overdue' && k !== 'nodate')
+    .sort()
+    .map(k => {
+      const [y, m] = k.split('-');
+      return {
+        key: k,
+        label: `${MESES[parseInt(m, 10) - 1]}/${y.slice(2)}`,
+        amount_cents: forecastMap[k].amount_cents,
+        count: forecastMap[k].count,
+      };
+    });
+  const forecast_future_cents = forecast.reduce((s, f) => s + f.amount_cents, 0);
+  const forecast_overdue_cents = forecastMap.overdue?.amount_cents || 0;
+  const forecast_nodate_cents = forecastMap.nodate?.amount_cents || 0;
+  const forecast_total_cents = forecast_future_cents + forecast_overdue_cents + forecast_nodate_cents;
+
   return NextResponse.json({
     ok: true,
     today,
@@ -148,6 +186,11 @@ export async function GET() {
     byOption,
     overdue,
     overdue_total_cents: overdue.reduce((s, o) => s + (o.amount_cents || 0), 0),
+    forecast,
+    forecast_future_cents,
+    forecast_overdue_cents,
+    forecast_nodate_cents,
+    forecast_total_cents,
     teams: teamRows,
     committed_count: teamRows.filter(t => t.payment_confirmed).length,
   });

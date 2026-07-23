@@ -113,6 +113,54 @@ export default function FinanceiroPage() {
         </Card>
       )}
 
+      {/* Previsão de recebíveis */}
+      {!loading && (
+        <Card style={{ marginBottom: 16 }}>
+          <SectionTitle badge="Previsão" badgeColor="#0D4BFF" title="Previsão de recebíveis"
+            right={<span style={{ fontSize: 13, fontWeight: 800, color: '#0f172a' }}>{BRL(data.forecast_total_cents || 0)} <span style={{ color: '#94a3b8', fontWeight: 600, fontSize: 11 }}>a receber</span></span>} />
+
+          {(data.forecast_overdue_cents > 0) && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: 12, background: '#fef2f2', border: '1px solid rgba(239,68,68,.25)', marginBottom: 12 }}>
+              <span style={{ fontSize: 12.5, fontWeight: 700, color: '#ef4444' }}>Vencidas (em atraso)</span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#ef4444' }}>{BRL(data.forecast_overdue_cents)}</span>
+            </div>
+          )}
+
+          {(!data.forecast || data.forecast.length === 0) ? (
+            <div style={{ color: '#94a3b8', fontSize: 13 }}>Nenhuma parcela futura pendente entre os times confirmados.</div>
+          ) : (() => {
+            const maxCents = Math.max(...data.forecast.map(f => f.amount_cents), 1);
+            let acc = 0;
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {data.forecast.map(f => {
+                  acc += f.amount_cents;
+                  const pct = Math.round((f.amount_cents / maxCents) * 100);
+                  return (
+                    <div key={f.key}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
+                        <span style={{ fontSize: 12.5, fontWeight: 800, color: '#334155', textTransform: 'capitalize' }}>{f.label} <span style={{ fontSize: 10.5, color: '#94a3b8', fontWeight: 600 }}>· {f.count} parcela{f.count > 1 ? 's' : ''}</span></span>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: '#0D4BFF' }}>{BRL(f.amount_cents)} <span style={{ fontSize: 10.5, color: '#94a3b8', fontWeight: 600 }}>· acum. {BRL(acc)}</span></span>
+                      </div>
+                      <div style={{ height: 8, borderRadius: 6, background: '#f1f5f9', overflow: 'hidden' }}>
+                        <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg,#0D4BFF,#4d8aff)', borderRadius: 6 }} />
+                      </div>
+                    </div>
+                  );
+                })}
+                {data.forecast_nodate_cents > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 4, fontSize: 12, color: '#94a3b8' }}>
+                    <span>Sem data de vencimento</span>
+                    <span style={{ fontWeight: 700 }}>{BRL(data.forecast_nodate_cents)}</span>
+                  </div>
+                )}
+                <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 2, lineHeight: 1.5 }}>Parcelas pendentes dos times confirmados, por mês de vencimento. "Acum." mostra o total projetado até o mês.</div>
+              </div>
+            );
+          })()}
+        </Card>
+      )}
+
       {/* Por método + Por opção */}
       <div className="fin-grid-2">
         <Card>
